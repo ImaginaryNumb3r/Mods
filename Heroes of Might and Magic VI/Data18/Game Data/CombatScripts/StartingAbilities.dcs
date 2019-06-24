@@ -1,0 +1,263 @@
+// coder : mitko, Steeve
+
+effect "HeroismMasterEffect"
+{
+	var Heroism_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Heroism_Master.Init(ability("Heroism"), MasterBonusPercent, BonusPercent);
+	}
+}
+
+effect "IceArmorMasterEffect"
+{
+	var IceArmor_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		IceArmor_Master.Init(ability("IceArmor"), MasterBonusPercent, BonusPercent);
+	}
+}
+
+effect "HealMasterEffect"
+{
+	var Heal_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Heal_Master.Init(ability("HealHero"), MasterBonusPercent, BonusPercent);
+	}
+}
+
+effect "AgonyMasterEffect"
+{
+	var Agony_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Agony_Master.Init(ability("Decay"), MasterBonus, BonusPercent);
+	}
+}
+
+effect "GoblinMasterEffect"
+{
+	var Goblin_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Goblin_Master.Init(ability("Traps"), CooldownDecreaseBonus, CooldownSubtract);
+	}
+}
+
+effect "SuccubusMasterEffect"
+{
+	event OnCauseDamage
+	{
+		if ((Damage.Flags & EDamageFlags.Simulation) == 0 && Damage.School == EAbilitySchool.Fire && Damage.Ability.Active && Damage.Target.ValidTarget)
+		{
+			local Effect: effect;
+			local EffectiveDamage: float;
+			
+			EffectiveDamage = Percentage.ScaleValue(Damage.Target, EScaling.All) * 0.01;
+			if (EffectiveDamage > 1.0)
+				EffectiveDamage = 1.0;
+			EffectiveDamage = EffectiveDamage * Damage.Amount;
+			Effect = Damage.Target.AddEffect(Owner, "ImmolationEffect", round(EffectiveDamage));
+		}
+	}
+}
+
+effect "TormentorMasterEffect"
+{
+	var Tormentor_Master: modifier"ModifyAbility";
+	var Tormentor_Master2: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Tormentor_Master.Init(ability("ExplodingSpikes"), AreaBonus, AreaBonusAdd);
+		Tormentor_Master2.Init(ability("RetractableSpikes"), AreaBonus, AreaBonusAdd);		
+	}
+}
+
+effect "GriffinMasterEffect"
+{
+	var Griffin_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Griffin_Master.Init(ability("DivingAttack"), GriffinMasterBonus, DamageIncreasePercent);
+	}
+}
+
+effect "CrossbowmanMasterEffect"
+{
+	var Crossbowman_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Crossbowman_Master.Init(ability("CrossbowmanAttack"), Master, 1);
+	}
+}
+
+effect "SharkWarriorMasterEffect"
+{
+	var SharkWarrior_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		SharkWarrior_Master.Init(effect("BloodFrenzy"), Master, MasterModifier);
+	}
+}
+
+effect "LightningMasterEffect"
+{
+	var Lightning_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Lightning_Master.Init(ability("LightningBolt"), Master, MasterModifier);
+	}
+}
+
+effect "StandYourGroundMasterEffect"
+{
+	var StandYourGround_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		StandYourGround_Master.Init(ability("StandYourGround"), Master, MasterModifier);
+	}
+}
+
+effect "StoneSkinMasterEffect"
+{
+	var StoneSkin_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		StoneSkin_Master.Init(ability("StoneSkin"), Master, MasterModifier);
+	}
+}
+
+effect "RegenerationMasterEffect"
+{
+	var Regeneration_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Regeneration_Master.Init(ability("Regeneration"), Master, MasterModifier);
+	}
+}
+
+effect "FireBoltMasterEffect"
+{
+	var FireBolt_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		FireBolt_Master.Init(ability("FireBolt"), Master, MasterModifier);
+	}
+}
+
+effect "HasteMasterEffect"
+{
+	var Haste_ModifyMovement: modifier"ModifyAbility";
+	var Haste_ModifyInitiative: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Haste_ModifyMovement.Init(ability("Haste"), ModifyMovement, MovementModifier);
+		Haste_ModifyInitiative.Init(ability("Haste"), ModifyInitiative, InitiativeModifier);
+	}
+}
+
+effect "SlowMasterEffect"
+{
+	var Slow_ModifyMovement: modifier"ModifyAbility";
+	var Slow_ModifyInitiative: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Slow_ModifyMovement.Init(ability("Slow"), ModifyMovement, MovementModifier);
+		Slow_ModifyInitiative.Init(ability("Slow"), ModifyInitiative, InitiativeModifier);
+	}
+}
+
+effect "BladeMasterEffect"
+{
+	event OnModifyDamageDone
+	{
+		if (Damage.IsDefaultAttack)
+		{
+			Damage.ApplyBonus(1.0 + DamageBonus * 0.01);
+		}
+	}
+}
+
+effect "AbyssesDwellerEffect"
+{
+	event OnCauseDamage
+	{
+		if ((Damage.Flags & EDamageFlags.Simulation) == 0 && Damage.Target.ValidTarget)
+		{
+			local Effect: effect;		
+			Effect = Damage.Target.AddEffect(Owner, "AbyssesDwellerReduceEffect");
+		}
+	}
+	
+	event GetTooltip
+	{
+		local Effect: effect"AbyssesDwellerReduceEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "AbyssesDwellerReduceEffect");
+		$percentage = Effect.MightMalus.AbsValue;
+		$turns = Effect.MaxTurns;
+	}
+}
+
+effect "AbyssesDwellerReduceEffect"
+{
+	event GetTooltip
+	{
+		$percentage = MightMalus.AbsValue;
+		$turns = MaxTurns;
+	}
+}
+
+effect "PoisonMasterEffect"
+{
+	var Modify_PoisonedBladesEffect: modifier"ModifyAbility";
+	var Modify_PoisonedBladesTooltip: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Modify_PoisonedBladesEffect.Init(effect("PoisonedBladesEffect"), PoisonMasterBonus, PoisonBonus);
+		Modify_PoisonedBladesTooltip.Init(effect("PoisonedBladesTooltip"), PoisonMasterBonus, PoisonBonus);	
+	}
+}
+
+effect "FleetFeetEffect"
+{
+	var Haste_ModifyMovement: modifier"ModifyAbility";
+	var Haste_ModifyInitiative: modifier"ModifyAbility";
+	var MassHaste_ModifyMovement: modifier"ModifyAbility";
+	var MassHaste_ModifyInitiative: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Haste_ModifyMovement.Init(ability("Haste"), ModifyMovement, MovementModifier);
+		Haste_ModifyInitiative.Init(ability("Haste"), ModifyInitiative, InitiativeModifier);
+		MassHaste_ModifyMovement.Init(ability("MassHaste"), ModifyMovement, MovementModifier);
+		MassHaste_ModifyInitiative.Init(ability("MassHaste"), ModifyInitiative, InitiativeModifier);
+	}
+}
+
+effect "StalkerMasterEffect"
+{
+	var WhirlingDeath_Master: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		WhirlingDeath_Master.Init(ability("WhirlingDeath"), Master, 1);
+	}
+}

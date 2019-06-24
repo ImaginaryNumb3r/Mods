@@ -1,0 +1,189 @@
+/********************************************************
+ * Dynasty Combat Script: Pet Abilities 				*
+ * Coder: Pat											*
+ ********************************************************/
+
+
+/*  (Passive) Static Charge - 
+	When a enemy creature was hit by a hero attack, 
+	the hit creature deals <50> magic (air) damage to every adjacent enemy creature. 
+	( Aoe air damage is cast on the heros next default attack. ) 
+*/
+
+effect "BabyThunderbird_Ability1_Effect"
+{
+	const DamageAmount = 50;
+
+	var TargetCell: cell;
+	var TargetSize: int;
+	var TargetUnit_: unitpointer;
+	var GameRound: int;
+
+	
+	// initialize
+	event OnInit
+	{
+		TargetCell = null;
+		TargetSize = 0;
+		GameRound = 0;
+	}
+	
+	// check before action
+	event OnPreAction
+	{
+		TargetCell = null;
+		TargetSize = 0;
+		if ( Action.TargetUnit.ValidTarget )
+		{
+			TargetCell = Action.TargetUnit.Cell;
+			TargetSize = Action.TargetUnit.Size;
+			TargetUnit_ = Action.TargetUnit;
+		}
+	}
+	
+	// do after action 
+	event OnPostAction
+	{
+		local Effect: vfx;
+	
+		if ( (TargetCell != null) && (Action.Command.Type == ECommandType.MeleeAttack || Action.Command.Type == ECommandType.RangedAttack) )
+		{
+			local DamageValue: combatdamage;
+			DamageValue.Set(DamageAmount, Source: Owner, School: EAbilitySchool.Air);
+			
+			// check for all adjacent enemy creature
+			for UnitsInSquare(It, TargetCell.X - 1, TargetCell.Y - 1, TargetSize + 2, TargetSize + 2)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+
+				if ( !CurrentTarget.Alive )
+					continue;
+				
+				if ( CurrentTarget.Team == Source.Team )
+					continue;
+				
+				
+				if (Execute && TargetUnit_.Alive && CurrentTarget != TargetUnit_)
+				{
+					Effect = VFX_Beam(info.LightningFX, TargetUnit_, "center", CurrentTarget, "center");
+				}
+					
+				CurrentTarget.DamageUnit(DamageValue);
+				CurrentTarget.PlayEffect(info.HitFX);
+			}
+		}
+	}
+	
+	event GetTooltip
+	{
+		$hpdamage = DamageAmount;
+	}
+	
+}
+
+ability "DungeonPet_Mommy"
+{
+	const SummonNum = 1;
+	const EffectName = "DungeonPet_Mommy_Effect";
+	const HitTime = 0;
+	
+	event OnActivate
+	{
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+
+	  EntityType = 70100452; // Dungeon/Units/Shadow Dragon upg
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		if (!TargetCell.Valid || TargetCell.BlockedSquare(EntityTypeSize, ECombatMapLevel.Play))
+		{
+			SetInvalidTarget;
+			return;
+		}
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Summon entities
+		Owner = Source.OwnerIndex;
+		SummonedUnit = SummonUnit(EntityType, SummonNum, Owner, TargetCell);
+		if ( SummonedUnit.Valid )
+		{
+			local SummonEffect: effect"DungeonPet_Mommy_Effect";
+			SummonEffect = Source.FindEffect(EffectName);
+			if (SummonEffect.Valid )
+			{
+				if ( SummonEffect.SummonedUnit.Valid )
+					SummonEffect.SummonedUnit.Kill(Source);
+			}
+			else
+			{
+				SummonEffect = Source.AddEffect(Source, EffectName);
+			}
+			if (SummonEffect.Valid)
+				SummonEffect.SummonedUnit = SummonedUnit;
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+	
+	}
+}
+
+effect "DungeonPet_Mommy_Effect"
+{
+	var SummonedUnit: unit;
+	var Dummy: modifier"Dummy";
+}
+
+effect "DungeonPet_Jinxed"
+{	
+	event OnCreate
+	{
+		if (Simulation)
+			return;
+		
+		local num: int;
+		num = Random(4);					
+		
+		for AllCreatures(It)
+		{
+			if (It.Unit.Team != Owner.Team && It.Unit.ValidTarget)
+			{	
+				if ( num == 0 )
+				{
+					It.Unit.AddEffect(Owner, "Chilled");
+				}
+				else if ( num == 1 )
+				{
+					It.Unit.AddEffect(Owner, "Daze");
+				}
+				else if ( num == 2 )
+				{
+					It.Unit.AddEffect(Owner, "Frozen");
+				}
+				else
+				{
+					It.Unit.AddEffect(Owner, "Soaked");
+				}
+			}
+		}
+	}
+	
+}

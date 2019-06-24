@@ -1,0 +1,840 @@
+// coder : peter
+
+ability "Leap"
+{
+	var DamageValue: combatdamage;
+	const BonusPerDist = 2;
+
+	event OnActivate
+	{
+		StartAbility;
+		TargetUnit.SetMainTarget;
+
+		MoveTargetCell = Source.GetClosestMeleeCell(TargetUnit, MinRange, Source.GetMovement * MaxRange, MaxAngle, true,true);
+
+		if (!MoveTargetCell.Valid)
+			return;
+
+		local Dist: float;
+		local bHaveInvisibleUnit: bool;
+		bHaveInvisibleUnit = MoveTargetCell.IsInvisibleOn;
+
+		if( bHaveInvisibleUnit )
+		{
+			SetSecondaryTargetCell( Source.GetClosestMeleeCell(TargetUnit, MinRange, Source.GetMovement * MaxRange, MaxAngle, true,false) );
+
+			local InvisibleUnit : unit;
+			InvisibleUnit = MoveTargetCell.GetUnit;
+			
+			//calculate for invisible unit
+			MoveTargetCell = Source.GetClosestMeleeCell(InvisibleUnit, MinRange, Source.GetMovement * MaxRange, MaxAngle, true,true);
+
+			local bCanAttackInvisible: int;
+			if (MoveTargetCell.Valid)	
+			{
+				Dist = Source.Cell.DistFrom(MoveTargetCell);
+				bCanAttackInvisible = 1;
+			}
+			else
+			{
+				bCanAttackInvisible = 0;
+				MoveTargetCell = Source.Cell;
+			}
+		
+			if (Execute)
+			{
+				if(bCanAttackInvisible)
+				{
+					Source.PlayLeap(1000, 45, MoveTargetCell, "LeapStart", "LeapLoop", "LeapEnd");
+					Source.WaitForMove;
+				}
+				else
+				{
+					InvisibleUnit.RemoveInvisibleEffect();
+				}		
+			}
+
+			DamageValue.Set(-1, -1, Mul: 1.0 + Dist * BonusPerDist * 0.01, Scaling: EScaling.Stats | EScaling.Num, Flags: EDamageFlags.PlayHit);
+			
+			if(Simulation)
+				TargetUnit.DamageUnit(DamageValue);
+		
+			if (Execute)
+			{
+				if(bCanAttackInvisible)
+				{	
+					InvisibleUnit.DamageUnit(DamageValue);
+					Source.SetPos(MoveTargetCell);
+				}
+			}
+		
+			FinishAction;	
+		}
+		else
+		{
+			SetSecondaryTargetCell(MoveTargetCell);
+
+			Dist = Source.Cell.DistFrom(MoveTargetCell);
+
+			if (Execute)
+			{
+				Source.PlayLeap(1000, 45, MoveTargetCell, "LeapStart", "LeapLoop", "LeapEnd");
+				Source.WaitForMove;
+			}
+
+			DamageValue.Set(-1, -1, Mul: 1.0 + Dist * BonusPerDist * 0.01, Scaling: EScaling.Stats | EScaling.Num, Flags: EDamageFlags.PlayHit);
+			TargetUnit.DamageUnit(DamageValue);
+
+			if (Execute)
+				Source.SetPos(MoveTargetCell);
+
+			FinishAction;
+		}
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		$percent = BonusPerDist;
+	}
+}
+
+ability "SuperLeap"
+{
+	var DamageValue: combatdamage;
+	const BonusPerDist = 2;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, Scaling: EScaling.Num | EScaling.Stats, School: EAbilitySchool.Water, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate
+	{
+		StartAbility;
+		TargetUnit.SetMainTarget;
+
+		MoveTargetCell = Source.GetClosestMeleeCell(TargetUnit, MinRange, Source.GetMovement * MaxRange, MaxAngle, true,true);
+		if (!MoveTargetCell.Valid)
+			return;
+		SetSecondaryTargetCell(MoveTargetCell);
+
+		local Dist: float;
+		local bHaveInvisibleUnit: bool;
+		bHaveInvisibleUnit = MoveTargetCell.IsInvisibleOn;
+		
+		if(bHaveInvisibleUnit)
+		{
+			local SimTargetCell : cell;
+			SimTargetCell = Source.GetClosestMeleeCell(TargetUnit, MinRange, Source.GetMovement * MaxRange, MaxAngle, true,false);
+			SetSecondaryTargetCell( SimTargetCell );
+			
+			local InvisibleUnit : unit;
+			InvisibleUnit = MoveTargetCell.GetUnit;
+			
+			//calculate for invisible unit
+			MoveTargetCell = Source.GetClosestMeleeCell(InvisibleUnit, MinRange, Source.GetMovement * MaxRange, MaxAngle, true,true);
+			
+			local bCanAttackInvisible: int;
+			if (MoveTargetCell.Valid)	
+			{
+				Dist = Source.Cell.DistFrom(MoveTargetCell);
+				bCanAttackInvisible = 1;
+			}
+			else
+			{
+				bCanAttackInvisible = 0;
+				MoveTargetCell = Source.Cell;
+			}
+			
+			if (Execute)
+			{
+				if(bCanAttackInvisible)
+				{
+					Source.PlayLeap(1000, 45, MoveTargetCell, "LeapStart", "LeapLoop", "LeapEnd");
+					Source.WaitForMove;
+				}
+				else
+				{
+					InvisibleUnit.RemoveInvisibleEffect();
+				}		
+			}
+				
+			CalcDamage;	
+			if(Simulation)
+			{
+					for UnitsInSquare(It, SimTargetCell, 3, 3)
+					{
+						TargetUnit = It.Unit;
+						if (TargetUnit.ValidTarget && TargetUnit.Team != Source.Team)
+							TargetUnit.DamageUnit(DamageValue);
+					}
+			}
+				
+			if(Execute)	
+			{	
+				if(bCanAttackInvisible)
+				{
+					for UnitsInSquare(It, MoveTargetCell, 3, 3)
+					{
+						TargetUnit = It.Unit;
+						if (TargetUnit.ValidTarget && TargetUnit.Team != Source.Team)
+							TargetUnit.DamageUnit(DamageValue);
+					}
+					Source.SetPos(MoveTargetCell);
+				}			
+			}
+				
+			FinishAction;
+		}
+		else
+		{
+			SetSecondaryTargetCell(MoveTargetCell);
+
+			if (Execute)
+			{
+				Source.PlayLeap(1000, 45, MoveTargetCell, "LeapStart", "LeapLoop", "LeapEnd");
+				Source.WaitForMove;
+			}
+
+			DamageValue.Set(-1, -1, Mul: 1.0 + Dist * BonusPerDist * 0.01, Scaling: EScaling.Stats | EScaling.Num, Flags: EDamageFlags.PlayHit);
+			TargetUnit.DamageUnit(DamageValue);
+
+			if (Execute)
+				Source.SetPos(MoveTargetCell);
+
+			CalcDamage;
+			Source.WaitForMove;
+			for UnitsInSquare(It, MoveTargetCell, 3, 3)
+			{
+				TargetUnit = It.Unit;
+				if (TargetUnit.ValidTarget && TargetUnit.Team != Source.Team)
+					TargetUnit.DamageUnit(DamageValue);
+			}
+
+			FinishAction;
+		}
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		$percent = BonusPerDist;
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "PearlMaidenAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+
+	event OnActivate
+	{
+		const Delay = 0.720;
+
+		local Effect: vfx;
+
+		AddLuck(Source);
+		TargetUnit.SetMainTarget;
+		StartAbility;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForAttack;
+
+		CalcDamage;
+
+		CombatWait(Delay);
+		if (Execute)
+			Effect = VFX_Beam(info.LightningFX, Source, "weapon1", TargetUnit, "center");
+
+		TargetUnit.SetPrimaryTarget;
+		TargetUnit.PlayEffect(info.HitFX);
+
+		TargetUnit.DamageUnit(DamageValue);
+
+		Source.WaitForHit;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "PearlMaidenUpgradeAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+
+	event OnActivate
+	{
+		const Delay = 0.720;
+
+		local Effect: vfx;
+
+		AddLuck(Source);
+		TargetUnit.SetMainTarget;
+		StartAbility;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForAttack;
+
+		CalcDamage;
+
+		CombatWait(Delay);
+		if (Execute)
+			Effect = VFX_Beam(info.LightningFX, Source, "weapon1", TargetUnit, "center");
+
+		TargetUnit.SetPrimaryTarget;
+		TargetUnit.PlayEffect(info.HitFX);
+
+		TargetUnit.DamageUnit(DamageValue);
+
+		Source.WaitForHit;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "Hailstorm"
+{
+	var DamageValue: combatdamage;
+
+	event OnActivate
+	{
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+			AddLuck(Source);
+		}
+
+		TargetUnit.SetMainTarget;
+		StartAbility;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForAttack;
+		Source.WaitForHit;
+
+		DamageValue.Set(MinDamage, MaxDamage, Scaling: EScaling.All, School: EAbilitySchool.Might, Flags: EDamageFlags.PlayHit);
+		TargetUnit.DamageUnit(DamageValue);
+		DamageValue.Set(ExtraDamage, Scaling: EScaling.All, School: EAbilitySchool.Water );
+		TargetUnit.DamageUnit(DamageValue);
+
+		local Effect: effect;
+		Effect = TargetUnit.AddEffect(Source, "Frozen");
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		DamageValue.Set(ExtraDamage);
+
+		$creaturename = Source.GetName;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "IceShards"
+{
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(Damage);
+
+		$hpdamage = DamageValue;
+		$duration = Turns;
+	}
+}
+
+ability "SpiritBond"
+{
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+ability "SpiritBondUpgrade"
+{
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+effect "TrailOfMists"
+{
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		$cmovement = cmovement_Tooltip;
+	}
+}
+
+ability "WavesOfRenewal"
+{
+	var Effect: effect"WavesOfRenewal";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "WavesOfRenewal");
+		$hpheal = Effect.Heal.Value;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "WavesOfRenewal"
+{
+	event GetTooltip
+	{
+		$hpheal = Heal.Value;
+		$duration = MaxTurns;
+	}
+}
+
+effect "BattleReady"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "Challenged"
+{
+	event GetTooltip
+	{
+		$damagemalus = Reduction;
+	}
+}
+
+effect "Challenge"
+{
+	event GetTooltip
+	{
+		$damagemalus = effect("Challenged").Reduction;
+	}
+}
+
+effect "FreezingStrike"
+{
+	event OnCauseDamage
+	{
+		if (Simulation
+		|| !Damage.IsDefaultAttack
+		|| !Damage.Target.ValidTarget
+		)
+			return;
+
+		local Effect: effect;		
+		Effect = Damage.Target.AddEffect(Owner, "FreezingStrikeEffect");
+		Effect = Damage.Target.AddEffect(Owner, "Chilled");
+	}
+
+	event GetTooltip
+	{
+		local Effect: effect"FreezingStrikeEffect";
+		Effect = HostileDummy.AddEffect(Source, "FreezingStrikeEffect");
+		$creaturename = Owner.GetName;
+		$initiative = Effect.Initiative.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "FreezingStrikeEffect"
+{
+	event GetTooltip
+	{
+		$initiative = Initiative.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "InvigoratingRain"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$cmovement = cmovement_Tooltip;
+	}
+}
+
+effect "MesmerizingGazeEffect"
+{
+	event GetTooltip
+	{
+		$initiative = Initiative.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "SharkWarriorPassive"
+{
+	event OnCauseDamage
+	{
+		if (!Damage.Target.Valid || !Damage.Target.Alive || !Damage.IsMelee || !Damage.Target.IsCreature)
+			return;
+
+		if (Owner.Valid && Owner.Alive)
+		{
+			local CripplingWoundEffect: effect"CripplingWound";
+			CripplingWoundEffect = Damage.Target.AddEffect(Owner, "CripplingWound", Damage);
+		}
+	}
+
+	event GetTooltip
+	{
+		local Effect: effect"CripplingWound";
+		local DamageValue: combatdamage;
+		Effect = HostileDummy.AddEffect(Source, "CripplingWound", DamageValue);
+
+		$creaturename = Owner.GetName;
+		$cmovement = Effect.Movement.AbsValue;
+		$duration = Effect.MaxTurns;
+//		$hpdamage = Effect.Damage.Value;
+		$percent = Effect.DamagePercentage;
+	}
+}
+
+effect "CripplingWound"
+{
+	var DamageValue: combatdamage;
+
+	event OnCreate(inDamage: combatdamage)
+	{
+		DamageValue = inDamage;
+		DamageValue.ClearDefaultAttack;
+		DamageValue.Flags = DamageValue.Flags | EDamageFlags.PlayHit;
+		DamageValue.Amount = DamageValue.Amount * DamagePercentage * 0.01;
+		DamageValue.MaxAmount = DamageValue.MaxAmount * DamagePercentage * 0.01;
+		SetDOTDamage(DamageValue);
+	}
+
+	event OnCompare
+	{
+		if (DamageValue < Other.DamageValue)
+			Result = -1;
+		else if (DamageValue > Other.DamageValue)
+			Result = 1;
+	}
+
+	event OnTick
+	{
+		Owner.DamageUnit(DamageValue);
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		$cmovement = Movement.AbsValue;
+		$duration = MaxTurns;
+		$hpdamage = DamageValue;
+		$percent = DamagePercentage;
+	}
+}
+
+effect "BloodFrenzy"
+{
+	var Master: int = 0;
+
+// event OnModifyDamageDone()
+// {
+// 	local CripplingWoundEffect: effect"CripplingWound";
+// 	if (Damage.Target.Valid)
+// 		CripplingWoundEffect = Damage.Target.FindEffect("CripplingWound");
+// 	if (Damage.Attacker.Valid && Damage.Attacker.Alive && CripplingWoundEffect.Valid)
+// 	{
+// 		Damage.ApplyBonus(1.0 + (Damagebonus + Master) * 0.01);
+// 	}
+// }
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damagebonus = Damagebonus + Master;
+	}
+}
+
+effect "WaterFlowsFreely"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "FourWaves"
+{
+	var Index: int = 0;
+	var Stacks: int = 0;
+	var LastTarget: unit;
+
+	event OnPostAction
+	{
+		local i: int;
+
+		if (Simulation)
+			return;
+
+		if ((Action.Command.Type != ECommandType.MeleeAttack && Action.Command.Type != ECommandType.RangedAttack) || !Action.IsCommand || Action.Command.Ability != Owner.DefaultAttack.Ability)
+			return;
+
+		if (!Action.TargetUnit.ValidTarget)
+		{
+			Stacks = 0;
+			return;
+		}
+
+		if (Action.TargetUnit != LastTarget)
+		{
+			LastTarget = Action.TargetUnit;
+			Stacks = 0;
+		}
+
+//		if (Index == 0)
+//			Owner.PlayEffect(info.vsProc);
+
+//		if (Stacks < MaxStacks)
+//			Stacks++;
+
+		for (i = 0; i < Stacks; i++)
+		{
+			AddCommand(Owner, Action.TargetCell, Owner.Cell, ability("DeepNagaAttack"), ECommandType.MeleeAttack, i + 1);
+		}
+
+		if (Stacks < MaxStacks)
+			Stacks++;
+		return;
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$number = MaxStacks;
+	}
+}
+
+effect "FrozenCaress"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "MesmerizingGaze"
+{
+	event GetTooltip
+	{
+		local Effect: effect"MesmerizingGazeEffect";
+		Effect = HostileDummy.AddEffect(Source, "MesmerizingGazeEffect");
+
+		$creaturename = Owner.GetName;
+		$initiative = Effect.Initiative.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "ResistanceToWater"
+{
+	event GetTooltip
+	{
+		$damageresistance = DamageModifier.AbsValue;
+	}
+}
+
+effect "VulnerableToLightning"
+{
+	event GetTooltip
+	{
+		$damagevulnerability = DamageModifier.AbsValue;
+	}
+}
+
+ability "Honor1"
+{
+	var Effect: effect"Honor1";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Honor1");
+		$mightmagicdefense = Effect.MightDefense.AbsValue;
+	}
+}
+
+effect "Honor1"
+{
+	event GetTooltip
+	{
+		$mightmagicdefense = MightDefense.AbsValue;
+	}
+}
+
+effect "Honor2"
+{
+	event GetTooltip
+	{
+		$mightmagicdefense = MightDefense.AbsValue;
+		$maxhealth = Health.AbsValue;
+	}
+}
+
+ability "Honor2"
+{
+	var Effect: effect"Honor2";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Honor2");
+
+		$mightmagicdefense = Effect.MightDefense.AbsValue;
+		$maxhealth = Effect.Health.AbsValue;
+	}
+}
+
+ability "Honor3"
+{
+	var Effect: effect"Honor3";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Honor3");
+		$mightmagicdefense = Effect.MightDefense.AbsValue;
+		$maxhealth = Effect.Health.AbsValue;
+		$hpdamagepercreature = Effect.Amount.ScaleValue(0);
+	}
+}
+
+effect "Honor3"
+{
+	event GetTooltip
+	{
+		$mightmagicdefense = MightDefense.AbsValue;
+		$maxhealth = Health.AbsValue;
+		$hpdamagepercreature = Amount.ScaleValue(0);
+	}
+}
+
+ability "Honor4"
+{
+	var Effect: effect"Honor4";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Honor4");
+		$mightmagicdefense = Effect.MightDefense.AbsValue;
+		$maxhealth = Effect.Health.AbsValue;
+		$hpdamagepercreature = Effect.Amount.ScaleValue(0);
+	}
+}
+
+effect "Honor4"
+{
+	event GetTooltip
+	{
+		$mightmagicdefense = MightDefense.AbsValue;
+		$maxhealth = Health.AbsValue;
+		$hpdamagepercreature = Amount.ScaleValue(0);
+	}
+}
+
+ability "DeepNagaAttack"
+{
+	var DamageValue: combatdamage;
+	var Mul: float = 1.0;
+	const CalcDamage = { DamageValue.Set(-1, -1, Mul: Mul, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate(AttackNum: int = 0)
+	{
+		Mul = 1.0 / (1 << AttackNum);
+
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+			AddLuck(Source);
+		}
+		if (Execute && (!Source.GetMeleeCell(TargetUnit).Valid || !TargetUnit.ValidTarget))
+		{
+			FinishAction;
+			return;
+		}
+
+		StartAbility;
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+
+ability "SharkAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+  const CalcDamage_Buffer = { DamageValue.Set(-1, -1, Scaling: EScaling.All,Mul:DamageMultiplier, Flags: EDamageFlags.PlayHit);};
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+
+		StartAbility;
+		
+		if (Execute)
+			Source.Move(0, Path, TargetUnit);
+
+		AddLuck(Source);
+			
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+
+		if(TargetUnit.FindEffectByName("CripplingWound") && Source.FindEffectByName("BloodFrenzy"))
+			CalcDamage_Buffer;
+		else
+			CalcDamage;
+
+		// Process hit events
+		Source.WaitForHit;
+		TargetUnit.PlayOnHitAnim;
+		TargetUnit.DamageUnit(DamageValue);
+
+		// Wait for source to finish the animation
+ 		Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}

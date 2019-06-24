@@ -1,0 +1,434 @@
+// coder : szatyor
+
+effect "PlusXtoFriendlyCreaturesDamagingAttack"
+{
+	var MySchool: int;
+  var Flags: int;
+  var Tier: int;
+  var fValue: float;
+	event OnCreate(_Type: float, _Flags: float, _Tier: float, _fValue:float)
+	{
+		MySchool = _Type;
+		Flags = _Flags;
+		Tier = _Tier;
+		fValue = _fValue;
+	}
+
+	event OnModifyDamageDone
+	{
+		if ( (Flags & 1) && !Damage.IsMelee )
+			return; // melee only
+		if ( (Flags & 2) && !Damage.IsRanged )
+			return; // ranged only
+
+		if ( Damage.School == EAbilitySchool.Might)
+		{
+			if ( MySchool != EAbilitySchool.Might )
+				return;
+		}
+		else
+		if ( Damage.School == EAbilitySchool.Magic)
+		{
+			if ( MySchool != EAbilitySchool.Magic )
+				return;
+		}
+		else
+		{
+			if ( MySchool != EAbilitySchool.Magic && MySchool != Damage.School )
+				return;
+		}
+		Damage.AdditiveBonus = Damage.AdditiveBonus + fValue;
+	}
+}
+
+effect "PlusXtoEnemyCreaturesDamagingAttack"
+{
+	var MySchool: int;
+  var Flags: int;
+  var Tier: int;
+  var fValue: float;
+	event OnCreate(_Type: float, _Flags: float, _Tier: float, _fValue:float)
+	{
+		MySchool = _Type;
+		Flags = _Flags;
+		Tier = _Tier;
+		fValue = _fValue;
+	}
+
+	event OnModifyDamageDone
+	{
+		if ( (Flags & 1) && !Damage.IsMelee )
+			return; // melee only
+		if ( (Flags & 2) && !Damage.IsRanged )
+			return; // ranged only
+
+		if ( Damage.School == EAbilitySchool.Might)
+		{
+			if ( MySchool != EAbilitySchool.Might )
+				return;
+		}
+		else
+		if ( Damage.School == EAbilitySchool.Magic)
+		{
+			if ( MySchool != EAbilitySchool.Magic )
+				return;
+		}
+		else
+		{
+			if ( MySchool != EAbilitySchool.Magic && MySchool != Damage.School )
+				return;
+		}
+		Damage.AdditiveBonus = Damage.AdditiveBonus + fValue;
+	}
+}
+
+effect "PlusXtoElementalSummoningPower"
+{
+	var Percent: float;
+
+
+	event OnCreate(_Percent: float)
+	{
+		Percent = _Percent;
+	}
+
+	event OnPreSummon
+	{
+		Op.PowerModifierMul = Op.PowerModifierMul * ( 1.0 + Percent * 0.01 );
+	}
+
+	event OnPostSummon
+	{
+		Op.PowerModifierMul = Op.PowerModifierMul / ( 1.0 + Percent * 0.01 );
+	}
+}
+
+
+effect "PlusXPowerToActiveAbilities"
+{
+	var Reputation: int;
+	var BonusPercentage: float;
+
+	var MightModifier: modifier"ModifyStat";
+	var MagicModifier: modifier"ModifyStat";
+
+	event OnCreate(_BonusPercentage: float, _Reputation: float)
+	{
+		Reputation = _Reputation;
+		BonusPercentage = _BonusPercentage;
+
+		MightModifier.Init(EStat.MightBonus, 0, 0);
+		MagicModifier.Init(EStat.MagicBonus, 0, 0);
+	}
+
+	event OnPreAction
+	{
+		if ( Action.Command.Ability.Active() )
+		{
+			if ( Action.Command.Ability.GetReputation() == Reputation )
+			{
+				MightModifier.Modify(0, 1.0 + BonusPercentage * 0.01);
+				MagicModifier.Modify(0, 1.0 + BonusPercentage * 0.01);
+			}
+		}
+	}
+
+	event OnPostAction
+	{
+		if ( Action.Command.Ability.Active() )
+		{
+			if (Action.Command.Ability.GetReputation() == Reputation)
+			{
+				MightModifier.Modify(0, 1);
+				MagicModifier.Modify(0, 1);
+			}
+		}
+	}
+}
+
+effect "DamageNegation"
+{
+	var ChargeCount: int;
+	var Instances: int = 0;
+
+	event OnCreate(_ChargeCount: float)
+	{
+		ChargeCount = _ChargeCount.ToInt;
+
+		//print("DamageNegation OnCreate ChargeCount ", ChargeCount, "\n");
+	}
+
+	event OnInit(_ChargeCount: float)
+	{
+		local OldEffect: effect"DamageNegation";
+		OldEffect = Owner.FindEffect("DamageNegation");
+		if (OldEffect.Valid)
+		{
+			OldEffect.ChargeCount = OldEffect.ChargeCount + ChargeCount;
+			//print("DamageNegation OnInit FindEffect OldEffect.ChargeCount ", OldEffect.ChargeCount, "\n");
+			return;
+		}
+
+		//print("DamageNegation OnInit ChargeCount ", ChargeCount, "\n");
+
+		local CurrentUnit: unit;
+		local ChildEffect: effect;
+		for AllCreatures(It)
+		{
+			CurrentUnit = It.Unit;
+			if (CurrentUnit.Team == Owner.Team)
+			{
+				ChildEffect = CurrentUnit.AddEffect(Owner, "DamageNegationEffect", this);
+				if (ChildEffect.Valid)	
+					Instances++;
+			}
+		}
+	}
+}
+
+effect "DamageNegationEffect"
+{
+	var OwnerEffect: effect"DamageNegation";
+
+	event OnCreate(_OwnerEffect: effect"DamageNegation")
+	{
+		OwnerEffect = _OwnerEffect;
+	}
+
+	event OnReduceDamageTaken()
+	{
+		if (Simulation)
+			return;
+
+		if (OwnerEffect.ChargeCount <= 0)
+			Remove();
+
+		Damage.ApplyReduction(0.0);
+		Damage.Amount = 0.0;
+
+		//print("DamageNegation Turns ", OwnerEffect.ChargeCount, "\n");
+		OwnerEffect.ChargeCount = OwnerEffect.ChargeCount - 1;
+	}
+}
+
+effect "DamageBleeding"
+{
+	event OnCauseDamage
+	{
+		if (!Damage.Target.Valid || !Damage.Target.Alive || !Damage.IsMelee || Simulation)
+			return;
+
+		if (Owner.Valid && Owner.Alive && Damage.IsMelee)
+		{
+			Damage.Target.AddEffect(Owner, "DamageBleedingEffect", Damage.Amount * Percentage * 0.01);
+			
+			local PoisonSpreadEffect: effect;
+			PoisonSpreadEffect = Owner.FindEffect("AssassinPoisonSpread");
+			if( PoisonSpreadEffect.Valid )
+			{
+				Damage.Target.AddEffect(Owner, "AssassinPoisonSpreadEffect");
+			}
+		}
+	}
+}
+
+effect "DamageBleedingEffect"
+{
+	var DamageValue: combatdamage;
+
+	event OnCreate(DamageOverTime: int)
+	{
+		DamageValue.Set(DamageOverTime, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		SetDOTDamage(DamageValue);
+	}
+	
+	event OnCompare
+	{
+		if (DamageValue < Other.DamageValue)
+			Result = -1;
+		else
+			Result = 1;
+	}
+	
+	event OnTick
+	{
+		Owner.DamageUnit(DamageValue);
+	}
+	
+	event OnRemoved
+	{
+		local Effect : effect;
+		Effect = Owner.FindEffect("AssassinPoisonSpreadEffect");
+		if (Effect.Valid)
+			Effect.Remove();
+	}
+	event GetTooltip
+	{
+		$damage = DamageValue;
+		$movement = Movement.AbsValue;
+		$initiative = Initiative.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "AssassinPoisonSpread"
+{
+	event OnInit()
+	{
+		local CurrentUnit: unit;
+		for AllCreatures(It)
+		{
+			CurrentUnit = It.Unit;
+			if ( CurrentUnit.Team != Owner.Team)
+			{
+				CurrentUnit.AddEffect(Owner, "AssassinPoisonSpreadEffect");
+			}
+		}
+	}
+}
+
+effect "AssassinPoisonSpreadEffect"
+{
+	// Currently Only two DOT effects will be spreaded.
+	event OnKilled()
+	{		
+		local Effect: effect;
+		local DamageValue: combatdamage;
+		
+		Effect = Owner.FindEffect("PoisonedBladesEffect");
+
+		if( Effect.Valid )
+		{
+			Effect.GetDOTDamage(DamageValue);
+			for UnitsInSquare(It, Owner.Cell.X - 1, Owner.Cell.Y - 1, Owner.Size + 2, Owner.Size + 2)
+			{
+				if (It.Unit.Team == Owner.Team)
+					Effect = It.Unit.AddEffect(Source,"PoisonedBladesEffect", DamageValue.Amount);
+			}
+		}
+
+		Effect = Owner.FindEffect("DamageBleedingEffect");
+
+		if( Effect.Valid )
+		{
+			Effect.GetDOTDamage(DamageValue);
+			for UnitsInSquare(It, Owner.Cell.X - 1, Owner.Cell.Y - 1, Owner.Size + 2, Owner.Size + 2)
+			{
+				if (It.Unit.Team == Owner.Team)
+					Effect = It.Unit.AddEffect(Source,"DamageBleedingEffect", DamageValue.Amount);
+			}
+		}		
+	}	
+}
+
+effect "AssassinIncreaseDamageEffect"
+{
+  	var m_fDamageBonus: float;
+	event OnCreate(_fValue:float)
+	{
+		m_fDamageBonus = _fValue;
+	}
+
+	event OnModifyDamageDone
+	{
+		if ( !Damage.IsMelee && !Damage.IsRanged )
+			return;
+		
+		Damage.AdditiveBonus = Damage.AdditiveBonus + m_fDamageBonus;
+	}
+}
+
+
+
+//Virtuos assassin's set
+effect "AssassinSetAvoidRetaliation"
+{
+	var ChargeCount: int;
+
+	event OnInit
+	{
+		ChargeCount = AvoidRetaliationCount;
+		local CurrentUnit: unit;
+		for AllCreatures(It)
+		{
+			CurrentUnit = It.Unit;
+			if (CurrentUnit.Team == Owner.Team)
+			{
+				CurrentUnit.AddEffect(Owner, "AssassinSetAvoidRetaliationEffect",this);
+			}
+		}
+	}
+}
+
+effect "AssassinSetAvoidRetaliationEffect"
+{
+	var OwnerEffect: effect"AssassinSetAvoidRetaliation";
+
+	event OnCreate(_OwnerEffect: effect"AssassinSetAvoidRetaliation")
+	{
+		OwnerEffect = _OwnerEffect;
+	}
+
+	event OnPreAction
+	{	
+		if( OwnerEffect.ChargeCount > 0 )
+		{
+			Action.SetRetaliationAllowed(false);
+		}
+		
+		if (!Simulation && OwnerEffect.ChargeCount <= 0)
+		{
+			Remove();
+			return ;
+		}
+	}
+	
+	event OnCauseDamage
+	{
+		if( !Simulation && Damage.IsMelee  && OwnerEffect.ChargeCount > 0 && !Damage.IsRetaliation )
+		{
+		  	OwnerEffect.ChargeCount = OwnerEffect.ChargeCount - 1;
+		}
+	}
+	
+	event GetTooltip
+	{
+		$charge = OwnerEffect.AvoidRetaliationCount;
+	}
+}
+
+effect "DazedImproveEffect"
+{
+	event GetTooltip
+	{
+		
+	}
+}
+
+effect "AddStormEffect"
+{
+	event OnInit
+	{
+		if (Simulation)
+			return;
+		
+		for AllCreatures(It)
+		{
+			if (It.Unit.ValidTarget)
+			{
+				if (It.Unit.Team == Owner.Team && (It.Unit.Flags & ECombatUnitFlags.Ranged))
+				{
+					AddCommand(Owner, It.Unit.Cell, null, ability("TrueShot"), ECommandType.Cast);
+				}
+			}
+		}
+		
+		AddCommand(Owner, null, null, ability("MassWindShield"), ECommandType.Cast);
+		
+	}
+	
+	event GetTooltip
+	{
+		
+	}
+}

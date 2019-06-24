@@ -1,0 +1,3 @@
+Dungeon:
+	- Assassin: Increased poison damage to 2.5 damage per Assasin (from 1)
+	- Minotaur: Increased damage of ability by 20%

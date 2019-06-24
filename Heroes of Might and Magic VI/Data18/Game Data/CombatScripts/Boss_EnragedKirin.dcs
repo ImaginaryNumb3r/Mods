@@ -1,0 +1,463 @@
+ability "EnragedKirin_Melee"
+{
+	var DamageValue: combatdamage;
+	var AOEDamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, School: EAbilitySchool.Water, Flags: EDamageFlags.PlayHit);
+						 AOEDamageValue.Set(MinDamage *(AOE * 0.01), MaxDamage*(AOE* 0.01), School: EAbilitySchool.Water, Flags: EDamageFlags.PlayHit);	};
+	  
+
+	event OnActivate
+	{
+
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		
+
+		Source.WaitForHit;
+
+
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+		local Effect: effect;
+		Effect = TargetUnit.AddEffect(Source, "Frozen");
+		//AOE Damage
+		for UnitsInSquare(It, TargetUnit.Cell.X - 1, TargetUnit.Cell.Y - 1, TargetUnit.Size + 2, TargetUnit.Size + 2)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+			if( CurrentTarget == TargetUnit ||!CurrentTarget.ValidTarget || CurrentTarget.Team == Source.Team)
+				continue;
+			CurrentTarget.SetPrimaryTarget;
+			CurrentTarget.PlayOnHitAnim;
+			CurrentTarget.DamageUnit(AOEDamageValue);
+		}
+			// Damage target
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+		$aoedamage = AOEDamageValue;
+	}
+}
+
+effect "EnragedKirin_MeleeTooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+ability "EnragedKirin_LightingMonsoon"
+{
+	const Duration = 3;
+	event OnActivate
+	{
+		local Effect: effect"LightingMonsoonEffect";
+		local Unit: unit;
+
+		StartAbility;
+
+		TargetCell = GetCell(TargetCell.X - 2, TargetCell.Y - 2);
+
+		if (!TargetCell.Valid || TargetCell.BlockedSquare(5,ECombatMapLevel.Sky))
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		Unit = CreateEffectUnit(5220171, Source.Team, TargetCell.X, TargetCell.Y, 5, ECombatMapLevel.Sky);
+		if (!Unit.Valid)
+			return;
+		Effect = Unit.AddEffect(Source, "LightingMonsoonEffect",Duration);
+		AddCommand(Unit, Unit.Cell, null, ability("LightingMonsoonActive"), ECommandType.Cast);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(ability("LightingMonsoonActive").Damage);
+		$hpdamage = DamageValue;
+		$duration = Duration;
+	}
+}
+
+ability "LightingMonsoonActive"
+{
+	var DamageValue: combatdamage;
+	const Damage = 100;
+
+	event OnActivate
+	{
+		const StartDelay = 3.0;
+		const Interval = 4.0;
+
+		local Effect: effect"LightingMonsoonEffect";
+		Effect = Source.FindEffect("LightingMonsoonEffect");
+
+		Effect.Turns--;
+
+		//PlayEffect(info.VisualFX, TargetCell.CenterX + 2, TargetCell.CenterY + 2);
+		if (Effect.Turns > 0)
+		{
+			Effect.VisualFX.Create(info.VisualFX, TargetCell.CenterX + 2, TargetCell.CenterY + 2);
+			Effect.IdleFX.Create(info.IdleFX, TargetCell.CenterX + 2, TargetCell.CenterY + 2);
+		}
+		CombatWait(StartDelay);
+		
+
+		local Targets: unitarray;
+		local CurrentTarget: unit;
+		local i: int;
+		local n: int;
+		local UnitInterval: float;
+		local CurrentDamage: float;
+
+		DamageValue.Set(Damage, Source: Effect.Source);
+
+		n = 0;
+		for UnitsInSquare(It, TargetCell.X, TargetCell.Y, 5, 5)
+		{
+			CurrentTarget = It.Unit;
+
+			if ( !CurrentTarget.Alive )
+				continue;
+
+			Targets.Add(CurrentTarget);
+			n++;
+		}
+
+		if (n > 1)
+			UnitInterval = Interval / (n - 1).ToFloat;
+
+		Targets.Randomize;
+
+		for (i = 0; i < n; i++)
+		{
+			if (i > 0)
+				CombatWait(UnitInterval);
+
+			CurrentTarget = Targets.Get(i);
+			CurrentTarget.AddEffect(Source, "Soaked");
+			//PlayEffect(info.HitFX, CurrentTarget.CenterX, CurrentTarget.CenterY);
+			CurrentTarget.DamageUnit(DamageValue);
+			if (Execute)
+				CurrentTarget.PlayOnHitAnim;
+		}
+		CombatWait(5.0);
+		if(Effect.Turns <= 0)
+		{
+			Effect.IdleFX.Clear;
+			Effect.VisualFX.Clear;
+			Source.Kill(Source);
+		}
+
+		FinishAction;
+	}
+}
+
+effect "LightingMonsoonEffect"
+{
+	var IdleFX: visualeffect;
+	var	VisualFX: visualeffect;
+	var Turns: int;
+
+	event OnCreate(inTurns: int)
+	{
+		Turns = inTurns;
+	}
+
+	event OnTick
+	{
+		AddCommand(Owner, Owner.Cell, null, ability("LightingMonsoonActive"), ECommandType.Cast);
+	}
+}
+
+ability "EnragedKirin_Enrage"
+{
+	event OnActivate
+	{
+		local Effect: effect;
+
+		StartAbility;
+
+		local Text: localizedstring;
+		Text.Init("CombatLog.Updated.Enrage");
+		Text.Add(Source);
+		Text.Log();
+
+		Source.PlayAnim("Enrage");
+		Source.WaitForAnim;
+
+		Effect = Source.AddEffect(Source, "EnragedKirin_EnrageEffect");
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+effect "EnragedKirin_EnrageEffect"
+{
+	var Dummy: modifier"Dummy";
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+ability "EnragedKirin_Riptide"
+{
+	const Duration = 1;
+	event OnActivate
+	{
+		local Effect: effect"RiptideEffect";
+		local Unit: unit;
+
+		StartAbility;
+
+		if (!TargetUnit.Valid || !TargetUnit.Cell.Valid || TargetUnit.Cell.BlockedSquare(1, ECombatMapLevel.Ground))
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		Source.StartAttack(TargetUnit, TargetUnit.Cell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		Unit = CreateEffectUnit(5220171, Source.Team, TargetUnit.Cell.X, TargetUnit.Cell.Y, 1, ECombatMapLevel.Ground);
+		if (!Unit.Valid)
+			return;
+		Effect = Unit.AddEffect(Source, "RiptideEffect",Duration);
+		Effect.RippleFX.Create(info.WarningFX, TargetCell.CenterX , TargetCell.CenterY );
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(ability("RiptideActive").Damage);
+		$hpdamage = DamageValue;
+		$duration = Duration;
+	}
+}
+
+ability "RiptideActive"
+{
+	var DamageValue: combatdamage;
+	const Damage = 100;
+
+	event OnActivate
+	{
+		const StartDelay = 3.5;
+		const Interval = 2.5;
+
+		local Effect: effect"RiptideEffect";
+		Effect = Source.FindEffect("RiptideEffect");
+		if(!Effect.Valid)
+			return;
+
+		if (Effect.Turns > 0)
+			Effect.TideFX.Create(info.TideFX, TargetCell.CenterX , TargetCell.CenterY );
+		else
+			Effect.TideFX.Clear;
+		CombatWait(StartDelay);
+		DamageValue.Set(Damage, Source: Effect.Source);
+		if(Source.Cell.GetUnit.Valid && Source.Cell.GetUnit.Alive && Source.Cell.GetUnit.Team != Source.Team)
+		{
+			Source.Cell.GetUnit.DamageUnit(DamageValue);
+			if (Execute)
+				Source.Cell.GetUnit.PlayOnHitAnim;
+		}
+		Effect.Turns--;
+		if(Effect.Turns <= 0)
+		{
+			Effect.RippleFX.Clear;
+			Effect.TideFX.Clear;
+			Source.Kill(Source);
+		}
+		CombatWait(1.5);
+
+
+		FinishAction;
+	}
+}
+
+effect "RiptideEffect"
+{
+	var RippleFX: visualeffect;
+	var TideFX:	  visualeffect;
+	var Turns: int;
+
+	event OnCreate(inTurns: int)
+	{
+		Turns = inTurns;
+	}
+
+	event OnTick
+	{
+		AddCommand(Owner, Owner.Cell, null, ability("RiptideActive"), ECommandType.Cast);
+	}
+}
+
+ability "EnragedKirin_Tsunami"
+{
+	var Effect: effect;
+
+	const Speed = 30.0 / (1.850 * 2);
+	
+	var DamageValue: combatdamage;
+
+	event OnActivate
+	{
+		local KnockbackInfo: knockbackinfo;
+		local StartX: float;
+		local EndX: float;
+
+		StartAbility;
+
+		if ( Simulation )
+		{
+		// AI simulatehoz (by Szatyor)
+			local AllUnits: unitarray;
+			local MyCurrentTarget: unit;
+			local i: int;
+
+			GetCreatureUnits(AllUnits);
+			for (i = 0; i < AllUnits.Num; i++)
+			{
+				MyCurrentTarget = AllUnits.Get(i);
+				if ( MyCurrentTarget.Valid && MyCurrentTarget.Size == 1 && MyCurrentTarget.Team != Source.Team )
+				{
+					Effect = MyCurrentTarget.AddEffect(Source, "TsunamiEffect");
+				}
+			}
+		}
+		local Effect: effect"Warning";
+		Effect = Source.FindEffect("Warning");
+		Effect.WFX.Clear;
+
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+		DamageValue.Set(Damage, Source: Source);
+		DisableStop;
+		
+		StartX = GetMapCenterX + 15;
+		EndX = GetMapCenterX - 15;
+		
+		PlayEffect(info.Long,  GetMapCenterX, GetMapCenterY +6);
+		PlayEffect(info.Short, GetMapCenterX, GetMapCenterY +3);
+		PlayEffect(info.Long,  GetMapCenterX, GetMapCenterY);
+		PlayEffect(info.Short, GetMapCenterX, GetMapCenterY -3);
+		PlayEffect(info.Long,  GetMapCenterX, GetMapCenterY -6);
+		
+		
+		KnockbackInfo.Horizontal(true);
+		
+	
+
+		for UnitsHorizontal(It, StartX, EndX, Speed)
+		{
+			It.WaitForHit;
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+			if (!CurrentTarget.Valid || 0 == EnragedKirin_Tsunami_ValidTarget(Source, CurrentTarget) )
+				continue;
+
+			if (Simulation)
+			{
+				SetValidTarget;
+			}
+
+			if (Execute)
+			{
+				if(EnragedKirin_Tsunami_ValidTarget(Source, CurrentTarget) == 1)
+				{
+				
+					if (KnockbackInfo.StartResult(CurrentTarget))
+					{
+						Effect = CurrentTarget.AddEffect(Source, "TsunamiEffect");
+						if (Effect.Valid && !Simulation)
+							EnragedKirin_AddNumStunnedTargets(Source, 1);
+					}
+					
+
+
+					if (CurrentTarget.Team != Source.Team)
+					{
+						CurrentTarget.DamageUnit(DamageValue);
+					}
+				}
+			}
+		}
+		KnockbackInfo.Finish;
+		EnableStop;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		Effect = HostileDummy.AddEffect(Source, "TsunamiEffect");
+		$duration = Effect.MaxTurns;
+		$hpdamage = Damage;
+	}
+	
+}
+
+
+
+effect "Warning"
+{
+	var WFX:visualeffect;
+
+	event OnTick
+	{
+		if( GetRound >= GameRound && Owner.CanUseAbility(ability("EnragedKirin_Tsunami") ) == 1 )
+		{
+			WFX.Create(info.WarningFX, GetMapCenterX, GetMapCenterY - 0.5 );
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+

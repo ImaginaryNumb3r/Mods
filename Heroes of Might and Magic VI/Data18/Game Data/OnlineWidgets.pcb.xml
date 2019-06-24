@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OnlineWidgets>
+  <OnlineWidget>
+    <Name>News</Name>
+    <Title>OnlineWidget.Title.News</Title>
+    <FilePath>NewsWindow.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_news.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>Chat</Name>
+    <Title>OnlineWidget.Title.Chat</Title>
+    <FilePath>DynastyChatWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_Chat.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>Skype</Name>
+    <Title>OnlineWidget.Title.Skype</Title>
+    <FilePath>SkypeWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_Skype.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>FriendsWidget</Name>
+    <Title>OnlineWidget.Title.Friends</Title>
+    <FilePath>FriendsWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_friends.png</ImagePath>
+  </OnlineWidget>
+</OnlineWidgets>

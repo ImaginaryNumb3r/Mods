@@ -1,0 +1,16 @@
+<Maplist>
+  <GameMode mode="Multi_Duel">
+  </GameMode>
+  <GameMode mode="Multi_Standard">
+  </GameMode>
+  <GameMode mode="Multi_Saved">
+  </GameMode>
+  <GameMode mode="Single_Duel">
+  </GameMode>
+  <GameMode mode="Single_Skirmish">
+ 		<Map value="NecroMap2_MP.scn" />
+    <Map value="DungeonMap1_MP.scn" />
+  </GameMode>
+  <GameMode mode="Single_Scenario">
+  </GameMode>
+</Maplist>

@@ -1,0 +1,2283 @@
+/********************************************************
+ * Dynasty Combat Script: Dungeon Abilities             *
+ ********************************************************/
+
+
+/***********************************************************
+ * Common abilities and effects for all Dungeon creatures  *
+ ***********************************************************/
+
+effect "DiscipleOfMalassa"
+{
+	event GetTooltip
+	{
+		$damageresistance = Resist.AbsValue;
+		$damagevulnerability = Vulnerability.AbsValue;
+	}
+}
+
+/***********************************************************
+ * Abilities and effects for Assassin & Assassin Upgrade   *
+ ***********************************************************/
+ability "AssassinAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+
+
+		StartAbility;
+		
+		AddLuck(Source);
+		
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+
+		CalcDamage;
+
+		// Process hit events
+		Source.WaitForHit;
+		TargetUnit.PlayOnHitAnim;
+		TargetUnit.DamageUnit(DamageValue);
+
+
+		// Wait for source to finish the animation
+		// Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "AssassinUpgAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+
+		local Effect: effect"PoisonedBladesEffect";
+		local DamageOverTime: float;
+
+		StartAbility;
+
+		AddLuck(Source);
+		
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+
+		CalcDamage;
+
+		// Process hit events
+		Source.WaitForHit;
+		TargetUnit.PlayOnHitAnim;
+		TargetUnit.DamageUnit(DamageValue);
+		
+		DamageOverTime = 2.5 * Source.Num;
+
+		Effect = TargetUnit.AddEffect(Source, "PoisonedBladesEffect", round(DamageOverTime));
+
+		// Wait for source to finish the animation
+	  // Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "ShadowCloak"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$turns = 2;
+	}
+}
+
+
+effect "InvisibleEffect"
+{
+	event OnCreate
+	{	
+		Owner.PlayEffect(info.PFX);
+		CombatWait(3.0);
+	}
+	
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+	
+}
+effect "Backstab"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damagebonus = DamageBonus;
+	}
+}
+
+effect "PoisonedBladesEffect"
+{
+	var DamageOverTime: int;
+	var CurrentDamage: combatdamage;
+	
+	var PoisonMasterBonus: int = 0;
+	
+	event OnCreate(Damage: int)
+	{
+		DamageOverTime = round( Damage * (DamagePerUnit + PoisonMasterBonus * 0.01) );
+		
+		CurrentDamage.Set(DamageOverTime, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		SetDOTDamage(CurrentDamage);
+	}
+	
+	event OnCompare
+	{
+		if ( DamageOverTime < Other.DamageOverTime )
+			Result = -1;
+		else
+			Result = 1;
+	}
+
+	event OnTick
+	{
+		Owner.DamageUnit(CurrentDamage);
+	}
+	
+	event GetTooltip
+	{
+		$hpdamage = CurrentDamage;
+		$initiative = Initiative.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "PoisonedBladesTooltip"
+{
+	var PoisonMasterBonus: int = 0;
+	
+	event GetTooltip
+	{
+		local Effect: effect"PoisonedBladesEffect";
+		local DamageOverTime: int;
+		DamageOverTime = round(1.0 * Source.Num * (1 + PoisonMasterBonus * 0.01) );
+		Effect = HostileDummy.AddEffect(Source, "PoisonedBladesEffect", DamageOverTime);
+		
+		$creaturename = Owner.GetName;
+		$hpdamage = Effect.DamagePerUnit;
+		$initiative = Effect.Initiative.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+/***********************************************************
+ * Abilities and effects for Stalker & Stalker Upgrade     *
+ ***********************************************************/
+ability "StalkerMeleeAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+
+		local Effect: effect"CurseOfShadowEffect";
+
+		StartAbility;
+
+		AddLuck(Source);
+		
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+
+		CalcDamage;
+
+		// Process hit events
+		Source.WaitForHit;
+		TargetUnit.PlayOnHitAnim;
+		TargetUnit.DamageUnit(DamageValue);
+		
+		Effect = TargetUnit.AddEffect(Source, "CurseOfShadowEffect");
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "StalkerRangedAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+	var Master: int = 0;
+
+	event OnActivate
+	{
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		AddLuck(Source);
+
+		// Start animation
+		Source.StartCurveAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForAttackToLoop;
+
+		CalcDamage;	
+
+		//Wait for start to loop
+		//CombatWait(1.0);
+		
+		// Damage units
+		for UnitsInCurve(It, Source, TargetCell)
+		{
+			if (!It.Unit.Alive)
+				continue;
+
+			It.WaitForHit();
+		}
+		
+		TargetUnit.DamageUnit(DamageValue);
+			
+		local Effect: effect"CurseOfShadowEffect";
+		Effect = TargetUnit.AddEffect(Source, "CurseOfShadowEffect");
+	
+	  	//End action delay time
+		CombatWait(0.8);
+		if (Execute)
+		{
+			Source.StopAttackLoop();
+			Source.PlayAnim("AttackRanged_End");
+		}
+		
+		Source.WaitForAnim;
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "WhirlingDeath"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+	var Master: int = 0;
+
+	event OnActivate
+	{
+		// Only if no enemy is on an adjacent cell
+		for UnitsInSquare(CurrentCell, Source.Cell, 3, 3)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = CurrentCell.Unit;
+
+			if ( !CurrentTarget.Alive || CurrentTarget == Source || !CurrentTarget.IsCreature)
+				continue;
+
+			if (CurrentTarget.Team != Source.Team)
+				return;
+		}
+		
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		AddLuck(Source);
+
+		// Start animation
+		Source.StartCurveAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForAttackToLoop;
+
+		CalcDamage;	
+
+		//Wait for start to loop
+		//CombatWait(1.0);
+		
+		// Damage units
+		for UnitsInCurve(It, Source, TargetCell)
+		{
+			if (!It.Unit.Alive || !It.Unit.IsCreature)
+				continue;
+				
+			if ( It.Unit.Team == Source.Team && Master > 0)
+				continue;
+			It.Unit.SetSecondaryTarget;
+			It.WaitForHit();
+			It.Unit.DamageUnit(DamageValue);
+			
+			local Effect: effect"CurseOfShadowEffect";
+			Effect = It.Unit.AddEffect(Source, "CurseOfShadowEffect");
+		}
+	
+	  	//End action delay time
+		CombatWait(0.8);
+		if (Execute)
+		{
+			Source.StopAttackLoop();
+			Source.PlayAnim("AttackRanged_End");
+		}
+		
+		// Check retaliation
+		//TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$creaturename = Source.GetName;
+		$hpdamage = DamageValue;
+	}
+}
+
+
+effect "WhirlingDeath"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "CurseOfShadowEffect"
+{
+	event GetTooltip
+	{
+		$cmovement = Movement.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "CurseOfShadowTooltip"
+{
+	event GetTooltip
+	{
+		local Effect: effect"CurseOfShadowEffect";
+		Effect = HostileDummy.AddEffect(Source, "CurseOfShadowEffect");
+		$creaturename = Owner.GetName;
+		$cmovement = Effect.Movement.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+/***********************************************************
+ * Abilities and effects for Shadow Lurker & Upgrade       *
+ ***********************************************************/
+ 
+ability "ShadowLurkerMeleeAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+
+		StartAbility;
+		
+		//Source.PlayEffect(info.EyeShiningFX);
+		
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+		
+		AddLuck(Source);
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;
+		
+		// Process hit events
+		//TargetUnit.PlayOnHitAnim;			
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+		
+//		TargetUnit.Dispel(-1, true, false, 1, 0);
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "ShadowLurkerRangedAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHitAnim); };
+	const Delay = 0.8;
+	event OnActivate
+	{
+		//const Damage = 100;
+
+		local EffectFX: vfx;
+		//local CurrentDamage: float;
+		//CurrentDamage = Damage;
+		
+		local Effect: effect"HarrowingVisionDotHelper";
+
+		StartAbility;
+//		Source.PlayEffect(info.StartFX);
+		AddLuck(Source);
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+		
+		Effect = TargetUnit.FindEffect("HarrowingVisionDotHelper");
+		if (!Effect.Valid)
+		{
+			Effect = TargetUnit.AddEffect(Source, "HarrowingVisionDotHelper");
+			if (Simulation)
+			{
+				TargetUnit.AddEffect(Source, "HarrowingVisionDarknessEffect", 0);
+			}
+		}
+
+		CalcDamage;
+
+		if (Execute)
+		{
+			CombatWait(Delay);
+			Source.PlayEffect(info.ShineFX);
+			EffectFX = VFX_Beam(info.BeamFX, Source, "eye", TargetUnit, "center");
+		}
+		TargetUnit.PlayEffect(info.HitFX);
+		TargetUnit.DamageUnit(DamageValue);
+		
+		Source.WaitForAnim;
+		
+//		TargetUnit.Dispel(-1, true, false, 1, 0);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "MindProbe"
+{
+	event OnActivate
+	{
+		StartAbility;
+
+		local TargetTeam: int;
+		TargetTeam = TargetUnit.Team;
+		local Effect : effect"MindProbeEffect";
+		
+		Effect = TargetUnit.FindEffect("MindProbeEffect")
+		
+		if ( !Effect.Valid )
+		{
+			if ( !Simulation )
+			{
+				for AllCreatures(It)
+				{
+					local CurrentTarget: unit;
+					CurrentTarget = It.Unit;
+					if (CurrentTarget.ValidTarget && CurrentTarget.IsCreature && CurrentTarget.Team != Source.Team)
+					{
+						Effect = CurrentTarget.FindEffect("MindProbeEffect")
+						if ( Effect.Valid )
+							Effect.Remove;
+					}
+				}
+			}
+			Effect = TargetUnit.AddEffect(Source, "MindProbeEffect");
+			TargetUnit.PlayEffect(info.HitFX);
+		}
+		
+		MultiAction;
+	}
+	
+	event GetTooltip
+	{
+		local Effect: effect"MindProbeEffect";
+		Effect = HostileDummy.AddEffect(Source, "MindProbeEffect");
+		$percentage = Effect.DamageBonus.AbsValue;
+		$abilityname = ability("MindProbe").DisplayName;
+		$creaturename = Source.GetName;
+	}
+	
+}
+
+effect "MindProbeEffect"
+{
+	event GetTooltip
+	{
+		$percentage = DamageBonus.AbsValue;
+	}
+}
+
+effect "HarrowingVision"
+{
+	event GetTooltip
+	{
+		local Effect: effect"HarrowingVisionDarknessEffect";
+		Effect = HostileDummy.AddEffect(Owner, "HarrowingVisionDarknessEffect", 0);
+		$creaturename = Owner.GetName;
+		$percent = Effect.Percentage;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "HarrowingVisionDotHelper"
+{
+	event OnDamage_TargetTaken
+	{
+		if (Damage.Ability == ability("ShadowLurkerRangedAttack").Ability)
+		{
+			Damage.Target.AddEffect(Damage.Attacker, "HarrowingVisionDarknessEffect", round(Damage.Amount));
+		}
+	}
+}
+
+effect "HarrowingVisionDarknessEffect"
+{
+	var DamageOverTime: int;
+	var CurrentDamage: combatdamage;
+	
+	event OnCreate(Damage: int)
+	{
+		DamageOverTime = Damage * 0.01 * Percentage;
+		
+		CurrentDamage.Set(DamageOverTime, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		SetDOTDamage(CurrentDamage);		
+	}
+	
+	event OnCompare
+	{
+		if ( DamageOverTime < Other.DamageOverTime )
+			Result = -1;
+		else
+			Result = 1;
+	}
+
+	event OnTick
+	{
+		Owner.DamageUnit(CurrentDamage);
+	}
+	
+	event GetTooltip
+	{
+		$hpdamage = CurrentDamage;
+		$duration = MaxTurns;
+	}
+}
+
+/***********************************************************
+ * Abilities and effects for Manticore & Manticore Upgrade *
+ ***********************************************************/
+
+ability "ManticoreAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+
+		local Effect: effect"BitingVenomEffect";
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+		
+		StartAbility;
+		
+		AddLuck(Source);
+	
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;
+
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+
+		local ExistingEffect : effect"CorrodingVenomEffect";
+		ExistingEffect = TargetUnit.FindEffect("CorrodingVenomEffect");
+		if (!ExistingEffect.Valid)
+			Effect = TargetUnit.AddEffect(Source, "BitingVenomEffect");
+				
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+		
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "ManticoreUpgAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+
+		local Effect: effect"CorrodingVenomEffect";
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+		
+		StartAbility;
+	
+		AddLuck(Source);
+			
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;
+
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+		if (!Simulation)
+		{
+			local ExistingEffect : effect"BitingVenomEffect";
+			ExistingEffect = TargetUnit.FindEffect("BitingVenomEffect");
+			if (ExistingEffect.Valid)
+				ExistingEffect.Remove;
+		}
+
+		Effect = TargetUnit.AddEffect(Source, "CorrodingVenomEffect");
+				
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+		
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "BitingVenomEffect"
+{
+	event GetTooltip
+	{
+		$mightdefense = MightDefense.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "CorrodingVenomEffect"
+{
+	event OnCompare
+	{
+		if (MightDefense.AbsValue <= Other.MightDefense.AbsValue)
+			Result = -1;
+		else
+			Result = 1;
+	}
+	event GetTooltip
+	{
+		$mightdefense = MightDefense.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "BitingVenomTooltip"
+{
+	event GetTooltip
+	{
+		local Effect: effect"BitingVenomEffect";
+		Effect = HostileDummy.AddEffect(Source, "BitingVenomEffect");
+		$creaturename = Owner.GetName;
+		$mightdefense = Effect.MightDefense.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "CorrodingVenomTooltip"
+{
+	event GetTooltip
+	{
+		local Effect: effect"CorrodingVenomEffect";
+		Effect = HostileDummy.AddEffect(Source, "CorrodingVenomEffect");
+		$creaturename = Owner.GetName;
+		$mightdefense = Effect.MightDefense.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+ability "ParalysisSting"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, School: EAbilitySchool.Might, Mul: Percentage * 0.01, Flags: EDamageFlags.PlayHitAnim); };
+	event OnActivate
+	{
+		local Effect: effect"ParalysisStingEffect";
+		if (!TargetUnit.ValidTarget)
+			return;
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+		
+		StartAbility;
+		
+		AddLuck(Source);
+		
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;	
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+		
+		Effect = TargetUnit.AddEffect(Source, "ParalysisStingEffect");
+		FinishAction;
+	}
+	event GetTooltip
+	{
+	
+		local Effect: effect"ParalysisStingEffect";
+		Effect = HostileDummy.AddEffect(Source, "ParalysisStingEffect");
+		$creaturename = Source.GetName;
+		$percentage = Percentage;
+		$movement = Effect.Movement.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+ability "CrippleSting"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, School: EAbilitySchool.Might, Flags: EDamageFlags.PlayHitAnim); };
+	event OnActivate
+	{
+		local Effect: effect"CrippleStingEffect";
+		if (!TargetUnit.ValidTarget)
+			return;
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+		
+		StartAbility;
+		
+		AddLuck(Source);
+		
+
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;	
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+		
+		Effect = TargetUnit.AddEffect(Source, "CrippleStingEffect");
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+		local Effect: effect"CrippleStingEffect";
+		Effect = HostileDummy.AddEffect(Source, "CrippleStingEffect");
+		$creaturename = Source.GetName;
+		$percentage = Percentage;
+		$movement = Effect.Movement.AbsValue;
+		$initiative = Effect.Initiative.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+	
+}
+effect "ParalysisStingEffect"
+{
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		$movement = Movement.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+effect "CrippleStingEffect"
+{
+	event GetTooltip
+	{
+		$movement = Movement.AbsValue;
+		$initiative = Initiative.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+/***********************************************************
+ * Abilities and effects for Faceless & Faceless Upgrade   *
+ ***********************************************************/
+
+ability "FacelessAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+			
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+			
+		StartAbility;
+		
+		AddLuck(Source);
+				
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+
+		CalcDamage;
+				
+		Source.WaitForHit;
+		TargetUnit.PlayOnHitAnim;
+		TargetUnit.DamageUnit(DamageValue);
+		
+		if(Execute)
+		{
+			if(Source.FindEffectByName("DarknessFormEffect") == 0)
+			{
+				TargetUnit.Dispel(-1, true, false, 1, 0);
+			}
+			else
+			{
+				local Effect:effect;
+				Effect = Source.FindEffect("DarknessFormEffect");
+				Effect.Remove;
+			
+				//Dispel all buffer
+				TargetUnit.Dispel(-1,true,false,-1,0);
+			}
+		}
+		
+		Source.WaitForAnim;
+		Path.Reverse;
+		Source.Move(0, Path, TargetUnit);
+
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+  		$creaturename = Source.GetName;
+
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+	
+}
+
+
+ability "MindLeash"
+{
+	var Effect: effect"MindLeashEffect";
+	/*event OnActivate
+	{
+		StartAbility;
+
+		if (Execute)
+		{
+			//Source.PlayEffect(info.VFX);
+			VFX_Beam(info.VFX, Source, "eye", TargetUnit, "center");
+		}
+		TargetUnit.AddEffect(Source, "MindLeashEffect");
+		CombatWait(1.5);
+
+		FinishAction;
+		
+	}
+	*/
+	
+
+	event GetTooltip
+	{
+		Effect = HostileDummy.AddEffect(Source, "MindLeashEffect");
+		$duration = Effect.MaxTurns;
+		$creaturename = Source.GetName;
+	}
+}
+
+effect "MindLeashEffect"
+{
+	event OnTakeDamage
+	{
+		if (Simulation)
+			return;
+		Remove;
+	}
+}
+
+/***********************************************************
+ * Abilities and effects for Minotaur & Minotaur Upgrade   *
+ ***********************************************************/
+
+effect "PreemptiveStrike"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+ability "MightySlash"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.Stats | EScaling.Num, Mul: DamageMultiplier); };
+
+	event OnActivate
+	{
+		const DamageMultiplier = 1.2;
+
+		local Targets: unitarray;
+		
+		// Avoid collison with Ice Wall - By VIRTUOS GAMES
+		if (!TargetUnit.IsCreature)
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		StartAbility;
+		CalcDamage;
+
+		// Move
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+			MoveTargetCell = Source.Cell;
+		}
+
+		// Start animation
+		TargetUnit.SetMainTarget;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;
+
+		if (TargetUnit.Size == 1)
+			Targets.Add(TargetUnit);
+		else if (Execute)
+			TargetUnit.PlayOnHitAnim;
+
+
+		TargetUnit.DamageUnit(DamageValue);
+		
+		if (!Simulation)
+		{
+			KnockbackSurroundingUnits(Source, 2, 0, 0, Targets);
+		
+			// Check Invisible Units
+			local iUnit: int;
+			for (iUnit = 0; iUnit < Targets.Num; iUnit++)
+			{
+				local KnockedUnit: unit;
+				KnockedUnit = Targets.Get(iUnit);
+				
+				//Check target pos's sourrounding invisible unit
+				for UnitsInSquare(It, KnockedUnit.Cell.X-1, KnockedUnit.Cell.Y-1, KnockedUnit.Size+2, KnockedUnit.Size+2)
+				{
+					if(It.Unit.Team != KnockedUnit.Team && KnockedUnit.Alive && It.Unit.IsInvisible )
+					{		
+						It.Unit.RemoveInvisibleEffect;
+						ForceAttackCommand(It.Unit,It.Unit.Cell, KnockedUnit.Cell);
+					}
+				}
+			}		
+		}
+		
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "FightingSpirit"
+{
+	var NumEffects: int = 0;
+	
+	event OnCauseDamage()
+	{
+		if (Simulation)
+			return;
+			
+		if (!Damage.IsRetaliation && Damage.IsMelee && NumEffects < 5)
+		{
+			NumEffects++;	
+			Owner.PlayEffect(info.FightingSpiritFX);
+			Owner.AddEffect(Owner, "FightingSpiritEffect", Value);		
+		}
+		
+	}
+	
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$value = Value;
+		$maxvalue = MaxValue;
+	}
+}
+
+effect "FightingSpiritEffect"
+{
+	var Modifier: modifier"ModifyStat";
+	
+	event OnCreate(ModifyValue: int)
+	{
+		Modifier.Init(EStat.Morale, ModifyValue, 0);
+	}
+	
+	//event OnCompare()
+	//{
+		//Result = 1;
+	//}
+
+	event GetTooltip
+	{
+	
+	}
+}
+
+/***********************************************************
+ * Abilities and effects for Shadow Dragon & Upgrade       *
+ ***********************************************************/
+
+ability "WitheringBreath"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHitAnim); };
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+
+		local Effect: effect"WitheringBreathDotHelper";
+	
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+		
+		StartAbility;
+		
+		AddLuck(Source);
+	
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;
+		Effect = TargetUnit.FindEffect("WitheringBreathDotHelper");
+		if (!Effect.Valid)
+		{
+			TargetUnit.AddEffect(Source, "WitheringBreathDotHelper");
+			if (Simulation)
+			{
+				TargetUnit.AddEffect(Source, "WitheringBreathEffect", 0);
+			}
+		}
+
+		CalcDamage;
+		DamageValue.ApplyBonus( DamagePercentage * 0.01 );
+		TargetUnit.DamageUnit(DamageValue);
+				
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		local Effect: effect"WitheringBreathEffect";
+		Effect = HostileDummy.AddEffect(Source, "WitheringBreathEffect", 0);
+		$creaturename = Source.GetName;
+		$damagepercentage = DamagePercentage;
+		$minpercetage = Effect.MinPercentage;
+		$increasement = Effect.Increasement;
+		$maxpercentage = Effect.MaxPercentage;		
+	}
+}
+
+
+effect "WitheringBreathDotHelper"
+{
+	event OnDamage_TargetTaken
+	{
+		if (Damage.Ability == ability("WitheringBreath").Ability)
+		{
+			Damage.Target.AddEffect(Damage.Attacker, "WitheringBreathEffect", round(Damage.Amount));
+		}
+	}
+}
+
+effect "WitheringBreathEffect"
+{
+	var DamageTaken: int;
+	var CurrentDamage: combatdamage;
+	var CurrentPercentage: float;
+	
+	event OnCreate(Damage: int)
+	{
+		DamageTaken = Damage;
+		CurrentPercentage = MinPercentage;
+		
+		CurrentDamage.Set(DamageTaken * CurrentPercentage / 100.0, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		SetDOTDamage(CurrentDamage);
+	}
+	
+	event OnCompare
+	{
+		if (DamageTaken * CurrentPercentage < Other.DamageTaken * Other.CurrentPercentage)
+			Result = -1;
+		else
+			Result = 1;
+	}
+
+	event OnTick
+	{
+		CurrentPercentage =  CurrentPercentage + Increasement;
+		if (CurrentPercentage > MaxPercentage)
+			CurrentPercentage = MaxPercentage;
+	
+		CurrentDamage.Set(DamageTaken * CurrentPercentage / 100.0, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		Owner.DamageUnit(CurrentDamage);
+		
+		SetDOTDamage(CurrentDamage);
+	}
+	
+	event GetTooltip
+	{
+		CurrentDamage.Set(DamageTaken * CurrentPercentage / 100.0, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		$hpdamage = CurrentDamage;
+	}
+}
+
+effect "HeartofDarkness"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "HeartofDarknessEffect"
+{
+	event GetTooltip
+	{
+		$percentage = DarknessBonus.AbsValue;
+	}
+}
+
+
+effect "ImmunitytoMagic"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$percentage = ImmunityToMagic.Value;
+	}
+}
+
+
+effect "TerrifyingPresence"
+{
+	event GetTooltip
+	{
+		local Effect: effect"TerrifyingPresenceEffect";
+		Effect = HostileDummy.AddEffect(Owner, "TerrifyingPresenceEffect");
+		$creaturename = Owner.GetName;
+		$CatatonicChance = Effect.Catatonic;
+		$ReduceMoraleChance = Effect.ReduceMorale;
+		$ReduceValue = Effect.MoraleValue;
+	}
+}
+
+effect "TerrifyingPresenceEffect"
+{
+	event OnTick
+	{
+  		local takeAction : int = 0;
+  	
+		for UnitsInSquare(It, Owner.Cell, 3, 3)
+  		{
+  			if (!It.Unit.Valid || (It.Unit.Team == Owner.Team) || !It.Unit.ValidTarget)
+				continue;
+			
+			if (0 != It.Unit.FindEffectByName("TerrifyingPresence"))
+			{
+				takeAction = 1;
+				break;
+			}
+  		}
+  	
+  		if (takeAction == 0)
+  			return;
+  		
+  		local iChance : int;
+  		//iChance = Owner.GetRandomValue(0, 100, 0);
+		iChance  = Random(100);
+  	  	
+  		local Effect : effect;
+  		Effect = Owner.FindEffect("TerrifyingLossAction");
+  		if (Effect.Valid)
+			Effect.Remove;
+  	
+  		if (iChance < Catatonic && !Simulation)
+  		{
+  			Owner.AddEffect(Source, "TerrifyingLossAction");		
+			return;
+  		}
+  	
+  		if (!Simulation && Owner.FindEffectByName("TerrifyingReduceMorale") == 0)
+  		{
+  			Owner.AddEffect(Source, "TerrifyingReduceMorale");
+  		}
+	}
+	
+	event OnRemoved
+	{
+		local Effect : effect;
+		Effect = Owner.FindEffect("TerrifyingLossAction");
+		if (Effect.Valid)
+			Effect.Remove;
+		
+		Effect = Owner.FindEffect("TerrifyingReduceMorale");
+		if (Effect.Valid)
+			Effect.Remove;
+		
+	}
+	
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;;
+		$CatatonicChance = Catatonic;
+		$ReduceMoraleChance = ReduceMorale;
+		$ReduceValue = MoraleValue;
+	}
+}
+
+effect "TerrifyingLossAction"
+{
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+effect "TerrifyingReduceMorale"
+{
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+/***********************************************************
+ * Racial Abilities									       *
+ ***********************************************************/
+ability "ShroudofMalassa1"
+{
+	event GetTooltip
+	{
+		local Effect: effect"ShroudofMalassa1";
+		Effect = FriendlyDummy.AddEffect(Source, "ShroudofMalassa1");
+		$movement = Effect.Movement.AbsValue;
+		$duration = Effect.MaxTurns;
+		$reduceDamage = Effect.DamageReduce.AbsValue;  
+		
+		$addDamage = 10;
+	}
+}
+
+effect "ShroudofMalassa1"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$movement = Movement.AbsValue;
+		$reduceDamage = DamageReduce.AbsValue;
+		
+		$addDamage = 10;
+	}
+}
+
+ability "ShroudofMalassa2"
+{
+	event GetTooltip
+	{
+		local Effect: effect"ShroudofMalassa2";
+		Effect = FriendlyDummy.AddEffect(Source, "ShroudofMalassa2");
+		$movement = Effect.Movement.AbsValue;
+		$duration = Effect.MaxTurns;
+		
+		$reduceDamage = Effect.DamageReduce.AbsValue; 
+		$addDamage = 10;
+	}
+}
+
+effect "ShroudofMalassa2"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$movement = Movement.AbsValue;
+		$reduceDamage = DamageReduce.AbsValue;
+		
+		$addDamage = 10;
+	}
+}
+
+ability "ShroudofMalassa3"
+{
+	event GetTooltip
+	{
+		local Effect: effect"ShroudofMalassa3";
+		Effect = FriendlyDummy.AddEffect(Source, "ShroudofMalassa3");
+		$movement = Effect.Movement.AbsValue;
+		$duration = Effect.MaxTurns;
+		$reduceDamage = Effect.DamageReduce.AbsValue; 
+		
+		$addDamage = 10;
+	}
+}
+
+effect "ShroudofMalassa3"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$movement = Movement.AbsValue;
+		$reduceDamage = DamageReduce.AbsValue;
+		
+		$addDamage = 10;
+	}
+}
+
+ability "ShroudofMalassa4"
+{
+	event GetTooltip
+	{
+		local Effect: effect"ShroudofMalassa4";
+		Effect = FriendlyDummy.AddEffect(Source, "ShroudofMalassa4");
+		$movement = Effect.Movement.AbsValue;
+		$duration = Effect.MaxTurns;
+		$reduceDamage = Effect.DamageReduce.AbsValue; 
+		
+		$addDamage = 10;
+	}
+}
+
+effect "ShroudofMalassa4"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$movement = Movement.AbsValue;
+		$reduceDamage = DamageReduce.AbsValue;
+		
+		$addDamage = 10;
+	}
+}
+
+/***********************************************************
+ * HeroicStrike										       *
+ ***********************************************************/
+ 
+effect "OfferingtoMalassa_HeroicStrike"
+{
+	event GetTooltip
+	{
+		local Effect: effect"OfferingtoMalassaEffect";
+		Effect = HostileDummy.AddEffect(Source, "OfferingtoMalassaEffect");
+		var CurrentDamage: combatdamage;
+		CurrentDamage.Set((Base + Bonus * (Source.GetHeroicStrikeLevel)), Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		$hpdamage = CurrentDamage;
+		$duration = Effect.MaxTurns;
+		$creaturename = Owner.GetName;
+		$gauge = 20;
+	}
+}
+
+effect "OfferingtoMalassaEffect"
+{
+
+	var CurrentDamage: combatdamage;
+	event OnCreate
+	{
+		CurrentDamage.Set((Base + Bonus * (Source.GetHeroicStrikeLevel)), Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		SetDOTDamage(CurrentDamage);
+	}
+	event OnTick
+	{
+		CurrentDamage.Set((Base + Bonus * (Source.GetHeroicStrikeLevel)), Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		Owner.DamageUnit(CurrentDamage);
+		SetDOTDamage(CurrentDamage);
+	}
+	event GetTooltip
+	{
+		CurrentDamage.Set((Base + Bonus * (Source.GetHeroicStrikeLevel)), Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness, Flags: EDamageFlags.PlayHit);
+		$hpdamage = CurrentDamage;
+		$duration = MaxTurns;
+		$gauge = 20;
+	}
+}
+
+/***********************************************************
+ * Reputation Abilities - Tear and Blood			       *
+ ***********************************************************/
+effect "HiddenConvent"
+{
+	event GetTooltip
+	{
+		var Effect: effect"HiddenConventEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "HiddenConventEffect");
+
+		$percentage = Effect.MagicPowerBonus.AbsValue;
+	}
+}
+
+effect "HiddenConventEffect"
+{
+	event GetTooltip
+	{
+		$percentage = MagicPowerBonus.AbsValue;
+	}
+}
+
+ability "BlackSacrifice"
+{
+	event OnActivate
+	{
+	StartAbility;
+
+		if (!TargetUnit.Valid || !TargetUnit.Alive)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		local Effect: effect"BlackSacrificeEffect";
+		Effect = TargetUnit.AddEffect(TargetUnit, "BlackSacrificeEffect");
+		FinishAction;
+	}
+}
+
+ability "VeilofMist"
+{
+	event OnActivate
+	{
+		local Effect: effect"VeilofMist";
+		local Unit: unit;
+		local Turns: int;
+		Turns = 2;
+		StartAbility;
+
+		TargetCell = GetCell(TargetCell.X - 1, TargetCell.Y - 1);
+
+		if (TargetCell.BlockedSquare(3, ECombatMapLevel.Sky))
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+		//PlayEffect(info.VisualFX, GetMapCenterX, GetMapCenterY);
+		Unit = CreateEffectUnit(5220171/*510051/2020284*/, Source.Team, TargetCell.X, TargetCell.Y, 3, ECombatMapLevel.Sky);
+		Unit.AddEffect(Source, "KillVeilofMistAfterTurn", Turns);
+		if (!Unit.Valid)
+			return;
+		Effect = Unit.AddEffect(Source,"VeilofMist");
+		Effect.VisualFX.Create(info.VisualFX, TargetCell.CenterX + 1, TargetCell.CenterY + 1);
+
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+		local Effect: effect"VeilofMistEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "VeilofMistEffect");
+		$rangedBonus = Effect.RangedBonus.Value;
+		$meleeBonus  = Effect.MeleeBonus.Value;
+	}
+}
+
+effect "VeilofMist"
+{
+	var VisualFX: visualeffect;
+/*
+	static VisualFX: visualshell"object\\high\\new\\Particle\\poisoncloud_idle.fx";
+*/
+//	event GetTooltip
+//	{
+//		
+//	}
+
+	event OnRemoved
+	{
+		VisualFX.Clear;
+		CombatWait(1.5);
+	}
+}
+
+effect "VeilofMistEffect"
+{
+	event GetTooltip
+	{
+		$rangedBonus = RangedBonus.Value;
+		$meleeBonus  = MeleeBonus.Value;
+	}
+}
+
+effect "KillVeilofMistAfterTurn"
+{
+	var Turns: int;
+	
+	event OnCreate(CreateTurns: int)
+	{
+		Turns = CreateTurns;
+	}
+
+	event OnTick
+	{
+		Turns = Turns - 1;
+		if (Turns == 0)
+		{
+
+			local Effect: effect"VeilofMist";
+			Effect = Owner.FindEffect("VeilofMist");
+			if(Effect.Valid)
+			Effect.VisualFX.Clear;
+			Owner.Kill(Owner);
+
+		}
+	}
+}
+
+ability "ShadowImplosion"
+{
+//	var Effect: effect"ShadowImplosion";
+	event GetTooltip
+	{
+	//	Effect = HostileDummy.AddEffect(Source, "ShadowImplosion");
+//		$percentage = Effect.DamageBonus.Percentage;
+			
+			const ScaledDamagePercent = Percentage.ScaleValue(EScaling.All | EScaling.Damage);
+			$percentage = ScaledDamagePercent;																								  
+	}
+}
+
+ability "StalkingShade"		// Dungeon Magic Tear Tier 2
+{
+	event OnActivate
+	{
+		const Turns = 0;
+	//	const Percentage = 15;
+		local ShadeUnit: unit;
+		local NewCell: cell;
+
+		if (TargetUnit.GetTier == 0 || TargetUnit.IsSummoned || !TargetUnit.CanBeSummonSource)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		StartAbility;
+
+		if (!Simulation)
+		{
+			NewCell = TargetUnit.FindSpawnSpotEX(TargetUnit.Cell);
+
+			if(!NewCell.Valid)
+			{
+				NeedTarget_Square(1, EAbilityFlags.OnEmptyCell, TargetUnit.Size, TargetUnit.Size);
+				NewCell = GetTarget(1);
+			}
+			//InfernoGating(4, TargetUnit, GetTarget(1), Turns, HpPercent);
+			//SpendAbilityCost(4);
+		
+			ShadeUnit = StalkingShade(TargetUnit, NewCell, Turns, HpPercent);
+		}
+		
+		if (ShadeUnit != null)
+		{
+			local Effect: effect"StalkingShadeEffect";
+			Effect = ShadeUnit.AddEffect(Source, "StalkingShadeEffect");
+			ShadeUnit.PlayEffect(info.ShadeEffect);
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$percentage = HpPercent;
+		
+		local Effect: effect"StalkingShadeDebuff";
+		Effect = HostileDummy.AddEffect(Source, "StalkingShadeDebuff");
+
+		$damageReducePercent = Effect.DmgReduce.AbsValue;
+	}
+}
+
+effect "StalkingShadeEffect"
+{
+	event GetTooltip
+	{
+		$percentage = ability("StalkingShade").HpPercent;
+	}
+	
+	event OnModifyDamageDone
+	{
+		if(Damage.IsDefaultAttack)
+		Damage.ApplyBonus(-100);
+	}
+}
+
+effect "StalkingShadeDebuff"
+{
+	event GetTooltip
+	{
+		$dmgReducePercent = DmgReduce.AbsValue;
+	}
+}
+
+ability "MarkOfDeath"
+{
+	event GetTooltip
+	{
+		local Effect: effect"MarkOfDeathEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "MarkOfDeathEffect");
+		$duration  = Effect.MaxTurns;
+		
+		$percent = 50;
+	}
+}
+
+effect "MarkOfDeathEffect"
+{
+	var DamageAddon: combatdamage;
+
+	event OnDamage_TargetTaken
+	{
+		if (Simulation)
+			return;
+			
+		if (Damage.Amount <= 0)
+		    return;
+		
+		if (Damage.Ability == effect("MarkOfDeathEffect").Ability)
+			return;
+
+//		const Percentage = 50;
+		local DamageValue : int;
+
+		DamageValue = Damage.Amount * Percent * 0.01;
+		
+		DamageAddon.Set(DamageValue, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Darkness);
+
+		Owner.DamageUnit(DamageAddon);
+	}
+	
+	event GetTooltip
+	{
+		$percentage = Percent;
+	}
+	
+}
+
+ability "FeignDeath"	//Dungeon Might Tear 1
+{
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget || !TargetUnit.Alive || TargetUnit.Team != Source.Team)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		StartAbility;
+		PlayEffect(info.VisualEffect, TargetUnit.CenterX, TargetUnit.CenterY);
+		CombatWait(StartDelay);
+		
+		local Effect: effect"FeignDeathEffect";
+		Effect = TargetUnit.AddEffect(Source, "FeignDeathEffect");
+		
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+		local Effect: effect"FeignDeathResurrectEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "FeignDeathResurrectEffect");
+		$invBonus  = Effect.InvBonus.AbsValue;
+		$movBonus  = Effect.MoveBonus.AbsValue;
+	}
+}
+
+effect "FeignDeathEffect"
+{
+	var bFeign: int = true;
+	var bStartFeignDeath: int = false;
+	
+	event OnCreate()
+	{
+		if (Simulation)
+			return;
+			
+		Owner.SetFeignDeath(bFeign);
+	}
+	
+	event OnTakeDamage
+	{
+		if (Simulation)
+			return;
+		
+		if (!bStartFeignDeath)
+		{
+			//Owner.SetFeignDeath(bFeign);
+			bStartFeignDeath = true;
+		}
+
+	}
+	
+	event OnTick
+	{
+		if (Simulation || !bStartFeignDeath)
+			return;
+		
+		bStartFeignDeath = false;
+		Owner.PlayEffect(info.VisualEffect);
+		Owner.ResurrectFromFeignDied();
+		Owner.AddEffect(Source, "FeignDeathResurrectEffect");
+		Owner.WaitForAnim();
+		
+		Remove;
+	}
+	
+	event GetTooltip
+	{
+		local Effect: effect"FeignDeathResurrectEffect";
+		Effect = FriendlyDummy.AddEffect(Owner, "FeignDeathResurrectEffect");
+		$invBonus  = Effect.InvBonus.AbsValue;
+		$movBonus  = Effect.MoveBonus.AbsValue;
+	}
+}
+
+effect "FeignDeathResurrectEffect"
+{
+	event GetTooltip
+	{
+		$invBonus = InvBonus.AbsValue;
+		$movBonus = MoveBonus.AbsValue;
+	}
+}
+
+effect "SilentLaw"
+{
+	event GetTooltip
+	{
+		local Effect: effect"SilentLawEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "SilentLawEffect");
+		$damagebonus = Effect.DamageBonus.AbsValue;
+	}
+}
+
+effect "SilentLawEffect"
+{
+	event GetTooltip
+	{
+		$damagebonus = DamageBonus.AbsValue;
+	}
+}
+
+effect "FindWeakness"
+{
+	var NeedAdd : int= 0;
+
+	event OnPreAction
+	{
+		if (!Action.Simulation)
+		{
+			if( Action.Command.Type == ECommandType.RangedAttack || Action.Command.Type == ECommandType.MeleeAttack)
+			if(Action.TargetUnit.ValidTarget && Action.TargetUnit.Team != Owner.Team && Owner.IsInvisible)
+			{
+				NeedAdd = 1;
+			}
+		}
+
+	}
+	
+	event OnPostAction
+	{
+		if (!Action.Simulation)
+		{
+			if( Action.Command.Type == ECommandType.RangedAttack || Action.Command.Type == ECommandType.MeleeAttack)
+			{
+				if( NeedAdd == 1 && 0 == Action.TargetUnit.FindEffectByName("FindWeaknessEffect"))
+				{
+					Action.TargetUnit.AddEffect(Source, "FindWeaknessEffect");
+					NeedAdd = 0;
+				}
+			}
+		}
+	
+	}
+	event GetTooltip
+	{
+		local Effect: effect"FindWeaknessEffect";
+		Effect = HostileDummy.AddEffect(Owner, "FindWeaknessEffect");
+		$duration = Effect.MaxTurns;
+		$mightdefence = Effect.MightDefence.AbsValue;
+	}
+}
+
+effect "FindWeaknessEffect"
+{
+	event GetTooltip
+	{
+
+		$mightdefence = MightDefence.AbsValue;
+	}
+}
+
+ability "Diversion"
+{
+	event OnActivate
+	{
+		const Turns = 1;
+
+		local EntityTypeId: int;
+		local IdolUnit: unit;
+		const StartDelay = 8;
+
+		StartAbility;
+
+		if (!TargetCell.Valid ||  TargetCell.BlockedSquareInvisible(1, ECombatMapLevel.Play,Source.Team))
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+
+		local InvisibleUnit : unit;
+		InvisibleUnit = TargetCell.GetUnit();
+		if(InvisibleUnit.Valid)
+		{
+			InvisibleUnit.RemoveInvisibleEffect;
+			TargetCell = Source.FindClosestEmptyCellFromOrigin(TargetCell,1);
+		}
+		
+		if(!TargetCell.Valid )
+		{	
+			SetInvalidTarget;
+			return;
+		}
+		
+		EntityTypeId = 70170078; // Combat/DiversionEntity = 70170078
+		IdolUnit = SummonObstacle(Source, TargetCell, EntityTypeId, 1, Source.Team);
+		if (IdolUnit.Valid)
+		{
+			IdolUnit.AddEffect(Source, "KillDiversionEntityAfterTurn", Turns);
+			local Effect : effect"NoDamageTaken";
+			
+			Effect = IdolUnit.AddEffect(Source, "NoDamageTaken");
+			for UnitsInSquare(It, IdolUnit.Cell.X - 1, IdolUnit.Cell.Y - 1, IdolUnit.Size + 2, IdolUnit.Size + 2)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if (CurrentTarget == IdolUnit || !CurrentTarget.ValidTarget || CurrentTarget.Team == Source.Team)
+					continue;
+					if( 0 == CurrentTarget.FindEffectByName("DiversionEffect"))
+					CurrentTarget.AddEffect(IdolUnit,"DiversionEffect");
+			}
+			CombatWait(StartDelay);
+			if(InvisibleUnit.Valid)
+			{
+				//local Cell: cell;
+				IdolUnit.WaitForHit;
+				if (IdolUnit.HasToughness && InvisibleUnit.GetMeleeCell(IdolUnit).Valid)
+				{
+					if ( InvisibleUnit.CanAct)
+						AddCommand(InvisibleUnit, InvisibleUnit.GetMeleeCell(IdolUnit), InvisibleUnit.Cell, InvisibleUnit.DefaultObstacleAttack, ECommandType.MeleeAttack);
+				}
+			}
+			
+			for UnitsInSquare(Ta, IdolUnit.Cell.X - 1, IdolUnit.Cell.Y - 1, IdolUnit.Size + 2, IdolUnit.Size + 2)
+			{
+				if ( (Ta.Unit.Team == IdolUnit.Team ) || (Ta.Unit.IsInvisible == 0 ) || !Ta.Unit.Alive )
+					continue;
+				if(Ta.Unit.IsInvisible)
+					Ta.Unit.RemoveInvisibleEffect;
+				if(Ta.Unit.CanAct)
+					AddCommand(Ta.Unit, Ta.Unit.GetMeleeCell(IdolUnit), Ta.Unit.Cell, Ta.Unit.DefaultObstacleAttack, ECommandType.MeleeAttack);
+			}
+			
+		}
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$duration = Turns;
+	}
+}
+
+effect "KillDiversionEntityAfterTurn"
+{
+	var Turns: int;
+	
+	event OnCreate(CreateTurns: int)
+	{
+		Turns = CreateTurns;
+	}
+
+	event OnTick
+	{
+		Turns = Turns - 1;
+		var CurrentUnit: unit;
+		if (Turns == 0)
+		{
+			Owner.Kill(Owner);
+		}
+	}
+	
+	event OnKilled
+	{
+		Owner.PlayEffect(info.DieFX);
+		if (Simulation)
+			return;
+		
+		for AllCreatures(It)
+		{
+			CurrentUnit = It.Unit;
+			if (CurrentUnit.Valid)
+			{
+				local Effect: effect "DiversionEffect";
+				Effect = CurrentUnit.FindEffect("DiversionEffect");
+				
+				if(Effect.Valid && Effect.Source == Owner)
+					Effect.Remove;
+			}
+		}
+	}
+}
+
+effect "NoDamageTaken"
+{
+
+	event GetTooltip
+	{
+	
+	}
+	event OnRemoved
+	{
+	}
+	
+}
+
+/***********************************************************
+ * Misc - Buildings, Moat, etc				       *
+ ***********************************************************/
+ 
+effect "Building_ApothecariesLibraryEffect"
+{
+	event OnInit
+	{
+		if (Simulation)
+			return;
+		CallCommand(Owner.HeroUnit, null, null, ability("Building_ApothecariesLibrary"), ECommandType.Cast);
+	}
+}
+
+ability "Building_ApothecariesLibrary"
+{
+	event OnActivate
+	{
+		for AllCreatures(It)
+		{
+			if (It.Unit.ValidTarget && It.Unit.Team != Source.Team)
+			{
+				local Effect: effect;
+				Effect = It.Unit.AddEffect(Source, "Building_PoisonedEffect");
+			}
+		}
+	}
+}
+
+effect "Building_PoisonedEffect"
+{
+	event OnCompare
+	{
+		Result = -1;
+	}
+
+	event GetTooltip
+	{
+		$hpdamage = DamageOverTime.Value;
+		$duration = MaxTurns;
+		$initiative =  Initiative.AbsValue;
+	}
+}
+
+effect "Building_ShadowveilLoomEffect"
+{
+	event OnInit
+	{
+		if (Simulation)
+			return;
+		CallCommand(Owner.HeroUnit, null, null, ability("Building_ShadowveilLoom"), ECommandType.Cast);
+	}
+}
+
+ability "Building_ShadowveilLoom"
+{
+	event OnActivate
+	{
+		for AllCreatures(It)
+		{
+			if (It.Unit.ValidTarget && It.Unit.Team == Source.Team)
+			{
+				local Effect: effect;
+				Effect = It.Unit.AddEffect(Source, "Building_ImmunityToMagic");
+			}
+		}
+	}
+}
+
+effect "Building_ImmunityToMagic"
+{
+	event OnCompare
+	{
+		Result = -1;
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$duration = MaxTurns;
+	}
+}
+
+effect "DungeonMoatEffect"
+{
+	event GetTooltip
+	{
+		$damage = MightMalus.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+ability "FacelessAttackNoReturn"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget)
+			return;
+			
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+			
+		StartAbility;
+		
+		AddLuck(Source);
+				
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+
+		CalcDamage;
+				
+		Source.WaitForHit;
+		TargetUnit.PlayOnHitAnim;
+		TargetUnit.DamageUnit(DamageValue);
+		
+		if(Execute)
+		{
+			if(Source.FindEffectByName("DarknessFormEffect") == 0)
+			{
+				TargetUnit.Dispel(-1, true, false, 1, 0);
+			}
+			else
+			{
+				local Effect:effect;
+				Effect = Source.FindEffect("DarknessFormEffect");
+				Effect.Remove;
+			
+				//Dispel all buffer
+				TargetUnit.Dispel(-1,true,false,-1,0);
+			}
+		}
+		
+		//Source.WaitForAnim;
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+  	$creaturename = Source.GetName;
+
+//		local DamageValue: combatdamage;
+//		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+//		$hpdamage = DamageValue;
+	}
+}
+
+ability "DrainSubstance"
+{
+	event OnActivate
+	{
+		StartAbility;
+		
+		Source.AddEffect(Source,"DarknessFormEffect");
+		
+		Source.SetCanCast();
+		MultiAction;
+	}
+	
+	event GetTooltip
+	{
+	  $abilityname = ability("DrainSubstance").DisplayName;
+		$creaturename = Source.GetName;
+	}
+}
+
+effect "DarknessFormEffect"
+{
+
+	event GetTooltip
+	{
+		$abilityname = Owner.GetName;
+	}
+}

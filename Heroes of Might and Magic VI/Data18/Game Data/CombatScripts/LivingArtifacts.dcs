@@ -1,0 +1,2698 @@
+// coder : mitko, szatyor , Pat
+
+
+ability "StaffOfTheNetherworld_Ability3"
+{
+
+	var DamageValue: combatdamage;
+	var ApplyEffect: int = false;
+	const CalcDamage = { DamageValue.Set(damage) } ;
+
+	event OnActivate
+	{
+		TargetUnit.SetMainTarget;
+		StartAbility;
+		
+
+		AddLuck(Source);
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		TargetUnit.PlayEffect( info.TargetFX ); 
+		TargetUnit.PlayEffect( info.CenterFX ); 
+		Source.WaitForHit;
+			
+		CalcDamage;
+		if( ApplyEffect ) 
+			TargetUnit.AddEffect(Source, "StaffOfTheNetherworld_Ability5Effect");
+		else 
+			TargetUnit.AddEffect(Source, "StaffOfTheNetherworld_Ability3Effect");
+		
+		for UnitsInSquare(It, TargetUnit.Cell.X - 1, TargetUnit.Cell.Y - 1, 4, 4)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+			if (CurrentTarget == Source || !CurrentTarget.ValidTarget || CurrentTarget.Team == Source.Team)
+				continue;
+
+			CurrentTarget.PlayOnHit;
+			CurrentTarget.DamageUnit(DamageValue);
+			
+		}
+		
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		CalcDamage;
+		$dmg = DamageValue;
+	}
+}
+
+effect "StaffOfTheNetherworld_Ability3Effect" 
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(dmg) } ;
+	var TickNum: int;
+	
+	event OnInit 
+	{
+		TickNum = 0;
+	}
+	
+	event OnPostAction
+	{
+		if (Execute)
+		{
+			// we got the debuff in the first turn, dont count it twice 
+			TickNum++;
+			
+			
+			CalcDamage;	
+			for UnitsInSquare(It, Owner.Cell.X - 1, Owner.Cell.Y - 1, 4, 4)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if ( !CurrentTarget.ValidTarget || CurrentTarget.Team == Source.Team)
+					continue;
+
+				CurrentTarget.PlayOnHit;
+				CurrentTarget.PlayEffect( info.DamageFX ); 
+				CurrentTarget.DamageUnit(DamageValue);
+				
+			}
+			
+			if ( TickNum >= 3)
+			{	
+				Remove;
+			}
+		}
+		
+	}
+	
+	event GetTooltip
+	{
+		CalcDamage;
+		$damage = DamageValue;
+		$turn = MaxTurns;
+	}		
+}
+
+effect "StaffOfTheNetherworld_Ability2"
+{
+	var TargetHero: unit;
+	var SourceHero: unit;		
+	
+	event OnCreate
+	{
+		if (Owner.Team == 0)
+		{
+			TargetHero = GetHero(0);
+			SourceHero = GetHero(1);
+		}
+		else if (Owner.Team == 1)
+		{
+			TargetHero = GetHero(1);
+			SourceHero = GetHero(0);
+		}
+	}
+	
+	event OnTick
+	{
+		// Mana steal 
+		if (TargetHero.Valid && SourceHero.Valid)
+		{
+			TargetHero.PlayEffect(info.ManaLeechFX);
+			local ManaAmount: int;
+			ManaAmount = ManaLeech;
+			ManaTransfer(Source, TargetHero.Team, SourceHero.Team, ManaAmount);
+			
+			local Text: localizedstring;
+			Text.Init("CombatLog.Updated.StealMana");
+			Text.Add(SourceHero);
+			Text.Add(ManaAmount);
+			Text.Add(TargetHero);
+			Text.Log();
+		}
+	}
+
+	event GetTooltip
+	{
+		$manadrain = ManaLeech;
+	}
+}
+
+effect "StaffOfTheNetherworld_Ability4"
+{
+	event GetTooltip
+	{
+		$initiative = Initiative.AbsValue;
+	}
+}
+
+effect "StaffOfTheNetherworld_Ability5"
+{
+	var Modifier: modifier"ModifyAbility";
+	
+	event OnCreate
+	{
+		Modifier.Init(ability("StaffOfTheNetherworld_Ability3"), ApplyEffect, true);
+	}
+	
+	event GetTooltip
+	{
+		local HostileEffect: effect"StaffOfTheNetherworld_Ability5Effect";
+		HostileEffect = HostileDummy.AddEffect(Source, "StaffOfTheNetherworld_Ability5Effect");
+		
+		$turns = HostileEffect.MaxTurns;
+		$damage = HostileEffect.damage;
+		$chance = HostileEffect.Chance;
+		
+	}
+}
+effect "StaffOfTheNetherworld_Ability5Effect" 
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(damage) } ;
+	var TickNum: int;
+	
+	event OnInit 
+	{
+		TickNum = 0;
+	}
+	
+	event OnPostAction
+	{
+		if (Execute)
+		{
+			// we got the debuff in the first turn, dont count it twice 
+			TickNum++;
+			
+			CalcDamage;	
+			for UnitsInSquare(It, Owner.Cell.X - 1, Owner.Cell.Y - 1, 4, 4)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if ( !CurrentTarget.ValidTarget || CurrentTarget.Team == Source.Team)
+					continue;
+
+				CurrentTarget.PlayOnHit;
+				CurrentTarget.PlayEffect( info.DamageFX ); 
+				CurrentTarget.DamageUnit(DamageValue);
+
+				if( ( Random() * 100.0 ) <= Chance )
+				{
+					if ( CurrentTarget.FindEffect( "StaffOfTheNetherworld_Ability5Effect").Valid() )
+						continue;
+						
+					CurrentTarget.AddEffect(Source, "StaffOfTheNetherworld_Ability5Effect");
+					CurrentTarget.PlayEffect( info.TargetFX ); 
+					CurrentTarget.PlayEffect( info.CenterFX ); 
+				}
+			}
+			
+			if ( TickNum >= 5 )
+			{	
+				Remove;
+			}
+		}
+		
+	}
+	
+	event GetTooltip
+	{
+		CalcDamage;
+		$damage = DamageValue;
+		$turn = MaxTurns;
+		$chance = Chance;
+	}		
+}
+
+effect "SwordOfThePirateKing_Ability4"
+{
+	event GetTooltip
+	{
+		$morale = Morale.AbsValue;
+		$initiative = Initiative.AbsValue;
+		$movement = Movement.AbsValue; 
+	}
+}
+
+effect "SwordOfThePirateKing_Ability5Effect"
+{
+	event GetTooltip
+	{
+		$value = Morale.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+ability "SwordOfThePirateKing_Ability5"
+{
+	const VfxDelay = 0.75;
+
+	event OnActivate
+	{
+		local Effect: effect;
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		CombatWait(VfxDelay);
+
+		for AllCreatures(It)
+		{
+			if (It.Unit.ValidTarget)
+			{
+				if (It.Unit.Team == Source.Team)
+				{
+					It.Unit.PlayEffect(info.VFXRum);
+					Effect = It.Unit.AddEffect(Source, "SwordOfThePirateKing_Ability5Effect");
+				}
+				else
+				{
+					
+				}
+			}
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		local FriendlyEffect: effect"SwordOfThePirateKing_Ability5Effect";
+		FriendlyEffect = FriendlyDummy.AddEffect(Source, "SwordOfThePirateKing_Ability5Effect");
+		$value = FriendlyEffect.Morale.AbsValue;
+		$duration = FriendlyEffect.MaxTurns;
+	}
+}
+
+ability "SwordOfTheGriffin_GriffinsFury"
+{
+	event OnActivate
+	{
+		local Effect: effect;
+
+		StartAbility;
+
+		Effect = TargetUnit.AddEffect(Source, "SwordOfTheGriffin_GriffinsFuryEffect");
+
+		FinishAction;
+	}
+}
+
+ability "StaffOfTheTides_Ability3"
+{
+	var DamageValue: combatdamage;
+
+	const DamageAmount = 100;
+	const CalcDamage = { DamageValue.Set(DamageAmount, School: EAbilitySchool.Water); };
+	static LeftFX: visualshell"object\\high\\new\\Particle\\tsunami_left.fx";
+	static RightFX: visualshell"object\\high\\new\\Particle\\tsunami_right.fx";
+	const Speed = 30.0 / (1.850 * 2);
+
+	event OnActivate
+	{
+		local Effect: effect;
+		local KnockbackInfo: knockbackinfo;
+		local StartX: float;
+		local EndX: float;
+
+		CalcDamage;
+
+		StartAbility;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+		DisableStop;
+		if (Source.Team != 0)
+		{
+			StartX = GetMapCenterX + 15;
+			EndX = GetMapCenterX - 15;
+			PlayEffect(info.RightFX, GetMapCenterX, GetMapCenterY);
+			KnockbackInfo.Horizontal(true);
+		}
+		else
+		{
+			StartX = GetMapCenterX - 15;
+			EndX = GetMapCenterX + 15;
+			PlayEffect(info.LeftFX, GetMapCenterX, GetMapCenterY);
+			KnockbackInfo.Horizontal(false);
+		}
+
+		for UnitsHorizontal(It, StartX, EndX, Speed)
+		{
+			It.WaitForHit;
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+			if (!CurrentTarget.Valid)
+				continue;
+
+			if (CurrentTarget.Team != Source.Team)
+			{
+				CurrentTarget.DamageUnit(DamageValue);
+				if (!CurrentTarget.Valid || !CurrentTarget.Alive)
+					continue;
+				if (Execute)
+					KnockbackInfo.Start(CurrentTarget);
+			}
+		}
+		KnockbackInfo.Finish;
+		EnableStop;
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+
+effect "StaffOfTheTides_Ability5"
+{
+	var Effect: effect"StaffOfTheTides_Ability5_Effect";
+
+	event OnCreate 
+	{
+		Effect = Owner.AddEffect( Owner, "StaffOfTheTides_Ability5_Effect", ShieldValue, ShieldPercentage);
+	}
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "StaffOfTheTides_Ability5_Effect", ShieldValue, ShieldPercentage);
+		$absorbvalue = Effect.Shield.AmountValue;
+		$duration = Effect.MaxTurns;
+	}
+
+	
+}
+
+
+effect "StaffOfTheTides_Ability5_Effect"
+{
+	event OnCompare
+	{
+		Compare(Shield);
+	}
+	
+	event OnCreate(ShieldValue: float, ShieldPercentage: float )
+	{
+		Shield.Init(ShieldValue, ShieldPercentage);
+	}
+	
+	event GetTooltip
+	{
+		$absorbvalue = Shield.AmountValue;
+		$duration = MaxTurns;
+	}
+}
+
+
+ability "Item_SephielsVoice"
+{
+	var HealValue: combatdamage;
+	const Heal = 10;
+	const HealDelay = 1.3;
+
+	event OnActivate
+	{
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		HealValue.SetHeal(Heal);
+
+		PlayEffect(info.vsHit, TargetCell.CenterX, TargetCell.CenterY);
+		CombatWait(HealDelay);
+
+		for UnitsInSquare(It, TargetCell, 3, 3)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+
+			if (!CurrentTarget.ValidTarget || !CurrentTarget.Alive)
+				continue;
+
+			if (CurrentTarget.Team == Source.Team)
+			{
+				CurrentTarget.PlayEffect(info.vsHeal);
+				CurrentTarget.HealUnit(HealValue);
+			}
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		HealValue.SetHeal(Heal);
+		HealValue.Target = FriendlyDummy;	// Added by VIRTUOS GAMES
+		$hphealing = HealValue;
+	}
+}
+
+ability "Item_SephielsVoiceUpgraded"
+{
+	var HealValue: combatdamage;
+	const Heal = 10;
+	const HealDelay = 1.3;
+
+	event OnActivate
+	{
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		HealValue.SetHeal(Heal);
+
+		PlayEffect(info.vsHit, TargetCell.CenterX, TargetCell.CenterY);
+		CombatWait(HealDelay);
+
+		for UnitsInSquare(It, TargetCell, 3, 3)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+
+			if (!CurrentTarget.ValidTarget || !CurrentTarget.Alive)
+				continue;
+
+			if (CurrentTarget.Team == Source.Team)
+			{
+				CurrentTarget.PlayEffect(info.vsHeal);
+				CurrentTarget.HealUnit(HealValue);
+			}
+			else
+			{
+				local Effect: effect;
+				Effect = CurrentTarget.AddEffect(Source, "Item_SephielsVoiceUpgraded_Enemy_Effect");
+			}
+		}
+
+		FinishAction;
+	}
+
+}
+
+effect "Item_SephielsVoiceUpgraded_Enemy_Effect"
+{
+	event OnTakeDamage
+	{
+		if (Simulation)
+			return;
+
+		Remove;
+	}
+}
+
+effect "EdgeOfChaos_Ability5Effect_Hostile"
+{
+	event GetTooltip
+	{
+		$luck_ally = Luck.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "EdgeOfChaos_Ability5Effect_Friendly"
+{
+	event GetTooltip
+	{
+		$luck_ally = Luck.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+ability "EdgeOfChaos_Ability5"
+{
+	const VfxDelay = 0.75;
+
+	event OnActivate
+	{
+		local Effect: effect;
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		CombatWait(VfxDelay);
+
+		for AllCreatures(It)
+		{
+			if (It.Unit.ValidTarget)
+			{
+				if (It.Unit.Team == Source.Team)
+				{
+					It.Unit.PlayEffect(info.vsLuckUp);
+					Effect = It.Unit.AddEffect(Source, "EdgeOfChaos_Ability5Effect_Friendly");
+				}
+				else
+				{
+					It.Unit.PlayEffect(info.vsLuckDown);
+					Effect = It.Unit.AddEffect(Source, "EdgeOfChaos_Ability5Effect_Hostile");
+				}
+			}
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		local FriendlyEffect: effect"EdgeOfChaos_Ability5Effect_Friendly";
+		local HostileEffect: effect"EdgeOfChaos_Ability5Effect_Hostile";
+		FriendlyEffect = FriendlyDummy.AddEffect(Source, "EdgeOfChaos_Ability5Effect_Friendly");
+		HostileEffect = HostileDummy.AddEffect(Source, "EdgeOfChaos_Ability5Effect_Hostile");
+
+		$luck_ally = FriendlyEffect.Luck.AbsValue;
+		$luck_enemy = HostileEffect.Luck.AbsValue;
+		$duration = FriendlyEffect.MaxTurns;
+	}
+
+}
+
+ability "Arachne_SpidersWeb"
+{
+
+	event OnActivate
+	{
+		local Effect: effect;
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		PlayEffect(info.AreaFX, TargetCell.CenterX, TargetCell.CenterY);
+
+		for UnitsInSquare(It, TargetCell, 3, 3)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+
+			if (!CurrentTarget.ValidTarget || !CurrentTarget.Alive)
+				continue;
+
+			if (CurrentTarget.Team != Source.Team)
+			{
+				Effect = It.Unit.AddEffect(Source, "Arachne_SpidersWeb_Effect");
+			}
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		local Effect: effect"Arachne_SpidersWeb_Effect";
+		Effect = FriendlyDummy.AddEffect(Source, "Arachne_SpidersWeb_Effect");
+		$duration = Effect.MaxTurns;
+		$cmovement = Effect.Cmovement.AbsValue;
+	}
+}
+
+effect "Arachne_SpidersWeb_Effect"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+		$cmovement = Cmovement.AbsValue;
+	}
+}
+
+effect "Arachne_Ability2"
+{
+	event GetTooltip
+	{
+		$initiative = 0-Initiative_Param;
+	}
+}
+
+effect "Arachne_Ability3"
+{
+	event GetTooltip
+	{
+		$morale = MoraleModifier.AbsValue;
+	}
+}
+
+ability "IronFeather_Ability5"
+{
+	event GetTooltip
+	{
+		local Effect: effect"IronFeather_Ability5_Effect";
+		Effect = HostileDummy.AddEffect(Source, "IronFeather_Ability5_Effect");
+		$percent = Effect.Rate;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "IronFeather_Ability5_Effect"
+{
+	const Rate = 10;
+
+	event OnCauseDamage
+	{
+		if ( (Damage.Flags & EDamageFlags.Simulation) == 0 && Damage.Target.ValidTarget )
+		{
+			if ( Damage.Attacker != Damage.Target )
+			{
+				local DamageValue: combatdamage;
+				DamageValue.Set(Damage.Amount * Rate * 0.01, Source: Owner, Scaling: EScaling.None, School: Damage.School, Flags: Damage.Flags);
+			  Owner.DamageUnit(DamageValue);
+			}
+		}
+	}
+	event GetTooltip
+	{
+		$percent = Rate;
+		$duration = MaxTurns;
+	}
+}
+
+effect "SilkswordOfTheKirin_Ability2"
+{
+	event OnPostAction
+	{
+		local Effect: effect;
+		if ( Action.Simulation == false && (Action.Command.Type == ECommandType.MeleeAttack || Action.Command.Type == ECommandType.RangedAttack) )
+		{
+			if ( Action.TargetUnit.ValidTarget )
+				Effect = Action.TargetUnit.AddEffect(Source, "Chilled");
+		}
+	}
+/*
+	event OnCauseDamage
+	{
+		local Effect: effect;
+		if ( (Damage.Flags & EDamageFlags.Simulation) == 0 && Damage.Target.ValidTarget )
+		{
+			Effect = Damage.Target.AddEffect(Source, "Chilled");
+		}
+	}
+*/
+}
+
+ability "SilkswordOfTheKirin_Teleport"
+{
+	const Delay = 2.3;
+	event OnActivate
+	{
+		StartAbility;
+
+		if (!TargetUnit.Valid || TargetUnit.Team != Source.Team)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		
+		TargetUnit.SetMainTarget;
+		
+		NeedTarget_Square(1, EAbilityFlags.OnEmptyCell, TargetUnit.Size, TargetUnit.Size);
+
+		local Cell: cell;
+		Cell = GetTarget(1);
+		if (!Cell.Valid || !TargetUnit.ValidPos(Cell))
+			return;
+
+		SetValidTarget;
+		if (Simulation)
+			return;
+
+		PlayEffect(info.StartFX, TargetUnit.CenterX(), TargetUnit.CenterY());
+		TargetUnit.PlayEffect(info.StartTargetFX);
+		CombatWait(Delay);
+		TargetUnit.SetPos(Cell);
+		TargetUnit.PlayEffect(info.EndTargetFX);
+		PlayEffect(info.StartFX, TargetUnit.CenterX(), TargetUnit.CenterY());
+
+		FinishAction;
+	}
+}
+
+ability "AngelicAlliance_Ability3"
+{
+	event OnActivate
+	{
+		for AllCreatures(It)
+		{
+			if (It.Unit.ValidTarget && It.Unit.Team == Source.Team)
+			{
+				local Effect: effect;
+				Effect = It.Unit.AddEffect(Source, "CelestialArmor", ability("CelestialArmorMass").ShieldValue, ability("CelestialArmorMass").ShieldPercentage, ability("CelestialArmorMass").DefenseValue);
+			}
+		}
+	}
+}
+
+ability "AngelicAlliance_Resurrection"
+{
+	const Heal = 10;
+	var ApplyEffect: int = false;
+
+	event OnActivate
+	{
+		local EffectiveHeal: int;
+		EffectiveHeal = Heal;
+
+		StartAbility;
+
+		TargetUnit = TargetCell.GetCorpse;
+		if (!TargetUnit.Valid || Source.Team != TargetUnit.Team)
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Allied
+		if (true)
+		{
+			// Heal
+			Resurrect(Source, TargetUnit, EffectiveHeal);
+			local Effect: effect;
+			if (ApplyEffect)
+			{
+				Effect = TargetUnit.AddEffect(Source, "AngelicAlliance_ResurrectionEffect");
+			}
+			Effect = TargetUnit.AddEffect(Source, "Resurrected"); // ez legyen leghátul, mert ez immuniss?teszi a unitot
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		$hphealing = Heal;
+	}
+}
+
+effect "AngelicAlliance_Ability5"
+{
+	var Modifier: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Modifier.Init(ability("AngelicAlliance_Resurrection"), ApplyEffect, true);
+	}
+	event GetTooltip
+	{
+		local Effect: effect"AngelicAlliance_ResurrectionEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "AngelicAlliance_ResurrectionEffect");
+		$damage = Effect.DamageBonus.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "AngelicAlliance_ResurrectionEffect"
+{
+	event GetTooltip
+	{
+		$damage = DamageBonus.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+ability "TheOblivion_Oblivion"
+{
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget || TargetUnit.Team == Source.Team)
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		StartAbility;
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		local Effect: effect;
+		Effect = TargetUnit.AddEffect(Source, "TheOblivion_OblivionEffect");
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		local Effect: effect"TheOblivion_OblivionEffect";
+		Effect = HostileDummy.AddEffect(Source, "TheOblivion_OblivionEffect");
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "TheOblivion_Ability4"
+{
+	var Capture: int = true; // Prevent infinite recursion due to adding daze effect
+
+	event OnCauseDamage
+	{
+		if (Simulation || !Damage.Target.ValidTarget || Damage.Target.Team == Owner.Team)
+			return;
+
+		Capture = false;
+		local Effect: effect;
+		Effect = Damage.Target.AddEffect(Owner, "Daze");
+		Capture = true;
+	}
+
+	event OnApplyEffect
+	{
+		if (!Capture || Simulation || Op.Effect.Owner.Team == Owner.Team || (Op.Effect.Flags & EEffectFlags.Debuff) == 0)
+			return;
+
+		Capture = false;
+		local DazeEffect: effect;
+		DazeEffect = Op.Effect.Owner.AddEffect(Owner, "Daze");
+		Capture = true;
+	}
+}
+
+effect "TheOblivion_Ability5"
+{
+	event OnModifyEffect
+	{
+		Op.DurationAdd = Op.DurationAdd - 1;
+	}
+
+	event GetTooltip
+	{
+		$turn = 1;
+	}
+}
+
+effect "IronFeather_Ability4"
+{
+	event GetTooltip
+	{
+		$mightresistance = Mightresistance.AbsValue;
+	}
+}
+
+effect "IronFeather_Ability2"
+{
+	event OnInit
+	{
+		Owner.AddImmunityToDispellBuff(1);
+	}
+}
+
+effect "WillOfUrgash_Ability3"
+{
+	event OnCauseDamage
+	{
+		if (Simulation || !Damage.Target.ValidTarget)
+			return;
+
+		if ( Damage.School == EAbilitySchool.Fire )
+		{
+			Damage.Target.PermanentDamage(Damage.Amount);
+		}
+	}
+}
+
+ability "WillOfUrgash_Ability5"
+{
+	var DamageValue: combatdamage;
+
+	const CalcDamage = { DamageValue.Set(Damage); };
+
+	event OnActivate
+	{
+		const StartDelay = 1;
+		const Interval = 1;
+		const Damage = 100;
+
+		
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		PlayEffect(info.VisualEffect, TargetCell.CenterX, TargetCell.CenterY);
+		CombatWait(StartDelay);
+
+		local Targets: unitarray;
+		local CurrentTarget: unit;
+		local i: int;
+		local n: int;
+		local UnitInterval: float;
+
+		CalcDamage;
+
+		n = 0;
+		for UnitsInSquare(It, TargetCell, 5, 5)
+		{
+			CurrentTarget = It.Unit;
+
+			if ( !CurrentTarget.Alive )
+				continue;
+
+			Targets.Add(CurrentTarget);
+			n++;
+		}
+
+		if (n > 1)
+			UnitInterval = Interval / (n - 1).ToFloat;
+
+		for (i = 0; i < n; i++)
+		{
+			if (i > 0)
+				CombatWait(UnitInterval);
+
+			CurrentTarget = Targets.Get(i);
+			CurrentTarget.DamageUnit(DamageValue);
+			CurrentTarget.AddEffect(Source, "Daze");
+			if (Execute)
+				CurrentTarget.PlayOnHitAnim;
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "SwordOfWhistlebone_Ability1"
+{
+	event OnActivate
+	{
+		StartAbility;
+		Source.SetMainTarget;
+
+		Source.StartAttack(Source, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		local Effect: effect;
+		Effect = Source.AddEffect(Source, "SwordOfWhistlebone_Ability1_Effect");
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		var Effect: effect"SwordOfWhistlebone_Ability1_Effect";
+		Effect = FriendlyDummy.AddEffect(Source, "SwordOfWhistlebone_Ability1_Effect");
+		$creaturename = Source.GetName;
+		$hpdamage = Effect.DamageAmount;
+	}
+}
+
+//1. (Active) Father Sky - Aoe air damage is cast on the heros next default attack.
+effect "SwordOfWhistlebone_Ability1_Effect"
+{
+	const DamageAmount = 900;
+
+	var TargetCell: cell;
+	var TargetSize: int;
+	var TargetUnit_: unitpointer;
+
+	event OnInit
+	{
+		TargetCell = null;
+		TargetSize = 0;
+	}
+
+	event OnPreAction
+	{
+		TargetCell = null;
+		TargetSize = 0;
+		if ( Action.TargetUnit.ValidTarget )
+		{
+			TargetCell = Action.TargetUnit.Cell;
+			TargetSize = Action.TargetUnit.Size;
+			TargetUnit_ = Action.TargetUnit;
+		}
+	}
+
+	event OnPostAction
+	{
+		local Effect: vfx;
+	
+		if ( (TargetCell != null) && (Action.Command.Type == ECommandType.MeleeAttack || Action.Command.Type == ECommandType.RangedAttack) )
+		{
+			local DamageValue: combatdamage;
+			DamageValue.Set(DamageAmount, Source: Owner, School: EAbilitySchool.Air);
+
+			for UnitsInSquare(It, TargetCell.X - 1, TargetCell.Y - 1, TargetSize + 2, TargetSize + 2)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+
+				if ( !CurrentTarget.Alive )
+					continue;
+					
+				if (Execute && TargetUnit_.Alive && CurrentTarget != TargetUnit_)
+				{
+					Effect = VFX_Beam(info.LightningFX, TargetUnit_, "center", CurrentTarget, "center");
+				}
+					
+				CurrentTarget.DamageUnit(DamageValue);
+				CurrentTarget.PlayEffect(info.HitFX);
+			}
+			if ( Action.Simulation == false )
+			  Remove;
+		}
+	}
+}
+
+
+effect "SoulreaverStaff_Ability3"
+{
+	const ManaStealPercent = 20.0;
+
+	event OnPostAction
+	{
+		if ( Action.Simulation == false )
+		{
+			local EnemyHero: unit;
+			local ManaSteal: float;
+
+			ManaSteal = Action.ManaUsed * ManaStealPercent * 0.01;
+			EnemyHero = GetHero( 1 - Owner.Team );
+			if ( EnemyHero.Valid )
+			{
+				EnemyHero.IncreaseMana( ManaSteal );
+			}
+		}
+	}
+
+	event GetTooltip
+	{
+		$percent = ManaStealPercent;
+	}
+}
+
+ability "SwordOfTheWolf_WolfsJaws"
+{
+	event OnActivate
+	{
+		StartAbility;
+
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+
+		Source.StartAttack(Source, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		if (Execute)
+		{
+			Source.HeroUnit.PlayEffect(info.VisualFX);
+			SetRetreatDisabled(ECombatRetreatDisableReasonFlag.Artifact);
+		}
+		FinishAction;
+	}
+}
+
+effect "SwordOfTheWolf_WolfSpirit"
+{
+	var IncreaseAmount: int;
+
+	var Modifier: modifier"ModifyStat";
+
+	event OnCreate
+	{
+		IncreaseAmount = 0;
+		Modifier.Init(EStat.MightAttack, IncreaseAmount.ToFloat(), 1);
+	}
+
+	event OnTick
+	{
+			IncreaseAmount = IncreaseAmount + MightPower;
+			Modifier.Modify(IncreaseAmount.ToFloat(), 1);
+	}
+	event GetTooltip
+	{
+		$mightpower = MightPower;
+	}
+}
+
+effect "StaffOfAshasEightfold_FocusMagic"
+{
+	const Percent = 40;
+	var ModifierMight: modifier"ModifyStat";
+	var ModifierMagic: modifier"ModifyStat";
+
+	event OnCreate
+	{
+		ModifierMight.Init(EStat.MightBonus, 0, Percent);
+		ModifierMagic.Init(EStat.MagicBonus, 0, Percent);
+	}
+
+	event OnPostAction
+	{
+		if (!Action.Simulation && Action.Command.Type == ECommandType.Cast)
+		{
+			Remove();
+		}
+	}
+	event GetTooltip
+	{
+		$percent = ModifierMight.AbsValue;
+	}
+}
+
+effect "ThunderStaff_Grounded"
+{
+	event OnInit
+	{
+		local Effect: effect;
+		
+		DisableAbility(1 - Source.Team, ability("DivingAttack").Ability);
+		DisableAbility(1 - Source.Team, ability("RushDive").Ability);
+		
+		for AllCreatures(It)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+			if (CurrentTarget.ValidTarget && CurrentTarget.Team != Source.Team && (CurrentTarget.Flags & ECombatUnitFlags.Fly))
+			{
+				Effect = CurrentTarget.AddEffect(Source, "Grounded");
+				if (Effect.Valid)
+					Effect.SetDuration(0);
+			}
+		}
+	}
+}
+
+ability "ThunderStaff_LightningRod"
+{
+	event OnActivate
+	{
+		local StrongestUnit: unit;
+		local StrongestPower: float;
+		local CurrentUnit: unit;
+		local CurrentPower: float;
+
+		StartAbility;
+		
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		CurrentUnit = null;
+		for AllCreatures(It)
+		{
+			CurrentUnit = It.Unit;
+			if ( CurrentUnit.Team == Source.Team )
+				continue;
+			CurrentPower = CurrentUnit.GetPower();
+			if (!StrongestUnit.Valid || CurrentPower > StrongestPower)
+			{
+				StrongestUnit = CurrentUnit;
+				StrongestPower = CurrentPower;
+			}
+		}
+		
+		if (StrongestUnit.Valid)
+		{
+			local Effect: effect;
+			Effect = StrongestUnit.AddEffect(Source, "ThunderStaff_LightningRod_Effect");
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		var Effect: effect"ThunderStaff_LightningRod_Effect";
+		Effect = FriendlyDummy.AddEffect(Source, "ThunderStaff_LightningRod_Effect");
+		$duration = Effect.MaxTurns;
+		$hpdamage = Effect.LightningDamage;
+	}
+}
+
+effect "ThunderStaff_LightningRod_Effect"
+{
+	const LightningDamage = 1000;
+	var TickNum: int;
+
+
+	event OnInit
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(LightningDamage, Source: Source, School: EAbilitySchool.Air);
+		Owner.DamageUnit(DamageValue);
+		PlayEffect(info.LightningVisual, Owner.CenterX, Owner.CenterY);
+		local Effect: effect;
+		Effect = Owner.AddEffect(Source, "Daze");
+		TickNum = 0;
+	}
+
+	event OnTick
+	{
+		TickNum++;
+		if ( TickNum == 1 )
+			return;
+		local DamageValue: combatdamage;
+		DamageValue.Set(LightningDamage, Source: Source, School: EAbilitySchool.Air);
+		Owner.DamageUnit(DamageValue);
+		PlayEffect(info.LightningVisual, Owner.CenterX, Owner.CenterY);
+		local Effect: effect;
+		Effect = Owner.AddEffect(Source, "Daze");
+	}
+}
+
+effect "PerfectSilksword_Ability3"
+{
+	event GetTooltip
+	{
+		$percent = Percent.AbsValue;
+	}
+}
+
+effect "SilkswordOfTheKirin_Ability4_Effect"
+{
+	event GetTooltip
+	{
+		$cmovement = Cmovement.AbsValue;
+	}
+}
+
+ability "SoulreaverStaff_Ability5"
+{
+	event GetTooltip
+	{
+		var Effect: effect"SoulreaverStaff_Ability5_Effect";
+		Effect = FriendlyDummy.AddEffect(Source, "SoulreaverStaff_Ability5_Effect");
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "SoulreaverStaff_Ability5_Effect"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "StaffOfTheLich_Ability2"
+{
+	event GetTooltip
+	{
+		$maxhealth = Maxhealth.AbsValue;
+	}
+}
+
+effect "BladeOfBinding_MagicDamageIncrease"
+{
+	event GetTooltip
+	{
+		$damagebonus = Damagebonus.AbsValue;
+	}
+}
+
+effect "StaffOfTheLich_Ability5_HealTargetEffect"
+{
+	var Temp: float;
+	var HealPercentage: float;
+	
+	event OnInit
+	{
+		Temp = 0;
+	}
+	
+	event GetTooltip
+	{
+		$percent = HealPercentage;
+	}
+}
+
+effect "StaffOfTheLich_Ability5_Effect"
+{
+	var MyTargetUnit: unit;
+	var TotalDamage: float;
+	var HealPercentage: float;
+
+	event OnInit
+	{
+		TotalDamage = 0;
+	}
+
+	event OnCauseDamage
+	{
+		if (Simulation || !MyTargetUnit.ValidTarget)
+			return;
+		TotalDamage = TotalDamage + Damage.Amount;
+
+		//Damage.Target.PlayEffect(info.DamageTarget);
+	}
+
+	event OnPostAction
+	{
+		if (Action.Simulation || !MyTargetUnit.ValidTarget)
+			return;
+
+		if ( TotalDamage > 0 )
+		{
+			local HealValue: combatdamage;			
+			CombatWait(0.5);
+			HealValue.SetHeal(TotalDamage * HealPercentage * 0.01, Source: Owner, Scaling: EScaling.None);
+			MyTargetUnit.HealUnit(HealValue);
+			MyTargetUnit.PlayEffect(info.HealTarget);
+		}
+		TotalDamage = 0;
+	}
+	event GetTooltip
+	{
+		$percent = HealPercentage;
+	}
+}
+
+ability "StaffOfTheLich_Ability5"
+{
+	const EffectName = "StaffOfTheLich_Ability5_Effect";
+	const HealEffectName = "StaffOfTheLich_Ability5_HealTargetEffect";
+
+	event OnActivate
+	{
+		StartAbility;
+		
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		if ( Source.Team == TargetUnit.Team )
+		{
+			if (Simulation)
+			{
+				SetValidTarget;
+				return;
+			}
+			local HeroEffect: effect"StaffOfTheLich_Ability5_Effect";
+			local HealEffect: effect"StaffOfTheLich_Ability5_HealTargetEffect";
+
+			HeroEffect = Source.FindEffect(EffectName);    
+			if (!HeroEffect.Valid)
+			{
+				HeroEffect = Source.AddEffect(Source, EffectName);
+				if (HeroEffect.Valid)
+					HeroEffect.HealPercentage = HealPercentage;
+			}
+			else
+			{
+				if ( HeroEffect.MyTargetUnit.ValidTarget )
+				{
+					HealEffect = HeroEffect.MyTargetUnit.FindEffect(HealEffectName);
+					if ( HealEffect.Valid )
+						HealEffect.Remove;
+				}
+			}
+
+			HeroEffect.MyTargetUnit = TargetUnit;
+			if ( TargetUnit.ValidTarget )
+			{
+				HealEffect = TargetUnit.AddEffect(Source, HealEffectName);
+				if(HealEffect.Valid)
+					HealEffect.HealPercentage = HealPercentage;
+				TargetUnit.PlayEffect(Source,info.SpellTarget);
+			}
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		$percent = HealPercentage;
+	}
+
+}
+
+ability "BladeOfBinding_SummonJuggernaut"
+{
+	const SummonNum = 100;
+	const EffectName = "BladeOfBinding_SummonJuggernautEffect";
+	
+	event OnActivate
+	{
+		
+		local Hero: unit;
+		local HeroLevel: int;
+		local SummonFormular: int;
+		local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+		EntityType = 513273; // Inferno/Units/Juggernaut = 513273
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		if (!TargetCell.Valid || TargetCell.BlockedSquare(EntityTypeSize, ECombatMapLevel.Play))
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+
+		Source.WaitForHit;
+
+		PlayEffect(info.GateFX, TargetCell.CenterX - 0.5 + EntityTypeSize / 2, TargetCell.CenterY - 0.5 + EntityTypeSize / 2);
+
+		// Summon entities
+		Owner = Source.OwnerIndex;
+		
+		// Balance Change 
+		HeroLevel = GetHeroLevel(Owner);
+		SummonFormular =round( SummonNum * ( 0.101 + 0.031 * ( HeroLevel - 1 )));
+		
+		if( SummonNum > SummonFormular)
+		{
+			ScaledNumber = round(SummonFormular.ScaleValue(EScaling.All | EScaling.Friendly)); 
+		}
+		else 
+		{
+			ScaledNumber = round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly));
+		}
+		
+		
+		if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		SummonedUnit = SummonUnit(EntityType, ScaledNumber, Owner, TargetCell);
+		if ( SummonedUnit.Valid )
+		{
+			SummonedUnit.PlayEffect(info.RevealFX);
+			local SummonEffect: effect"BladeOfBinding_SummonJuggernautEffect";
+			SummonEffect = Source.FindEffect(EffectName);			
+			if (SummonEffect.Valid )
+			{
+				if ( SummonEffect.SummonedUnit.Valid )
+					SummonEffect.SummonedUnit.Kill(Source);
+			}
+			else
+			{
+				SummonEffect = Source.AddEffect(Source, EffectName);
+			}
+			if (SummonEffect.Valid)
+				SummonEffect.SummonedUnit = SummonedUnit;
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		local Team: int ;
+		local Hero: unit;
+		local HeroLevel: int;
+		local SummonFormular: int;
+		Team = Source.OwnerIndex;
+		
+		HeroLevel = GetHeroLevel(Team);
+				
+		SummonFormular = round( SummonNum * ( 0.101 + 0.031 * ( HeroLevel - 1 )));
+		
+		if( SummonNum > SummonFormular)
+		{
+			$number = SummonFormular; 
+		}
+		else 
+		{
+			$number = SummonNum;
+		}
+	}
+}
+
+effect "BladeOfBinding_SummonJuggernautEffect"
+{
+	var SummonedUnit: unit;
+  var Dummy: modifier"Dummy";
+}
+
+effect "BladeOfBinding_EffectiveSummon"
+{
+	const Percent = 20;
+
+	event OnPreSummon
+	{
+		Op.PowerModifierMul = Op.PowerModifierMul * ( 1.0 + Percent.ToFloat() * 0.01 );
+	}
+
+	event OnPostSummon
+	{
+		Op.PowerModifierMul = Op.PowerModifierMul / ( 1.0 + Percent.ToFloat() * 0.01 );
+	}
+	event GetTooltip
+	{
+		$percent = Percent;
+	}
+}
+
+ability "OrcCleaver_WrathOfTheOrcs"
+{
+	var Upgraded: int = 0;
+
+	event OnActivate
+	{
+		local Effect: effect;
+
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		if (Upgraded == 0)
+			Effect = TargetUnit.AddEffect(Source, "OrcCleaver_WrathOfTheOrcsEffect");
+		else
+			Effect = TargetUnit.AddEffect(Source, "OrcCleaver_WrathOfTheOrcsUpgradedEffect");
+
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		local Effect: effect"OrcCleaver_WrathOfTheOrcsEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "OrcCleaver_WrathOfTheOrcsEffect");
+		$duration = Effect.MaxTurns;
+	}
+
+}
+
+effect "OrcCleaver_WrathOfTheOrcsUpgrade"
+{
+		var OrcCleaver_WrathOfTheOrcs_Upgrade: modifier"ModifyAbility";
+
+		event OnCreate
+		{
+			OrcCleaver_WrathOfTheOrcs_Upgrade.Init(ability("OrcCleaver_WrathOfTheOrcs"), Upgraded, 1);
+		}
+}
+
+effect "OrcCleaver_WrathOfTheOrcsEffect"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "Souldrinker_Ability2"
+{
+	event GetTooltip
+	{
+		$maxhealth = Health.AbsValue;
+	}
+}
+
+ability "Souldrinker_LifeDrain"
+{
+	const Damage = 600;
+	const ScaledDamage = Damage.ScaleValue(EScaling.Damage);
+	const HealPercentage = 50;
+
+	event OnActivate
+	{
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		local CurrentDamage: float;
+		local SimulatedDamage: float;
+		CurrentDamage = ScaledDamage;
+
+		SimulatedDamage = TargetUnit.DamageUnit_ReturnValue(Source, CurrentDamage, CurrentDamage, EAbilitySchool.None, 0);
+
+		if (Execute && SimulatedDamage > 0)
+		{
+			local TotalHeal: float;
+			local HealPool: float;
+			local AllUnits: unitarray;
+			local UnitToHeal : unit;
+			local i: int;
+
+			TotalHeal = 0;
+			HealPool = SimulatedDamage * HealPercentage.ToFloat()/100.0;
+
+			GetCreatureUnits(AllUnits);
+			for (i = 0; i < AllUnits.Num; i++)
+			{
+				UnitToHeal = AllUnits.Get(i);
+				if ( UnitToHeal.Team != Source.Team )
+					continue;
+				TotalHeal = TotalHeal + UnitToHeal.SimulateHealUnit(Source,99999,99999, EAbilitySchool.None, 0);
+			}
+			for (i = 0; i < AllUnits.Num; i++)
+			{
+				UnitToHeal = AllUnits.Get(i);
+				if ( UnitToHeal.Team != Source.Team )
+					continue;
+				local UnitHeal: float;
+				UnitHeal = (UnitToHeal.SimulateHealUnit(Source,99999,99999, EAbilitySchool.None, 0) / TotalHeal) * HealPool;
+				if ( UnitHeal > 0 )
+				{
+					local HealValue: combatdamage;
+					HealValue.Set(UnitHeal, Source: Source, Scaling: EScaling.None);
+					UnitToHeal.PlayEffect(info.HealFX);
+					UnitToHeal.HealUnit(HealValue);
+				}
+			}
+		}
+
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$hpdamage = ScaledDamage;
+	}
+}
+
+ability "Souldrinker_LifeDrain_Upgraded"
+{
+	const Damage = 600;
+	const ScaledDamage = Damage.ScaleValue(EScaling.Damage);
+	const HealPercentage = 50;
+	const ManaRestorePercent = 15;
+
+	event OnActivate
+	{
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		local CurrentDamage: float;
+		local SimulatedDamage: float;
+		CurrentDamage = ScaledDamage;
+
+		SimulatedDamage = TargetUnit.DamageUnit_ReturnValue(Source, CurrentDamage, CurrentDamage, EAbilitySchool.None, 0);
+
+		if (Execute && SimulatedDamage > 0)
+		{
+			local TotalHeal: float;
+			local HealPool: float;
+			local AllUnits: unitarray;
+			local UnitToHeal : unit;
+			local i: int;
+
+			TotalHeal = 0;
+			HealPool = SimulatedDamage * HealPercentage.ToFloat()/100.0;
+
+			GetCreatureUnits(AllUnits);
+			for (i = 0; i < AllUnits.Num; i++)
+			{
+				UnitToHeal = AllUnits.Get(i);
+				if ( UnitToHeal.Team != Source.Team )
+					continue;
+				TotalHeal = TotalHeal + UnitToHeal.SimulateHealUnit(Source,99999,99999, EAbilitySchool.None, 0);
+			}
+			for (i = 0; i < AllUnits.Num; i++)
+			{
+				UnitToHeal = AllUnits.Get(i);
+				if ( UnitToHeal.Team != Source.Team )
+					continue;
+				local UnitHeal: float;
+				UnitHeal = (UnitToHeal.SimulateHealUnit(Source,99999,99999, EAbilitySchool.None, 0) / TotalHeal) * HealPool;
+				if ( UnitHeal > 0 )
+				{
+					UnitToHeal.PlayEffect(info.HealFX);
+					UnitToHeal.HealUnit(Source, UnitHeal, UnitHeal, EAbilitySchool.None, 0);
+				}
+			}
+		}
+
+		Source.IncreaseMana(SimulatedDamage * ManaRestorePercent.ToFloat()/100.0);
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$number = ScaledDamage * ManaRestorePercent * 0.01;
+	}
+}
+
+ability "StaffOfCleansing_Cleansing"
+{
+	const ManaIncrease = 20;
+	var PowerChanneling: int = 0;
+
+	event OnActivate
+	{
+		local DispelledEffectCount: int;
+		local OldMana: int;
+
+		if (!TargetUnit.Valid)
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		StartAbility;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+	
+		if (TargetUnit.Team == Source.Team)
+		{
+			DispelledEffectCount = TargetUnit.Dispel(-1, false, true, -1, 0);
+		}
+		else
+		{
+			DispelledEffectCount = TargetUnit.Dispel(-1, true, false, -1, 0);
+		}
+
+		if (DispelledEffectCount <= 0)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		else
+		{
+			SetValidTarget;
+
+			if (TargetUnit.Team == Source.Team)
+				TargetUnit.PlayEffect(info.vsFriendly);
+			else
+				TargetUnit.PlayEffect(info.vsEnemy);
+		}
+
+		if (Execute && (PowerChanneling > 0))
+		{
+				OldMana = GetMana(Source.Team);
+				//SetMana(Source.Team, OldMana + ManaIncrease);
+				ManaTransfer( null, -1, Source.Team, ManaIncrease);
+		}
+
+		FinishAction;
+	}
+}
+
+effect "StaffOfCleansing_TaintedMist"
+{
+		event GetTooltip
+		{
+			$damagemalus = DamageModifier.AbsValue;
+		}
+}
+
+effect "StaffOfCleansing_PowerChanneling"
+{
+		var StaffOfCleansing_Cleansing_PowerChanneling: modifier"ModifyAbility";
+
+		event OnCreate
+		{
+			StaffOfCleansing_Cleansing_PowerChanneling.Init(ability("StaffOfCleansing_Cleansing"), PowerChanneling, 1);
+		}
+		event GetTooltip
+		{
+			$number = ability("StaffOfCleansing_Cleansing").ManaIncrease;
+		}
+}
+
+effect "Arachne_Ability4"
+{
+	event GetTooltip
+	{
+		$percent = Recovery.AbsValue;
+	}
+}
+
+effect "EdgeOfChaos_Ability3"
+{
+	event GetTooltip
+	{
+		$damageresistance = DamageReduction.AbsValue;
+	}
+}
+
+effect "PerfectSilksword_Ability2"
+{
+	event GetTooltip
+	{
+		$mightresistance = MightResistance.AbsValue;
+	}
+}
+
+ability "PerfectSilksword_Ability5"
+{
+	event GetTooltip
+	{
+		local Effect: effect"PerfectSilksword_Ability5_Effect";
+		Effect = FriendlyDummy.AddEffect(Source, "PerfectSilksword_Ability5_Effect");
+		$damage = Effect.MinDamage.AbsValue;
+		$luck = Effect.Luck.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "PerfectSilksword_Ability5_Effect"
+{
+	event GetTooltip
+	{
+		$damage = MinDamage.AbsValue;
+		$luck = Luck.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "StaffOfTheLich_Ability4"
+{
+	event GetTooltip
+	{
+		$magicresistance = MagicResistance.AbsValue;
+	}
+}
+
+effect "SwordOfWhistlebone_Ability5"
+{
+	event GetTooltip
+	{
+		$initiative = Initiative.AbsValue;
+	}
+}
+
+effect "TheOblivion_OblivionEffect"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "StaffOfTheLich_Ability3"
+{
+	event GetTooltip
+	{
+		$morale = Morale.AbsValue;
+	}
+}
+
+effect "SwordOfTheGriffin_GriffinsRoar"
+{
+	event GetTooltip
+	{
+		$morale = Morale.AbsValue;
+	}
+}
+
+effect "SwordOfWhistlebone_Ability3"
+{
+	event GetTooltip
+	{
+		$cmovement = Movement.AbsValue;
+	}
+}
+
+effect "BatusTotem_Ability5_Effect"
+{
+	var DamageValue: combatdamage;
+
+	event OnPostAction
+	{
+		// Don't run in simulation
+		if (Simulation)
+			return;
+
+		// Get last casted ability's mana cost
+		local AbilityCost:int;
+		AbilityCost = ModifiedManaCost(Owner.Team, Action.Command.Ability);
+		
+		// If zero, don't even bother
+		if (AbilityCost <= 0)
+			return;
+		
+		// Calculate damage to unit
+		local DamageToUnit:float;
+		DamageToUnit = AbilityCost * DamageMultiply;
+		
+		// Get a random unit from the same team
+		local Targets: unitarray;
+		local CurrentTarget: unit;
+		for AllCreatures(It)
+		{
+			CurrentTarget = It.Unit;
+			if (CurrentTarget.Team == Owner.Team)
+				Targets.Add(CurrentTarget);
+				
+		}
+		if (Targets.Num() < 1)
+			return;
+		if (Targets.Num() == 1)
+			CurrentTarget = Targets.Get(0);
+		else
+			CurrentTarget = Targets.Get(Random(Targets.Num - 1));
+		
+		// Damage unit
+		DamageValue.Set(DamageToUnit, DamageToUnit, Source: Source, Scaling: EScaling.None, Flags: EDamageFlags.PlayHit);
+		CurrentTarget.PlayEffect(info.BoltFX);
+		CurrentTarget.DamageUnit(DamageValue);
+	}
+}
+
+ability "StaffOfSarAggreth_Ability3"
+{
+	// Set to true if improved ability
+	var Improved: int = false;
+
+	event OnActivate
+	{
+		// Init
+		StartAbility();
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit();
+		
+		// Add effect to self
+		local Effect:effect;
+		Effect = Source.AddEffect(Source, "StaffOfSarAggreth_Ability3_Effect");
+
+		// Improved adds effect to every friendly creature stack
+		if (Improved)
+		{
+			for AllCreatures(It)
+			{
+				// Check unit
+				if (!It.Unit.ValidTarget || It.Unit.Team != Source.Team)
+					continue;
+
+				// Add effect to creature stack
+				Effect = It.Unit.AddEffect(Source, "StaffOfSarAggreth_Ability3_Effect");
+			}
+		}
+
+		// Finish
+		FinishAction();
+	}
+	
+	event GetTooltip
+	{
+		// Display as improved if it is the improved version
+		if (!Improved)
+		{
+			$tooltiptext = ability("StaffOfSarAggreth_Ability3").Tooltip;
+			$name = ability("StaffOfSarAggreth_Ability3").DisplayName;
+		}
+		else
+		{
+			$tooltiptext = effect("StaffOfSarAggreth_Ability5").Tooltip;
+			$name = effect("StaffOfSarAggreth_Ability5").DisplayName;
+		}
+	}
+}
+
+effect "StaffOfSarAggreth_Ability5"
+{
+	var Modifier: modifier"ModifyAbility";
+	event OnCreate
+	{
+		// Set ability 3 to improved
+		Modifier.Init(ability("StaffOfSarAggreth_Ability3"), Improved, true);
+	}	
+}
+
+effect "DragonFlameTongue_Ability2"
+{
+	event GetTooltip
+	{
+		$luck = Luck.AbsValue;
+	}
+}
+
+ability "DragonFlameTongue_Ability4"
+{
+	var Mod: int = false;
+
+	event OnActivate
+	{
+		local DamageValue: combatdamage;
+		local Amount: int;
+		local HealEffectivePercent: float;
+		local DamageEffectivePercent: float;
+		local i: int;
+		local Corpses: unitarray;
+		local Effect: effect"DragonFlameTongue_Ability5Effect";
+
+		StartAbility;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Kill: Aktualis leny teljes HP-nak x%-t RAW-kent sebezni ahol X skalazodik
+		// Resurrect: Hianyzo hp mennyiseg x%-t RAW-kent healelni ahol X skalazodik
+
+		HealEffectivePercent = HealPercent * 0.01;
+		DamageEffectivePercent = DamagePercent * 0.01;
+
+		for AllCreatures(It)
+		{
+			if (!It.Unit.ValidTarget)
+				continue;
+
+			if (It.Unit.Team == Source.Team)
+			{
+				// Friendly
+				Amount = round((It.Unit.GetMaxHealth * It.Unit.MaxUnits - It.Unit.GetTotalHealth) * HealEffectivePercent);
+				if (Amount <= 0)
+					continue;
+
+				DamageValue.SetHeal(Amount, Scaling: EScaling.None);
+				It.Unit.HealUnit(DamageValue);
+				if (It.Unit.Alive)
+					Effect = It.Unit.AddEffect(Source, "DragonFlameTongue_Ability5Effect");
+			}
+			else
+			{
+				// Hostile
+				Amount = round(It.Unit.GetTotalHealth * DamageEffectivePercent);
+				DamageValue.Set(Amount, Scaling: EScaling.None, Flags: EDamageFlags.PlayHitAnim);
+				It.Unit.PlayEffect(info.HitFX);
+				It.Unit.DamageUnit(DamageValue);
+				if (It.Unit.Alive)
+					Effect = It.Unit.AddEffect(Source, "DragonFlameTongue_Ability5Effect");
+			}
+		}
+
+		GetCorpses(Corpses);
+		for (i = 0; i < Corpses.Num; i++)
+		{
+			local CurrentUnit: unit;
+			CurrentUnit = Corpses.Get(i);
+			if (CurrentUnit.Alive || CurrentUnit.OwnerIndex != Source.OwnerIndex)
+				continue;
+
+			Amount = round(CurrentUnit.GetMaxHealth * CurrentUnit.MaxUnits * HealEffectivePercent);
+			Resurrect(Source, CurrentUnit, Amount);
+			if (CurrentUnit.Alive)
+				Effect = It.Unit.AddEffect(Source, "DragonFlameTongue_Ability5Effect");
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		if (Mod)
+		{
+			$tooltiptext = ability("DragonFlameTongue_Ability4_Improved").Tooltip;
+			$name = ability("DragonFlameTongue_Ability4_Improved").DisplayName;
+			$icon = ability("DragonFlameTongue_Ability4_Improved").Icon;
+		}
+		$hpheal = HealPercent;
+		$hpdamage = DamagePercent;
+	}
+}
+
+effect "DragonFlameTongue_Ability5"
+{
+	var Modifier: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Modifier.Init(ability("DragonFlameTongue_Ability4"), Mod, true);
+	}
+}
+
+effect "DragonFlameTongue_Ability5Effect"
+{
+	var GameRound: int = 0;
+
+	event OnInit
+	{
+		GameRound = GetRound;
+	}
+
+	event OnTick
+	{
+		if (GetRound == GameRound && Owner.CanWait)
+			SetCommand(Owner, Owner.Cell, Owner.Cell, null, ECommandType.Wait);
+		Remove;
+	}
+}
+
+effect "AssassinsBlade_Ability1"
+{
+	var Effect: effect"AssassinsBlade_Ability1Effect";
+
+	event OnCauseDamage
+	{
+		if (!Damage.IsDefaultAttack)
+			return;
+		Effect = Damage.Target.AddEffect(Source, "AssassinsBlade_Ability1Effect");
+	}
+
+	event GetTooltip
+	{
+		Effect = HostileDummy.AddEffect(Source, "AssassinsBlade_Ability1Effect");
+		$hpdamage = Effect.DamageValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "AssassinsBlade_Ability1Effect"
+{
+	const Damage = 10;
+
+	var DamageValue: combatdamage;
+
+	event OnInit
+	{
+		DamageValue.Set(Damage, Source: Source, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		
+		SetDOTDamage(DamageValue);
+	}
+
+	event OnReduceHealingTaken
+	{
+		Heal.Flags = Heal.Flags | EDamageFlags.Immune;
+	}
+	
+	event OnTick
+	{
+		Owner.DamageUnit(DamageValue);
+	}
+
+	event GetTooltip
+	{
+		$hpdamage = DamageValue;
+		$duration = MaxTurns;
+	}
+}
+
+ability "AssassinsBlade_Ability3"
+{
+	var Effect: effect"AssassinsBlade_Ability3Effect";
+	var Mod: int = false;
+
+	event OnActivate
+	{
+		StartAbility;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		TargetUnit.PlayEffect(info.vsHit);
+
+		Effect = TargetUnit.AddEffect(Source, "AssassinsBlade_Ability3Effect", Mod);
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "AssassinsBlade_Ability3Effect", Mod);
+		$damageresistance = Effect.ReduceDamage.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "AssassinsBlade_Ability3Effect"
+{
+	var Modifier: modifier"SetMoveType";
+	var ReduceDamage: modifier"ReduceDamageTaken";
+	var ApplyPoison: int;
+	var InAction: int = false;
+	var PoisonApplied: int = false;
+
+	event OnCreate(Mod: int)
+	{
+		Modifier.Init(EUnitMoveType.Fly);
+		ReduceDamage.Init(DamageReduction, EAbilitySchool.Might, true, true, true);
+		ApplyPoison = Mod;
+	}
+	
+	event OnInit(Mod: int)
+	{
+		if (Owner.Flags & (ECombatUnitFlags.Fly | ECombatUnitFlags.Teleport))
+			SetDuration(-1);
+	}
+
+
+	event OnPreAction
+	{
+		InAction = true;
+	}
+
+	event OnCauseDamage
+	{
+		if (Simulation || !ApplyPoison || !InAction)
+			return;
+
+		PoisonApplied = true;
+
+		local Effect: effect;
+		Effect = Damage.Target.AddEffect(Owner, "AssassinsBlade_Ability5Effect");
+	}
+
+	event OnPostAction
+	{
+		InAction = false;
+		if (PoisonApplied)
+			ApplyPoison = false;
+	}
+
+	event GetTooltip
+	{
+		$damageresistance = ReduceDamage.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "AssassinsBlade_Ability5"
+{
+	var Modifier: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Modifier.Init(ability("AssassinsBlade_Ability3"), Mod, true);
+	}
+
+	event GetTooltip
+	{
+		local Effect: effect"AssassinsBlade_Ability5Effect";
+		Effect = HostileDummy.AddEffect(Owner, "AssassinsBlade_Ability5Effect");
+		$hpdamage = Effect.DamageValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "AssassinsBlade_Ability5Effect"
+{
+	var DamageValue: combatdamage;
+
+	event OnInit
+	{
+		DamageValue.Set(Damage, Source: Source, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		
+		SetDOTDamage(DamageValue);
+	}
+
+	event OnTick
+	{
+		Owner.DamageUnit(DamageValue);
+	}
+
+	event GetTooltip
+	{
+		$hpdamage = DamageValue;
+		$duration = MaxTurns;
+	}
+}
+
+
+ability "SylvanVengeance"
+{
+	event OnActivate
+	{
+		local Effect: effect;
+
+		StartAbility;
+	//	TargetUnit.SetMainTarget;
+		
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		Effect = TargetUnit.AddEffect(Source, "SylvanVengeanceEffect");
+	
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+			local Effect: effect"SylvanVengeanceEffect";
+			Effect = HostileDummy.AddEffect(Source, "SylvanVengeanceEffect");
+			$duration = Effect.MaxTurns;	
+	}
+}
+
+effect "SylvanVengeanceEffect"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+		$damagebonus = DamageBonus.AbsValue;
+	}
+}
+
+ability "ImprovedSylvanVengeance"
+{
+	event OnActivate
+	{
+		local Effect: effect;
+
+		StartAbility;
+//		TargetUnit.SetMainTarget;
+		
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		Effect = TargetUnit.AddEffect(Source, "ImprovedSylvanVengeanceEffect");
+
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+			local Effect: effect"ImprovedSylvanVengeanceEffect";
+			Effect = HostileDummy.AddEffect(Source, "ImprovedSylvanVengeanceEffect");
+			$duration = Effect.MaxTurns;
+	}
+}
+
+effect "ImprovedSylvanVengeanceEffect"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "EagerOfBloodEffect"
+{
+	var IncreaseAmount: int = 0;
+
+	var Modifier: modifier"ModifyStat";	
+	event OnCreate(MightPower : int)
+	{
+		Modifier.Init(EStat.MightAttack, IncreaseAmount.ToFloat(), 1);
+		Modifier.Modify(MightPower.ToFloat(), 1);
+	}
+}
+
+
+effect "EagerOfBlood"
+{
+	var IncreaseAmount: int = 0;
+
+	event OnKilled
+	{
+		if (!Killer.Valid)
+			return;
+		local CasterHero: unit;
+		CasterHero = GetHero(Source.Team);
+		if (CasterHero.Valid)
+		{
+			//local Effect: effect"RecordMightPower";
+			//Effect = CasterHero.FindEffect("RecordMightPower");
+			//if(!Effect.Valid)
+			//{
+				//Effect = CasterHero.AddEffect(CasterHero,"RecordMightPower");
+			//}
+			local Effect: effect"EagerOfBloodEffect";
+			Effect = CasterHero.FindEffect("EagerOfBloodEffect");
+			if(!Effect.Valid)
+			{
+				Effect = CasterHero.AddEffect(CasterHero,"EagerOfBloodEffect",MightPower);
+				Effect.IncreaseAmount = Effect.IncreaseAmount + MightPower;
+			}
+			else 
+			{
+				Effect.IncreaseAmount = Effect.IncreaseAmount + MightPower;
+				Effect.Modifier.Modify(Effect.IncreaseAmount.ToFloat(), 1);
+			//IncreaseAmount = Effect.IncreaseAmount;
+			//CasterHero.AddEffect(CasterHero,"EagerOfBloodEffect",IncreaseAmount);
+			}
+		}
+	}
+	event GetTooltip
+	{
+		$mightpower = MightPower;
+	}
+}
+
+
+effect "RecordMightPower"
+{
+	var IncreaseAmount : int = 0;
+}
+
+
+effect "DeathsEmbrace_Ability2"
+{
+	event GetTooltip
+	{
+		$cmovement = Movement.AbsValue;
+	}
+}
+
+effect "DeathsEmbrace_Ability4"
+{
+	event OnCauseDamage
+	{
+		if (Simulation)
+			return;
+
+		Damage.Target.Dispel(-1, true, false, -1, 0);
+	}
+}
+
+ability "DeathsEmbrace_Ability5"
+{
+	event OnActivate
+	{
+		StartAbility;
+		
+	    if (Simulation)
+	    {
+	        SetValidTarget;
+	        //return;
+	    }
+	    else
+	        Source.AddSpecialSpell(2, EAbilitySchool.Darkness);
+   		
+		FinishAction;
+	}
+}
+
+ability "DragonboneStaff_SummonDragonwraith"
+{
+	const EffectName = "DragonboneStaff_SummonDragonwraithEffect";
+	
+	event OnActivate
+	{
+		//local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+		EntityType = 70101473; // Spectral Dragon
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		if (!TargetCell.Valid || TargetCell.BlockedSquare(EntityTypeSize, ECombatMapLevel.Play))
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+
+		Source.WaitForHit;
+
+		PlayEffect(info.GateFX, TargetCell.CenterX - 0.5 + EntityTypeSize / 2, TargetCell.CenterY - 0.5 + EntityTypeSize / 2);
+
+		// Summon entities
+		Owner = Source.OwnerIndex;
+
+		SummonedUnit = SummonUnit(EntityType, SummonNum, Owner, TargetCell);
+		if ( SummonedUnit.Valid )
+		{
+			SummonedUnit.PlayEffect(info.RevealFX);
+			local SummonEffect: effect"DragonboneStaff_SummonDragonwraithEffect";
+			SummonEffect = Source.FindEffect(EffectName);			
+			if (SummonEffect.Valid )
+			{
+				if ( SummonEffect.SummonedUnit.Valid )
+					SummonEffect.SummonedUnit.Kill(Source);
+			}
+			else
+			{
+				SummonEffect = Source.AddEffect(Source, EffectName);
+			}
+			if (SummonEffect.Valid)
+				SummonEffect.SummonedUnit = SummonedUnit;
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		$summonNumber = SummonNum;
+	}
+}
+
+ability "DragonboneStaff_SummonDragonImproved"
+{
+	const EffectName = "DragonboneStaff_SummonDragonwraithEffect";
+	
+	event OnActivate
+	{
+		//local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+		EntityType = 70101473; // Spectral Dragon
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		if (!TargetCell.Valid || TargetCell.BlockedSquare(EntityTypeSize, ECombatMapLevel.Play))
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+
+		Source.WaitForHit;
+
+		PlayEffect(info.GateFX, TargetCell.CenterX - 0.5 + EntityTypeSize / 2, TargetCell.CenterY - 0.5 + EntityTypeSize / 2);
+
+		// Summon entities
+		Owner = Source.OwnerIndex;
+		//ScaledNumber = round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly));
+		//if ( ScaledNumber < 1 )
+			//ScaledNumber = 1;
+		SummonedUnit = SummonUnit(EntityType, SummonNum, Owner, TargetCell);
+		if ( SummonedUnit.Valid )
+		{
+			SummonedUnit.PlayEffect(info.RevealFX);
+			local SummonEffect: effect"DragonboneStaff_SummonDragonwraithEffect";
+			SummonEffect = Source.FindEffect(EffectName);			
+			if (SummonEffect.Valid )
+			{
+				if ( SummonEffect.SummonedUnit.Valid )
+					SummonEffect.SummonedUnit.Kill(Source);
+			}
+			else
+			{
+				SummonEffect = Source.AddEffect(Source, EffectName);
+			}
+			if (SummonEffect.Valid)
+				SummonEffect.SummonedUnit = SummonedUnit;
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		$summonNumber = SummonNum;
+	}
+}
+
+effect "DragonboneStaff_ReduceMorale"
+{
+	event GetTooltip
+	{
+		$moraleReduce = ReduceBonus.AbsValue;
+	}
+}
+
+
+effect "DragonboneStaff_SummonDragonwraithEffect"
+{
+	var SummonedUnit: unit;
+  var Dummy: modifier"Dummy";
+}
+
+effect "HeartOfTuidhana_Ability3"
+{
+	event GetTooltip
+	{
+		$percentage = DamageDec.Value;
+	}
+}
+
+effect "HeartOfTuidhana_Ability4"
+{
+	event GetTooltip
+	{
+		$percentage = ActivePercent.Value;
+	}
+}
+
+ability "HeartOfTuidhana_Ability5"
+{
+	var DamageValue: combatdamage;
+
+	event OnActivate
+	{
+		const Delay = 0.85;
+		const ScaledDamagePercent = DamagePercent.ScaleValue(EScaling.All | EScaling.Friendly);
+		local EffectiveDamage: int;
+
+		StartAbility;
+
+		EffectiveDamage = round(TargetUnit.GetTotalDamageDone * DamagePercent / 100);
+		if (EffectiveDamage <= 0)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		DamageValue.Set(EffectiveDamage, LimitMax: DamageMaximum, Scaling: EScaling.None, Flags: EDamageFlags.Raw);
+
+		TargetUnit.SetMainTarget;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		TargetUnit.PlayEffect(info.vsHit);
+		CombatWait(Delay);
+
+		TargetUnit.DamageUnit(DamageValue);
+		if (Execute)
+			TargetUnit.PlayOnHitAnim;
+
+		Source.WaitForAnim;
+		
+		local Effect: effect"HeartOfTuidhana_Ability5Effect";
+		Effect = TargetUnit.AddEffect(Source, "HeartOfTuidhana_Ability5Effect");
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$percent = DamagePercent;
+		$MaxDamage = DamageMaximum;
+	}
+}
+
+effect "HeartOfTuidhana_Ability5Effect"
+{
+	event GetTooltip
+	{
+		$percentage = DamageInc.Value;
+	}
+}
+

@@ -1,0 +1,999 @@
+/********************************************************
+ * Dynasty Combat Script: Stronghold Abilities          *
+ ********************************************************/
+
+ability "Traps"
+{
+	var CooldownDecreaseBonus: int = 0;
+
+	event OnActivate
+	{
+		StartAbility;
+		Source.StartAttack(null, TargetCell, EAttackRange.None, null);
+
+		// Don't wait for hit!
+
+		ExecuteTrigger;
+
+		// Bonus given by GoblinMasterEffect
+		if (CooldownDecreaseBonus > 0)
+			ReduceMaximumCooldown(CooldownDecreaseBonus);
+
+		Source.WaitForHit;
+
+		Source.WaitForAnim;
+
+		FinishTriggerAction;
+	}
+	event GetTooltip
+	{
+		$hpdamage = Damage.ScaleValue(EScaling.Damage);
+		$cmovement = Movement;
+	}
+}
+
+ability "CentaurRetaliation"
+{
+	event OnActivate
+	{
+		// Escape
+		local NewCell: cell;
+		local Range: int;
+
+		NewCell = Source.FindSafeSpot();
+		if (NewCell.Valid)
+		{
+			Source.Move(0, NewCell);
+			Range = EAttackRange.Half;
+		}
+		else
+			Range = EAttackRange.Melee;
+
+		// Attack
+		AddLuck(Source);
+		TargetUnit.SetMainTarget;
+		Source.StartAttack(TargetUnit, TargetCell, Range, null);
+		Source.WaitForHit;
+		TargetUnit.AttackUnit(Source, Range, -1, -1, EAbilitySchool.None, 0);
+		TargetUnit.PlayOnHitAnim;
+		Source.WaitForAnim;
+	}
+}
+
+ability "BrutalBlow"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.Stats | EScaling.Num, Mul: DamageMultiplier); };
+
+	event OnActivate
+	{
+		const Angle = 90;
+		const DamageMultiplier = 1;
+
+		local Targets: unitarray;
+		
+		// Fix collison with Ice Wall - By VIRTUOS GAMES
+		if (!TargetUnit.IsCreature)
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		StartAbility;
+		CalcDamage;
+
+		// Move
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+			MoveTargetCell = Source.Cell;
+		}
+
+		// Start animation
+		TargetUnit.SetMainTarget;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;
+
+		if (TargetUnit.Size == 1)
+			Targets.Add(TargetUnit);
+		else if (Execute)
+			TargetUnit.PlayOnHitAnim;
+
+		TargetUnit.DamageUnit(DamageValue);
+
+		Knockback(Source, Targets);
+		
+		// Check Invisible Units - Added by VIRTUOS GAMES
+		local iUnit: int;
+		for (iUnit = 0; iUnit < Targets.Num; iUnit++)
+		{
+			local KnockedUnit: unit;
+			KnockedUnit = Targets.Get(iUnit);
+			
+			//Check target pos's sourrounding invisible unit
+			for UnitsInSquare(It, KnockedUnit.Cell.X-1, KnockedUnit.Cell.Y-1, KnockedUnit.Size+2, KnockedUnit.Size+2)
+			{
+				if(It.Unit.Team != KnockedUnit.Team && KnockedUnit.Alive && It.Unit.IsInvisible )
+				{		
+					It.Unit.RemoveInvisibleEffect();
+					ForceAttackCommand(It.Unit,It.Unit.Cell, KnockedUnit.Cell);
+				}
+			}
+		}
+		
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "SuperBrutalBlow"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.Stats | EScaling.Num, Mul: DamageMultiplier); };
+
+	event OnActivate
+	{
+		const Angle = 90;
+		const DamageMultiplier = 1.5;
+
+		local CurrentTarget: unit;
+		local UnitsInArc: unitarray;
+		local Targets: unitarray;
+		local i: int;
+		local TotalMinDamage: float;
+		local TotalMaxDamage: float;
+		
+		// Fix collison with Ice Wall - By VIRTUOS GAMES
+		if (!TargetUnit.IsCreature)
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		StartAbility;
+		CalcDamage;
+
+		// Move
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+			MoveTargetCell = Source.Cell;
+		}
+
+		// Start animation
+		TargetUnit.SetMainTarget;
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;
+
+		Source.GetArcTargets(UnitsInArc, MoveTargetCell, TargetCell, 1, Angle);
+		for (i = 0; i < UnitsInArc.Num; i++)
+		{
+			CurrentTarget = UnitsInArc.Get(i);
+
+			CurrentTarget.SetSecondaryTarget;
+
+			if (CurrentTarget.Size == 1)
+				Targets.Add(CurrentTarget);
+			else if (Execute)
+				CurrentTarget.PlayOnHitAnim;
+
+			CurrentTarget.DamageUnit(DamageValue);
+		}
+
+		Knockback(Source, Targets);
+		
+		// Check Invisible Units - Added by VIRTUOS GAMES
+		local iUnit: int;
+		for (iUnit = 0; iUnit < Targets.Num; iUnit++)
+		{
+			local KnockedUnit: unit;
+			KnockedUnit = Targets.Get(iUnit);
+			
+			//Check target pos's sourrounding invisible unit
+			for UnitsInSquare(It, KnockedUnit.Cell.X-1, KnockedUnit.Cell.Y-1, KnockedUnit.Size+2, KnockedUnit.Size+2)
+			{
+				if(It.Unit.Team != KnockedUnit.Team && KnockedUnit.Alive && It.Unit.IsInvisible )
+				{		
+					It.Unit.RemoveInvisibleEffect();
+					ForceAttackCommand(It.Unit,It.Unit.Cell, KnockedUnit.Cell);
+				}
+			}
+		}
+		
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		$percent = round(DamageMultiplier * 100.0);
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+// goblin_boomerang_basic.fx 
+
+ability "GoblinAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate
+	{
+		local HitTime: float;
+		local EndTime: float;
+
+		AddLuck(Source);
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForAttackToLoop;
+
+		CalcDamage;
+
+		if (Execute)
+		{
+			Source.WaitForHit;
+			local Effect: vfx;
+			Effect = VFX_Boomerang(info.VisualFX, Source, TargetUnit, "center", "AttackRanged_Start", "AttackRanged_End", HitTime, EndTime);
+		}
+		CombatWait(HitTime);
+		TargetUnit.DamageUnit(DamageValue);
+		CombatWait(EndTime);
+		if (Execute)
+		{
+			Source.StopAttackLoop();
+			Source.PlayAnim("AttackRanged_End");
+		}
+		// Wait for source to finish the animation
+//		Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "CyclopsAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+
+	event OnActivate
+	{
+		const Damage = 100;
+
+		local Effect: vfx;
+		local CurrentDamage: float;
+		CurrentDamage = Damage;
+		
+		local DOTHelperEffect: effect"BurningRageDotHelper";
+
+		StartAbility;
+		AddLuck(Source);
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+		
+		DOTHelperEffect = TargetUnit.FindEffect("BurningRageDotHelper");
+		if (!DOTHelperEffect.Valid)
+		{
+			DOTHelperEffect = TargetUnit.AddEffect(Source, "BurningRageDotHelper");
+			if (Simulation)
+			{
+				TargetUnit.AddEffect(Source, "BurningRageFireEffect", 0);
+			}
+		}
+		
+		CalcDamage;
+
+		if (Execute)
+			Effect = VFX_Beam(info.BeamFX, Source, "head", TargetUnit, "center");
+
+		TargetUnit.PlayEffect(info.HitFX);
+		TargetUnit.DamageUnit(DamageValue);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "FatherSkyOrMotherEarth"
+{
+	const AllowMove = false;
+	const AllowReta = false;
+	const AllowReturn = false;
+	const HitEvent =
+	{
+		local Effect: effect;
+		if (TargetUnit.ValidTarget && TargetUnit.IsCreature )
+		{
+			if (TargetUnit.Team == Source.Team)
+				Effect = TargetUnit.AddEffect(Source, "FatherSkyOrMotherEarthFriendly");
+			else
+				Effect = TargetUnit.AddEffect(Source, "FatherSkyOrMotherEarthHostile");
+		}
+	};
+	event OnActivate
+	{
+		AbilityBody;
+	}
+	event GetTooltip
+	{
+		local FriendlyEffect: effect"FatherSkyOrMotherEarthFriendly";
+		local HostileEffect: effect"FatherSkyOrMotherEarthHostile";
+		FriendlyEffect = FriendlyDummy.AddEffect(Source, "FatherSkyOrMotherEarthFriendly");
+		HostileEffect = HostileDummy.AddEffect(Source, "FatherSkyOrMotherEarthHostile");
+		$initiative = FriendlyEffect.Modifier_Initiative.AbsValue;
+		$cmovement_ally = FriendlyEffect.Modifier_Movement.AbsValue;
+		$hpdamage = HostileEffect.Damage.ScaleValue(EScaling.Damage);
+		$cmovement_enemy = HostileEffect.Modifier_Movement.AbsValue;
+		$duration = FriendlyEffect.MaxTurns;
+	}
+}
+
+ability "FatherSkyOrMotherEarthIncreasedCooldown"
+{
+	const AllowMove = false;
+	const AllowReta = false;
+	const AllowReturn = false;
+	const HitEvent =
+	{
+		local Effect: effect;
+		if (TargetUnit.ValidTarget && TargetUnit.IsCreature )
+		{
+			if (TargetUnit.Team == Source.Team)
+				Effect = TargetUnit.AddEffect(Source, "FatherSkyOrMotherEarthFriendly");
+			else
+				Effect = TargetUnit.AddEffect(Source, "FatherSkyOrMotherEarthHostile");
+		}
+	};
+	event OnActivate
+	{
+		AbilityBody;
+	}
+	event GetTooltip
+	{
+		local FriendlyEffect: effect"FatherSkyOrMotherEarthFriendly";
+		local HostileEffect: effect"FatherSkyOrMotherEarthHostile";
+		FriendlyEffect = FriendlyDummy.AddEffect(Source, "FatherSkyOrMotherEarthFriendly");
+		HostileEffect = HostileDummy.AddEffect(Source, "FatherSkyOrMotherEarthHostile");
+		$initiative = FriendlyEffect.Modifier_Initiative.AbsValue;
+		$cmovement_ally = FriendlyEffect.Modifier_Movement.AbsValue;
+		$hpdamage = HostileEffect.Damage.ScaleValue(EScaling.Damage);
+		$cmovement_enemy = HostileEffect.Modifier_Movement.AbsValue;
+		$duration = FriendlyEffect.MaxTurns;
+	}
+}
+
+ability "MassFatherSkyOrMotherEarth"
+{
+	const AllowMove = false;
+	const AllowReta = false;
+	const AllowReturn = false;
+	const HitEvent =
+	{
+		local TargetTeam: int;
+		TargetTeam = TargetUnit.Team;
+		for AllCreatures(It)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+			local Effect: effect;
+			if (CurrentTarget.ValidTarget && CurrentTarget.IsCreature && CurrentTarget.Team == TargetTeam)
+			{
+				if (CurrentTarget.Team == Source.Team)
+					Effect = CurrentTarget.AddEffect(Source, "MassFatherSkyOrMotherEarthFriendly");
+				else
+					Effect = CurrentTarget.AddEffect(Source, "MassFatherSkyOrMotherEarthHostile");
+			}
+		}
+	};
+	event OnActivate
+	{
+		AbilityBody;
+	}
+	event GetTooltip
+	{
+		local FriendlyEffect: effect"MassFatherSkyOrMotherEarthFriendly";
+		local HostileEffect: effect"MassFatherSkyOrMotherEarthHostile";
+		FriendlyEffect = FriendlyDummy.AddEffect(Source, "MassFatherSkyOrMotherEarthFriendly");
+		HostileEffect = HostileDummy.AddEffect(Source, "MassFatherSkyOrMotherEarthHostile");
+		$initiative = FriendlyEffect.Modifier_Initiative.AbsValue;
+		$cmovement_ally = FriendlyEffect.Modifier_Movement.AbsValue;
+		$hpdamage = HostileEffect.Damage.ScaleValue(EScaling.Damage);
+		$cmovement_enemy = HostileEffect.Modifier_Movement.AbsValue;
+		$duration = FriendlyEffect.MaxTurns;
+	}
+}
+
+effect "FatherSkyOrMotherEarthFriendly"
+{
+	const MovementModifier = 2;
+	const InitiativeModifier = 5;
+
+	var Modifier_Movement: modifier"ModifyStat";
+	var Modifier_Initiative: modifier"ModifyStat";
+
+	event OnCreate
+	{
+		Modifier_Movement.Init(EStat.Movement, MovementModifier, 0);
+		Modifier_Initiative.Init(EStat.Initiative, InitiativeModifier, 0);
+	}
+	event GetTooltip
+	{
+		$initiative = Modifier_Initiative.AbsValue;
+		$cmovement_ally = Modifier_Movement.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "FatherSkyOrMotherEarthHostile"
+{
+	var DamageValue: combatdamage;
+
+	const Damage = 20;
+	const MovementModifier = -2;
+
+	var Modifier_Movement: modifier"ModifyStat";
+
+	event OnCreate
+	{
+		Modifier_Movement.Init(EStat.Movement, MovementModifier, 0);
+		DamageValue.Set(Damage, Source: Source, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		SetDOTDamage(DamageValue);
+	}
+
+	event OnPreAction
+	{
+		if (Simulation || Action.Command.Ability == ability("DefendAction").Ability || Action.Command.Ability == ability("WaitAction").Ability)
+			return;
+
+		Owner.DamageUnit(DamageValue);
+	}
+	event GetTooltip
+	{
+		$hpdamage = DamageValue;
+		$cmovement_enemy = Modifier_Movement.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "MassFatherSkyOrMotherEarthFriendly"
+{
+	const MovementModifier = 1;
+	const InitiativeModifier = 1;
+
+	var Modifier_Movement: modifier"ModifyStat";
+	var Modifier_Initiative: modifier"ModifyStat";
+
+	event OnCreate
+	{
+		Modifier_Movement.Init(EStat.Movement, MovementModifier, 0);
+		Modifier_Initiative.Init(EStat.Initiative, InitiativeModifier, 0);
+	}
+	event GetTooltip
+	{
+		$initiative = Modifier_Initiative.AbsValue;
+		$cmovement_ally = Modifier_Movement.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "MassFatherSkyOrMotherEarthHostile"
+{
+	var DamageValue: combatdamage;
+
+	const Damage = 10;
+	const MovementModifier = -1;
+
+	var Modifier_Movement: modifier"ModifyStat";
+
+	event OnCreate
+	{
+		Modifier_Movement.Init(EStat.Movement, MovementModifier, 0);
+		DamageValue.Set(Damage, Source: Source, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		SetDOTDamage(DamageValue);
+	}
+
+	event OnPreAction
+	{
+		if (Simulation || Action.Command.Ability == ability("DefendAction").Ability || Action.Command.Ability == ability("WaitAction").Ability)
+			return;
+
+		Owner.DamageUnit(DamageValue);
+	}
+	event GetTooltip
+	{
+		$hpdamage = DamageValue;
+		$cmovement_enemy = Modifier_Movement.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+ability "PowerOfTheHorde"
+{
+	const Percentage = 100.0;
+
+	var DamageValue: combatdamage;
+
+	const CalcDamage =
+	{
+		DamageValue.Set(
+			Source.ScaleValueByLevel(Source.MinRangedDamage),
+			Source.ScaleValueByLevel(Source.MaxRangedDamage),
+			Add: GetCurrentArmyPower(Source.Team) * Percentage * 0.01,
+			Scaling: EScaling.Stats,
+			Flags: EDamageFlags.PlayHit
+		);
+	};
+
+	event OnActivate
+	{
+
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;		
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		if (Execute)
+		{
+			Source.PlayEffect(info.HeroEffect);
+			Source.PlayAnim("Victory");
+//			CombatWait(3.5);
+		}
+
+		CalcDamage;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		TargetUnit.PlayEffect(ability("HeroMightAttack").VisualFX);
+		CombatWait(ability("HeroMightAttack").Delay);
+		
+		TargetUnit.DamageUnit(DamageValue);
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "AllAroundSlash"
+{
+	var DamageValue: combatdamage;
+
+	event OnActivate
+	{
+		local FindInvisible : int = 0 ;
+		
+		// Fix collison with Ice Wall - By VIRTUOS GAMES
+		if (!TargetUnit.IsCreature)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		
+		StartAbility;
+		
+		if(Execute)
+		{
+			if(Source.InvisibleUnitOnPath(Path))
+			{
+				TargetUnit = FindTheClosestInvisibleUnitInPath(Path,Source);
+				FindInvisible = 1;
+			}
+		}
+		
+		TargetUnit.SetPrimaryTarget;
+
+		if (Path.IsEmpty)
+			Path.Set(Source.Cell);
+		
+		Source.Move(0, Path, TargetUnit, Speed, "", "ChargeLoop", "ChargeEnd", "");
+	//Source.WaitForMove;
+		
+		if(FindInvisible == 0)
+		{
+			DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		}
+		
+		if( Execute )
+		{
+			MoveTargetCell = Source.Cell;
+		}
+		
+		if(FindInvisible == 0 )
+		{
+			for UnitsInSquare(It, MoveTargetCell.X - 1, MoveTargetCell.Y - 1, Source.Size + 2, Source.Size + 2)
+			{
+				if (It.Unit.IsCreature && It.Unit.ValidTarget && It.Unit.Team != Source.Team)
+					It.Unit.DamageUnit(DamageValue);
+			}
+		}
+		
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+ability "FeralCharge"
+{
+	var DamageValue: combatdamage;
+
+	event OnActivate
+	{		
+		local FindInvisible : int = 0 ;
+		
+		// Fix collison with Ice Wall - By VIRTUOS GAMES
+		if (!TargetUnit.IsCreature)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		
+		StartAbility;
+
+		if(Execute)
+		{
+			if(Source.InvisibleUnitOnPath(Path))
+			{
+				TargetUnit = FindTheClosestInvisibleUnitInPath(Path,Source);
+				FindInvisible = 1;
+			}
+		}
+
+		TargetUnit.SetPrimaryTarget;
+
+		if (Path.IsEmpty)
+			Path.Set(Source.Cell);
+
+		Source.Move(0, Path, TargetUnit, Speed, "", "ChargeLoop", "ChargeEnd", "");
+		//Source.WaitForMove;
+
+		if(FindInvisible == 0)
+		{
+			DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+			TargetUnit.DamageUnit(DamageValue);
+		}
+		
+		FinishAction;
+
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+effect "BerserkerRage"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "BlurofFeatherstooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "Manoeuvre tooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "MobileShooter"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "Sundertooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "Assault"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "BloodAnger"
+{
+	event GetTooltip
+	{
+		local Effect: effect"BloodAngerEffect";
+		Effect = HostileDummy.AddEffect(Owner, "BloodAngerEffect");
+		$creaturename = Owner.GetName;
+		$mindamage = Effect.MinDamageModifier.AbsValue;
+		$number = Effect.MaxStacks;
+	}
+}
+
+effect "BloodAngerEffect"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$mindamage = MinDamageModifier.AbsValue;
+	}
+}
+
+effect "BurningRage"
+{
+	event GetTooltip
+	{
+		local Effect: effect"BurningRageFireEffect";
+		Effect = HostileDummy.AddEffect(Owner, "BurningRageFireEffect", 0);
+		$creaturename = Owner.GetName;
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All);
+		$hpdamage = DamageValue;
+		$percent = Effect.Percentage;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "BurningRageDotHelper"
+{
+	event OnDamage_TargetTaken
+	{
+		if (Damage.Ability == ability("CyclopsAttack").Ability)
+		{
+			Damage.Target.AddEffect(Damage.Attacker, "BurningRageFireEffect", round(Damage.Amount));
+		}
+	}
+}
+
+effect "BurningRageFireEffect"
+{
+	var DamageOverTime: int;
+	var CurrentDamage: combatdamage;
+	
+	event OnCreate(Damage: int)
+	{
+		DamageOverTime = Damage * 0.01 * Percentage;
+		
+		CurrentDamage.Set(DamageOverTime, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Fire, Flags: EDamageFlags.PlayHit);
+		SetDOTDamage(CurrentDamage);		
+	}
+	
+	event OnCompare
+	{
+		if ( DamageOverTime < Other.DamageOverTime )
+			Result = -1;
+		else
+			Result = 1;
+	}
+
+	event OnTick
+	{
+		Owner.DamageUnit(CurrentDamage);
+	}
+	
+	event GetTooltip
+	{
+		$hpdamage = CurrentDamage;
+		$duration = MaxTurns;
+	}
+}
+
+effect "Flybytacticstooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "ShieldedStronghold"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damageresistance = ReduceDamageMight.AbsValue;
+	}
+}
+
+effect "WarFury"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "VigilantScout"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName();
+	}
+}
+
+effect "Opportunism"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName();
+		$damagebonus = Damagebonus_Param;
+	}
+}
+
+ability "Rage1"
+{
+	var Effect: effect"Rage1";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Rage1");
+		$initiative = Effect.Initiative.AbsValue;
+	}
+}
+effect "Rage1"
+{
+	event GetTooltip
+	{
+		$initiative = Initiative.AbsValue;
+	}
+}
+
+effect "Rage2"
+{
+	event GetTooltip
+	{
+		$initiative = InitiativeModifier.AbsValue;
+		$mightpower = MightAttackModifier.AbsValue;
+	}
+}
+
+ability "Rage2"
+{
+	var Effect: effect"Rage2";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Rage2");
+		$initiative = Effect.InitiativeModifier.AbsValue;
+		$mightpower = Effect.MightAttackModifier.AbsValue;
+	}
+}
+
+effect "Rage3"
+{
+	event GetTooltip
+	{
+		$initiative = Initiative.AbsValue;
+		$mightpower = MightAttack.AbsValue;
+		$number = Retaliation.Charges;
+	}
+}
+
+ability "Rage3"
+{
+	var Effect: effect"Rage3";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Rage3");
+		$initiative = Effect.Initiative.AbsValue;
+		$mightpower = Effect.MightAttack.AbsValue;
+		$number = Effect.Retaliation.Charges;
+	}
+}
+
+ability "Rage4"
+{
+	var Effect: effect"Rage4";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Rage4");
+		$initiative = Effect.Initiative.AbsValue;
+		$mightpower = Effect.MightAttack.AbsValue;
+		$number = Effect.Retaliation.Charges;
+	}
+}
+
+effect "Rage4"
+{
+	event OnPreAction
+	{
+		Action.SetRetaliationAllowed(false);
+	}
+
+	event GetTooltip
+	{
+		$initiative = Initiative.AbsValue;
+		$mightpower = MightAttack.AbsValue;
+		$number = Retaliation.Charges;
+	}
+}
+
+ability "VigilantScoutAttack"
+{
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget || !Source.CanAct)
+			return;
+
+		local Effect: effect;
+		Effect = Source.FindEffect("VigilantScout");
+		if (Effect.Valid)
+			Effect.Remove;
+		CallCommand(Source, TargetUnit.Cell, Source.Cell, Source.DefaultAttack, ECommandType.RangedAttack);
+	}
+}
+
+ability "HarpyAttack"
+{
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "HarpyUpgradeAttack"
+{
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}

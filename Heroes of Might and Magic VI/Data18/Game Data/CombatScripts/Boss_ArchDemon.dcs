@@ -1,0 +1,271 @@
+// coder : mitko
+
+// Melee Attack
+ability "ArchDemon_Melee"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, School: EAbilitySchool.Might); };
+
+	event OnActivate
+	{
+		const MinDamage = 100;
+		const MaxDamage = 100;
+
+		local Effect: effect;
+		local EffectTarget: unit;
+
+		// Move if needed
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+			AddLuck(Source);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Check for first retaliation etc.
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+
+		Source.WaitForHit;
+
+		// Drain Luck
+		if ( TargetUnit.Valid && TargetUnit.FindEffectByName("ArchDemon_DrainLuckTarget") == 0 )
+		{
+			Effect = TargetUnit.AddEffect(Source, "ArchDemon_DrainLuckTarget");
+			if (Effect.Valid)
+				Effect = Source.AddEffect(TargetUnit, "ArchDemon_DrainLuckSource");
+		}
+
+		// Damage target
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		// Allow retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+// Ill Blood
+ability "ArchDemon_IllBlood"
+{
+	var FrenzyEffect: effect"FrenzyEffect";
+
+	event OnActivate
+	{
+		local Effect: effect;
+
+		if (!TargetUnit.Valid)
+			return;
+			
+		if (!TargetUnit.IsUnitInMeleeRange(true,true,true))
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Put frenzy effect on target
+		TargetUnit.PlayOnHit;
+
+		FrenzyEffect = TargetUnit.AddEffect(Source, "FrenzyEffect");
+		Effect = TargetUnit.AddEffect(Source, "ArchDemon_IllBloodEffect");
+		
+		if (!FrenzyEffect.Valid && !Effect.Valid)
+		{
+			SetInvalidTarget;
+			FinishAction
+			return;
+		}
+		
+		// Change team to the controller, attack, then change team back to the original
+		local OriginalTeam: int;
+		OriginalTeam = TargetUnit.Team;
+		TargetUnit.SetTeam(Source.Team);
+		TargetUnit.Frenzy(Source.Team, true, true);
+
+		if (TargetUnit.Valid)
+		{
+			TargetUnit.SetTeam(OriginalTeam);
+			Effect = TargetUnit.AddEffect(Source, "LossOfActionEffect");
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		FrenzyEffect = HostileDummy.AddEffect(Source, "FrenzyEffect");
+		$damagebonus = FrenzyEffect.MightBonus.AbsValue;
+	}
+}
+
+effect "ArchDemon_IllBloodEffect"
+{
+	var OriginalTeam: int;
+
+	event OnPreAction
+	{
+		OriginalTeam = Owner.Team;
+		Owner.SetTeam(Source.Team);
+	}
+
+	event OnPostAction
+	{
+		Owner.SetTeam(OriginalTeam);
+		Remove();
+	}
+}
+
+effect "ArchDemon_DrainLuckSource"
+{
+	const LuckIncrease = 10;
+
+	var Modifier: modifier"ModifyStat";
+	var Times: int;
+
+	event OnCreate
+	{
+		Times = 1;
+		Modifier.Init(EStat.Luck, LuckIncrease, 0);
+	}
+
+	event OnRefresh
+	{
+		Times = Times + 1;
+		Modifier.Modify(LuckIncrease * Times, 1);
+	}
+}
+
+effect "ArchDemon_DrainLuckTarget"
+{
+	var Modifier: modifier"ModifyStat";
+	var SourceEffectType: effect"ArchDemon_DrainLuckSource";
+
+	event OnCreate
+	{
+		local LuckIncrease: int;
+
+		LuckIncrease = SourceEffectType.LuckIncrease;
+		Modifier.Init(EStat.Luck, -LuckIncrease, 0);
+	}
+}
+
+effect "ArchDemon_DrainLuck"
+{
+	var Effect: effect"ArchDemon_DrainLuckSource";
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		Effect = HostileDummy.AddEffect(Owner, "ArchDemon_DrainLuckSource");
+		$luck = Effect.Modifier.AbsValue;
+	}
+}
+
+ability "ArchDemon_MarkOfConsumption"
+{
+	var Effect: effect"ArchDemon_MarkOfConsumptionEffect";
+
+	event GetTooltip
+	{
+		Effect = HostileDummy.AddEffect(Source, "ArchDemon_MarkOfConsumptionEffect");
+		$damagebonus = Effect.FireBonus.AbsValue;
+	}
+}
+
+ability "DemonLord_MarkOfConsumption"
+{
+	var Effect: effect"DemonLord_MarkOfConsumptionEffect";
+
+	event GetTooltip
+	{
+		Effect = HostileDummy.AddEffect(Source, "DemonLord_MarkOfConsumptionEffect");
+		$damagebonus = Effect.FireBonus.AbsValue;
+	}
+}
+
+effect "ArchDemon_MarkOfConsumptionEffect"
+{
+	event OnCompare
+	{
+		Result = -1;
+	}
+
+	event GetTooltip
+	{
+		$damagebonus = FireBonus.AbsValue;
+	}
+}
+
+ability "ArchDemon_Melee_Arhi"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, School: EAbilitySchool.Might); };
+
+	event OnActivate
+	{
+		const MinDamage = 100;
+		const MaxDamage = 100;
+
+		local Effect: effect;
+		local EffectTarget: unit;
+
+		// Move if needed
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+			AddLuck(Source);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Check for first retaliation etc.
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+
+		Source.WaitForHit;
+
+		// Drain Luck
+		if ( TargetUnit.Valid && TargetUnit.FindEffectByName("ArchDemon_DrainLuckTarget") == 0 )
+		{
+			Effect = TargetUnit.AddEffect(Source, "ArchDemon_DrainLuckTarget");
+			if (Effect.Valid)
+				Effect = Source.AddEffect(TargetUnit, "ArchDemon_DrainLuckSource");
+		}
+
+		// Damage target
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		// Allow retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}

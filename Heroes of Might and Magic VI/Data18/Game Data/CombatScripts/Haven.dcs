@@ -1,0 +1,1536 @@
+/********************************************************
+ * Dynasty Combat Script: Haven Abilities               *
+ ********************************************************/
+
+ability "DivingAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, Mul: 1 + GriffinMasterBonus * 0.01); };
+
+	const MinDamage = 100;
+	const MaxDamage = 100;
+
+	var GriffinMasterBonus: int = 1;
+
+	event OnActivate
+	{
+		StartAbility;
+
+		if (Simulation)
+		{
+			//Virtuos: Fix bug that frozen griffin should not be able to use this ability.
+			if(Source.FindEffectByName("Frozen") != 0)
+			{
+				SetInvalidTarget;
+				return;
+			}
+		
+			CalcDamage;
+			TargetUnit.DamageUnit(DamageValue);
+			return;
+		}
+
+		local SavedCell: cell;
+		local NewCell: cell;
+		SavedCell = Source.Cell;
+
+		if (HasUI)
+		{
+			Source.PlayAnim("FlyOut");
+			Source.WaitForAnim;
+		}
+
+		Source.RemoveFromMap;
+		Source.SetTeamFacing;
+		DelayAction;
+		Source.WaitForNextTurn;
+
+		if (TargetUnit.ValidTarget)
+		{
+			if(!TargetUnit.IsInvisible)
+			{
+				// Start attack anim
+				if (HasUI)
+				{
+					Source.SetEntityPosFromUnit(TargetUnit);
+					Source.PlayAttack("DivingAttack", EAttackAnim.DontBlend | EAttackAnim.DontRotate, TargetUnit);
+					Source.Show;
+					Source.WaitForHit;
+				}
+
+				AddLuck(Source);
+
+				CalcDamage;
+
+		//			TargetUnit.PlayEffect(info.vsHit);
+				TargetUnit.PlayOnHitAnim;
+				TargetUnit.DamageUnit(DamageValue);
+
+				// Wait for anim
+				if (HasUI)
+				{
+					Source.WaitForAnim;
+					Source.Hide;
+				}
+			}
+		}
+
+		// Try to find landing spot
+		do
+		{
+			NewCell = Source.FindSpawnSpot(SavedCell);
+			if (NewCell.Valid)
+				break;
+			Source.WaitForNextTurn;
+		};
+
+		Source.Appear(NewCell, "FlyIn");
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "RushDive"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage); };
+
+	const RushSpeed = 100;
+	const MinDamage = 100;
+	const MaxDamage = 100;
+	const TotalMinDamage = MinDamage;
+	const TotalMaxDamage = MaxDamage;
+
+	event OnActivate
+	{
+		StartAbility;
+
+		if (Simulation)
+		{
+			//Virtuos: Fix bug that frozen griffin should not be able to use this ability.
+			if(Source.FindEffectByName("Frozen") != 0)
+			{
+				SetInvalidTarget;
+				return;
+			}
+			
+			SetValidTarget;
+			return;
+		}
+
+		local SavedCell: cell;
+		local NewCell: cell;
+		SavedCell = Source.Cell;
+
+		if (HasUI)
+		{
+			Source.PlayAnim("FlyOut");
+			Source.WaitForAnim;
+		}
+
+		Source.RemoveFromMap;
+		Source.SetTeamFacing;
+		DelayAction;
+		Source.WaitForNextTurn;
+
+		block
+		{
+			// Start rush anim
+			if (HasUI)
+			{
+				local StartCell: cell;
+				local EndCell: cell;
+
+				if (Source.OwnerIndex != ETeam.Right)
+					GetMapBorderForRow(TargetCell.Y, 2, StartCell, EndCell);
+				else
+					GetMapBorderForRow(TargetCell.Y, 2, EndCell, StartCell);
+				if (!StartCell.Valid)
+					break;
+				Source.PlayMove(EMoveType.Flight, RushSpeed, StartCell, EndCell, "RushDiveStart", "RushDiveLoop", "RushDiveEnd");
+				Source.Show;
+			}
+
+			AddLuck(Source);
+
+			CalcDamage;
+
+			// Damage units
+			for UnitsInRow(It, Source, TargetCell.Y, 2)
+			{
+				if (!It.Unit.Alive || It.Unit.Team == Source.Team)
+					continue;
+
+				Source.WaitForHorizontalHit(It.Pos);
+				It.Unit.PlayEffect(info.vsHit);
+				It.Unit.PlayOnHitAnim;
+				It.Unit.DamageUnit(DamageValue);
+			}
+
+			// Wait for rush anim
+			if (HasUI)
+			{
+				Source.WaitForAnim;
+				Source.Hide;
+			}
+		}
+
+		// Try to find landing spot
+		do
+		{
+			NewCell = Source.FindSpawnSpot(SavedCell);
+			if (NewCell.Valid)
+				break;
+			Source.WaitForNextTurn;
+		};
+
+		Source.Appear(NewCell, "FlyIn");
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "CrossbowmanAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+	var Master: int = 0;
+
+	event OnActivate
+	{
+		// Only if no enemy is on an adjacent cell
+		for UnitsInSquare(CurrentCell, Source.Cell, 3, 3)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = CurrentCell.Unit;
+
+			if ( !CurrentTarget.Alive || CurrentTarget == Source )
+				continue;
+
+			if (CurrentTarget.Team != Source.Team)
+				return;
+		}
+	
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		AddLuck(Source);
+
+		// Start animation
+		Source.StartLineAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.SkipHitEvents;
+
+		CalcDamage;
+
+		// Damage units
+		for UnitsInLine(It, Source, TargetCell)
+		{
+			if (!It.Unit.Alive)
+				continue;
+
+			if ( It.Unit.Team == Source.Team )
+			{
+				if ( Master > 0 )
+					continue; // mastery(starting skill) miatt nem sebez sajátot
+				if ( Source.IsInMeeleRange(It.Unit) )
+					continue; // melee rangeban lévö sajátot nem sebez
+			}
+
+			It.WaitForHit();
+			It.Unit.DamageUnit(DamageValue);
+		}
+
+		// Wait for source to finish the animation
+//		Source.WaitForAnim;
+		// Check retaliation
+		//TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+		$creaturename = Source.GetName;
+	}
+}
+
+ability "SunRiderAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate
+	{
+		local NumHits: int;
+		local HitIndex: int;
+
+		if (Execute)
+		{
+			// Move if needed
+			local StartCell: cell;
+			StartCell = Source.Cell;
+			Source.Move(0, Path, TargetUnit);
+			if (Source.Cell != StartCell)
+				DisableRetaliation;
+			AddLuck(Source);
+		}
+
+		if ( Simulation && Source.TravelDistanceSimulated > 0 )
+			DisableRetaliation;
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, NumHits);
+
+		CalcDamage;
+
+		// Process hit events
+		for (HitIndex = 0; HitIndex < NumHits; HitIndex++)
+		{
+			Source.WaitForHit;
+			TargetUnit.DamageUnit(DamageValue);
+		}
+
+		// Wait for source to finish the animation
+//		Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "CleansingLightEffect"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+ability "CleansingLight"
+{
+	var Effect: effect"CleansingLightEffect";
+
+	event OnActivate
+	{
+		StartAbility;
+
+		Effect = Source.AddEffect(Source, "CleansingLightEffect");
+		
+		MultiAction;
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+effect "SearingLightSelfEffect"
+{
+	const SelfDamage = 1;
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+ability "SearingLight"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	const EffectDamage = 1;
+
+	var TargetEffect: effect"SearingLightEffect";
+
+	event OnActivate
+	{
+		local Effect: effect"SearingLightSelfEffect";
+		local CleansingLightEffect: effect"CleansingLightEffect";
+		local NumHits: int;
+		local HitIndex: int;
+
+		local StartCell: cell;
+		local SelfDamage: int;
+		local SelfKill: int;
+		local Log: localizedstring;
+		local NeedMovement: int = false;
+		StartCell = Source.Cell;
+		
+		CleansingLightEffect = Source.FindEffect("CleansingLightEffect");
+
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+
+			NeedMovement = Source.Cell != StartCell;
+			if (NeedMovement)
+			{
+				local n: int;
+				n = 0;
+
+				if( CleansingLightEffect.Valid )
+				{
+					for UnitsInSquare(It, Source.Cell, 3, 3)
+					{
+						local CurrentTarget: unit;
+						CurrentTarget = It.Unit;
+
+						if ( !CurrentTarget.Alive || CurrentTarget == Source )
+							continue;
+
+						if (CurrentTarget.Team == Source.Team)
+							n = n + CurrentTarget.Dispel(-1, false, true, 1, 0);
+						else
+							n = n + CurrentTarget.Dispel(-1, true, false, 1, 0);
+					}
+
+					Source.LightElementalSelfDamage(Effect.SelfDamage * n, SelfDamage, SelfKill);
+					if (HasUI && SelfDamage > 0)
+					{
+						if (SelfKill > 0)
+							Log.Init("CombatLog.Updated.PurifyingLightAbilityDamageAndDies");	
+						else
+							Log.Init("CombatLog.Updated.PurifyingLightAbilityDamage");
+						Log.Add(Source);
+						Log.Add(SelfDamage);
+						if (SelfKill > 0)
+							Log.Add(SelfKill);
+						Log.Log;
+					}
+				}
+			}
+
+			AddLuck(Source);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, NumHits);
+
+		CalcDamage;
+
+		local HasValidTarget: int = false;
+
+		// Process hit events
+		for (HitIndex = 0; HitIndex < NumHits; HitIndex++)
+		{
+			Source.WaitForHit;
+
+			if (Execute)
+				TargetUnit.DamageUnit(DamageValue);
+			if (TargetUnit.Alive)
+			{
+				TargetEffect = TargetUnit.AddEffect(Source, "SearingLightEffect");
+				if (TargetEffect.Valid)
+					HasValidTarget = true;
+				if (Execute && TargetEffect.Valid)
+				{
+					Source.LightElementalSelfDamage(EffectDamage, SelfDamage, SelfKill);
+					if (HasUI && SelfDamage > 0)
+					{
+						if (SelfKill > 0)
+							Log.Init("CombatLog.Updated.SearingLightAbilityDamageAndDies");
+						else
+							Log.Init("CombatLog.Updated.SearingLightAbilityDamage");
+						Log.Add(Source);
+						Log.Add(SelfDamage);
+						if (SelfKill > 0)
+							Log.Add(SelfKill);
+						Log.Log;
+					}
+				}
+			}
+			if (Simulation && TargetEffect.Valid)
+				TargetUnit.DamageUnit(DamageValue);
+		}
+
+		ClearValidTarget;
+		if (HasValidTarget)
+			SetValidTarget;
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		Path.Reverse;
+		Source.Move(0, Path, null);
+
+		if (NeedMovement)
+		{
+			n = 0;
+
+			if ( CleansingLightEffect.Valid )
+			{
+				for UnitsInSquare(It, Source.Cell, 3, 3)
+				{
+					CurrentTarget = It.Unit;
+
+					if ( !CurrentTarget.Alive || CurrentTarget == Source )
+						continue;
+
+					if (CurrentTarget.Team == Source.Team)
+						n = n + CurrentTarget.Dispel(-1, false, true, 1, 0);
+					else
+						n = n + CurrentTarget.Dispel(-1, true, false, 1, 0);
+				}
+
+				Source.LightElementalSelfDamage(Effect.SelfDamage * n, SelfDamage, SelfKill);
+				if (HasUI && SelfDamage > 0)
+				{
+					if (SelfKill > 0)
+						Log.Init("CombatLog.Updated.PurifyingLightAbilityDamageAndDies");	
+					else
+						Log.Init("CombatLog.Updated.PurifyingLightAbilityDamage");
+					Log.Add(Source);
+					Log.Add(SelfDamage);
+					if (SelfKill > 0)
+						Log.Add(SelfKill);
+					Log.Log;
+				}
+			}
+		}
+			// Check retaliation
+//		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		TargetEffect = HostileDummy.AddEffect(Source, "SearingLightEffect");
+		CalcDamage;
+		$hpdamage = DamageValue;
+		$duration = TargetEffect.MaxTurns;
+		$percent = EffectDamage;
+	}
+}
+
+effect "SearingLightEffect"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+ability "LightElementalAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate
+	{
+		local Effect: effect"SearingLightSelfEffect";
+		local CleansingLightEffect: effect"CleansingLightEffect";
+		local NumHits: int;
+		local HitIndex: int;
+		local CurrentDispelNum: int;
+
+		local StartCell: cell;
+		local SelfDamage: int;
+		local SelfKill: int;
+		local Log: localizedstring;
+		local NeedMovement: int = false;
+		StartCell = Source.Cell;
+		
+		CleansingLightEffect = Source.FindEffect("CleansingLightEffect");
+
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+
+			NeedMovement = Source.Cell != StartCell;
+			if (NeedMovement)
+			{
+				local n: int;
+				n = 0;
+
+				if ( CleansingLightEffect.Valid )
+				{
+					for UnitsInSquare(It, Source.Cell, 3, 3)
+					{
+						local CurrentTarget: unit;
+						CurrentTarget = It.Unit;
+
+						if ( !CurrentTarget.Alive || CurrentTarget == Source )
+							continue;
+
+						if (CurrentTarget.Team == Source.Team)
+						{
+							CurrentDispelNum = CurrentTarget.Dispel(-1, false, true, 1, 0);
+							n = n + CurrentDispelNum;
+							if (CurrentDispelNum > 0)
+								CurrentTarget.PlayEffect(info.vsHitFriendly);
+						}
+						else
+						{
+							CurrentDispelNum = CurrentTarget.Dispel(-1, true, false, 1, 0);
+							n = n + CurrentDispelNum;
+							if (CurrentDispelNum > 0)
+								CurrentTarget.PlayEffect(info.vsHitHostile);
+						}
+					}
+
+					Source.LightElementalSelfDamage(Effect.SelfDamage * n, SelfDamage, SelfKill);
+					if (HasUI && SelfDamage > 0)
+					{
+						if (SelfKill > 0)
+							Log.Init("CombatLog.Updated.PurifyingLightAbilityDamageAndDies");	
+						else
+							Log.Init("CombatLog.Updated.PurifyingLightAbilityDamage");
+						Log.Add(Source);
+						Log.Add(SelfDamage);
+						if (SelfKill > 0)
+							Log.Add(SelfKill);
+						Log.Log;
+					}
+				}
+			}
+
+			AddLuck(Source);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, NumHits);
+
+		CalcDamage;
+
+		// Process hit events
+		for (HitIndex = 0; HitIndex < NumHits; HitIndex++)
+		{
+			Source.WaitForHit;
+			TargetUnit.DamageUnit(DamageValue);
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		Path.Reverse;
+		Source.Move(0, Path, null);
+
+		if (NeedMovement)
+		{
+			n = 0;
+
+			if ( CleansingLightEffect.Valid )
+			{
+				for UnitsInSquare(It, Source.Cell, 3, 3)
+				{
+					CurrentTarget = It.Unit;
+
+					if ( !CurrentTarget.Alive || CurrentTarget == Source )
+						continue;
+
+					if (CurrentTarget.Team == Source.Team)
+					{
+						CurrentDispelNum = CurrentTarget.Dispel(-1, false, true, 1, 0);
+						n = n + CurrentDispelNum;
+						if (CurrentDispelNum > 0)
+							CurrentTarget.PlayEffect(info.vsHitFriendly);
+					}
+					else
+					{
+						CurrentDispelNum = CurrentTarget.Dispel(-1, true, false, 1, 0);
+						n = n + CurrentDispelNum;
+						if (CurrentDispelNum > 0)
+							CurrentTarget.PlayEffect(info.vsHitHostile);
+					}
+				}
+
+				Source.LightElementalSelfDamage(Effect.SelfDamage * n, SelfDamage, SelfKill);
+				if (HasUI && SelfDamage > 0)
+				{
+					if (SelfKill > 0)
+						Log.Init("CombatLog.Updated.PurifyingLightAbilityDamageAndDies");	
+					else
+						Log.Init("CombatLog.Updated.PurifyingLightAbilityDamage");
+					Log.Add(Source);
+					Log.Add(SelfDamage);
+					if (SelfKill > 0)
+						Log.Add(SelfKill);
+					Log.Log;
+				}
+			}
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "LightElementalAttackObstacle"
+{
+	event OnActivate
+	{
+		local Effect: effect"SearingLightSelfEffect";
+		local CleansingLightEffect: effect"CleansingLightEffect";
+		local NumHits: int;
+		local HitIndex: int;
+		local CurrentDispelNum: int;
+
+		local StartCell: cell;
+		local SelfDamage: int;
+		local SelfKill: int;
+		local Log: localizedstring;
+		local NeedMovement: int = false;
+		StartCell = Source.Cell;
+		
+		CleansingLightEffect = Source.FindEffect("CleansingLightEffect");
+
+		if (Execute)
+		{
+			// Move if needed
+			Source.Move(0, Path, TargetUnit);
+
+			NeedMovement = Source.Cell != StartCell;
+			if (NeedMovement)
+			{
+				local n: int;
+				n = 0;
+
+				if ( CleansingLightEffect.Valid )
+				{
+					for UnitsInSquare(It, Source.Cell, 3, 3)
+					{
+						local CurrentTarget: unit;
+						CurrentTarget = It.Unit;
+
+						if ( !CurrentTarget.Alive || CurrentTarget == Source )
+							continue;
+
+						if (CurrentTarget.Team == Source.Team)
+						{
+							CurrentDispelNum = CurrentTarget.Dispel(-1, false, true, 1, 0);
+							n = n + CurrentDispelNum;
+							if (CurrentDispelNum > 0)
+								CurrentTarget.PlayEffect(ability("LightElementalAttack").vsHitFriendly);
+						}
+						else
+						{
+							CurrentDispelNum = CurrentTarget.Dispel(-1, true, false, 1, 0);
+							n = n + CurrentDispelNum;
+							if (CurrentDispelNum > 0)
+								CurrentTarget.PlayEffect(ability("LightElementalAttack").vsHitHostile);
+						}
+					}
+
+					Source.LightElementalSelfDamage(Effect.SelfDamage * n, SelfDamage, SelfKill);
+					if (HasUI && SelfDamage > 0)
+					{
+						if (SelfKill > 0)
+							Log.Init("CombatLog.Updated.PurifyingLightAbilityDamageAndDies");	
+						else
+							Log.Init("CombatLog.Updated.PurifyingLightAbilityDamage");
+						Log.Add(Source);
+						Log.Add(SelfDamage);
+						if (SelfKill > 0)
+							Log.Add(SelfKill);
+						Log.Log;
+					}
+				}
+			}
+
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, NumHits);
+
+		// Process hit events
+		for (HitIndex = 0; HitIndex < NumHits; HitIndex++)
+		{
+			Source.WaitForHit;
+			ExecuteTrigger;
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		Path.Reverse;
+		Source.Move(0, Path, null);
+
+		if (NeedMovement)
+		{
+			n = 0;
+
+			if ( CleansingLightEffect.Valid )
+			{
+				for UnitsInSquare(It, Source.Cell, 3, 3)
+				{
+					CurrentTarget = It.Unit;
+
+					if ( !CurrentTarget.Alive || CurrentTarget == Source )
+						continue;
+
+					if (CurrentTarget.Team == Source.Team)
+					{
+						CurrentDispelNum = CurrentTarget.Dispel(-1, false, true, 1, 0);
+						n = n + CurrentDispelNum;
+						if (CurrentDispelNum > 0)
+							CurrentTarget.PlayEffect(ability("LightElementalAttack").vsHitFriendly);
+					}
+					else
+					{
+						CurrentDispelNum = CurrentTarget.Dispel(-1, true, false, 1, 0);
+						n = n + CurrentDispelNum;
+						if (CurrentDispelNum > 0)
+							CurrentTarget.PlayEffect(ability("LightElementalAttack").vsHitHostile);
+					}
+				}
+
+				Source.LightElementalSelfDamage(Effect.SelfDamage * n, SelfDamage, SelfKill);
+				if (HasUI && SelfDamage > 0)
+				{
+					if (SelfKill > 0)
+						Log.Init("CombatLog.Updated.PurifyingLightAbilityDamageAndDies");	
+					else
+						Log.Init("CombatLog.Updated.PurifyingLightAbilityDamage");
+					Log.Add(Source);
+					Log.Add(SelfDamage);
+					if (SelfKill > 0)
+						Log.Add(SelfKill);
+					Log.Log;
+				}
+			}
+		}
+
+		FinishAction;
+	}
+}
+
+ability "LightElementalMove"
+{
+	event OnActivate
+	{
+		local Effect: effect"SearingLightSelfEffect";
+		local CleansingLightEffect: effect"CleansingLightEffect";
+		local CurrentDispelNum: int;
+		local SelfDamage: int;
+		local SelfKill: int;
+		local Log: localizedstring;
+
+		local n: int;
+		n = 0;
+		
+		CleansingLightEffect = Source.FindEffect("CleansingLightEffect");
+
+		if (Simulation)
+			return;
+
+		Source.Move(0, Path, null);
+		
+		if (TargetCell.IsGarrison)
+			Source.EnterGarrison;
+
+		if ( CleansingLightEffect.Valid )
+		{
+			for UnitsInSquare(It, Source.Cell, 3, 3)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+
+				if ( !CurrentTarget.Alive || CurrentTarget == Source )
+					continue;
+
+				if (CurrentTarget.Team == Source.Team)
+				{
+					CurrentDispelNum = CurrentTarget.Dispel(-1, false, true, 1, 0);
+					n = n + CurrentDispelNum;
+					if (CurrentDispelNum > 0)
+						CurrentTarget.PlayEffect(info.vsHitFriendly);
+				}
+				else
+				{
+					CurrentDispelNum = CurrentTarget.Dispel(-1, true, false, 1, 0);
+					n = n + CurrentDispelNum; 
+					if (CurrentDispelNum > 0)
+						CurrentTarget.PlayEffect(info.vsHitHostile);
+				}
+
+			}
+
+			Source.LightElementalSelfDamage(Effect.SelfDamage * n, SelfDamage, SelfKill);
+			if (HasUI && SelfDamage > 0)
+			{
+				if (SelfKill > 0)
+					Log.Init("CombatLog.Updated.PurifyingLightAbilityDamageAndDies");	
+				else
+					Log.Init("CombatLog.Updated.PurifyingLightAbilityDamage");
+				Log.Add(Source);
+				Log.Add(SelfDamage);
+				if (SelfKill > 0)
+					Log.Add(SelfKill);
+				Log.Log;
+			}
+		}
+
+		FinishAction;
+	}
+}
+
+effect "Martyr"
+{
+	event GetTooltip
+	{
+		local MartyrEffect: effect"MartyrEffect";
+		MartyrEffect = FriendlyDummy.AddEffect(Source, "MartyrEffect");
+		$mightresistancehealth = MartyrEffect.Health.AbsValue;
+		$duration = MartyrEffect.MaxTurns;
+	}
+}
+
+ability "MartyrAbility"
+{
+	var MartyrEffect: effect"MartyrEffect";
+
+	event OnActivate
+	{
+		local AllUnits: unitarray;
+		local iUnit: int;
+		local WeakestUnit: unit;
+		local WeakestRate: float;
+		local CurrentUnit: unit;
+		local CurrentRate: float;
+
+		WeakestRate = 1.0;
+		WeakestUnit = null;
+		GetCreatureUnits(AllUnits);
+		for (iUnit = 0; iUnit < AllUnits.Num; iUnit++)
+		{
+			CurrentUnit = AllUnits.Get(iUnit);
+			if (CurrentUnit.Team != Source.Team)
+				continue;
+			TargetUnit = CurrentUnit;
+			TargetCell = TargetUnit.Cell;
+			CurrentRate = CurrentUnit.Num / CurrentUnit.MaxUnits;
+			if (CurrentRate < WeakestRate )
+			{
+				WeakestUnit = CurrentUnit;
+				WeakestRate = CurrentRate;
+			}
+		}
+		if (WeakestUnit != null)
+		{
+			TargetUnit = WeakestUnit;
+			TargetCell = TargetUnit.Cell;
+		}
+		
+		StartAbility;
+		
+		if (WeakestUnit != null)
+		{
+			MartyrEffect = TargetUnit.AddEffect(Source, "MartyrEffect");
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		MartyrEffect = FriendlyDummy.AddEffect(Source, "MartyrEffect");
+		$mightresistancehealth = MartyrEffect.Health.AbsValue;
+		$duration = MartyrEffect.MaxTurns;
+	}
+}
+
+effect "MartyrEffect"
+{
+	event GetTooltip
+	{
+		$mightresistancehealth = Health.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+ability "Heal"
+{
+	var DamageValue: combatdamage;
+	var HealValue: combatdamage;
+
+	const MinHeal = 10;
+	const MaxHeal = 10;
+	const MinDamage = 10;
+	const MaxDamage = 10;
+	const StartDelay = 2;
+
+	event OnActivate
+	{
+		StartAbility;
+
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		if (Source.Team == TargetUnit.Team)
+		{
+			// Allied
+			if (TargetUnit.IsLiving && !TargetUnit.IsDemon && !TargetUnit.IsFactionByIndex(8))	// Index 8 stands for Dungeon creatures
+			{
+				// Heal
+				TargetUnit.PlayEffect(info.VisualEffect);
+				CombatWait(StartDelay);
+				HealValue.SetHeal(MinHeal, MaxHeal);
+				TargetUnit.HealUnit(HealValue);
+			}
+		}
+		else
+		{
+			// Hostile
+			if (TargetUnit.IsUndead || TargetUnit.IsDemon || TargetUnit.IsOrc || TargetUnit.IsFactionByIndex(8))	// Index 8 stands for Dungeon creatures
+			{
+				TargetUnit.PlayEffect(info.VisualEffect);
+				CombatWait(StartDelay);
+				TargetUnit.PlayOnHit;
+				DamageValue.Set(MinDamage, MaxDamage);
+				TargetUnit.DamageUnit(DamageValue);
+			}
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		HealValue.SetHeal(MinHeal, MaxHeal);
+		HealValue.Target = FriendlyDummy;	// Added by VIRTUOS GAMES
+		$hpheal = HealValue;
+	}
+}
+
+ability "Heal_upgrade"
+{
+	var DamageValue: combatdamage;
+	var HealValue: combatdamage;
+
+	const MinHeal = 10;
+	const MaxHeal = 10;
+	const MinDamage = 10;
+	const MaxDamage = 10;
+	const StartDelay = 2;
+
+	event OnActivate
+	{
+		StartAbility;
+
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		if (Source.Team == TargetUnit.Team)
+		{
+			// Allied
+			if (TargetUnit.IsLiving && !TargetUnit.IsDemon && !TargetUnit.IsFactionByIndex(8))	// Index 8 stands for Dungeon creatures
+			{
+				// Heal
+				TargetUnit.PlayEffect(info.VisualEffect);
+				CombatWait(StartDelay);
+				HealValue.SetHeal(MinHeal, MaxHeal);
+				TargetUnit.HealUnit(HealValue);
+			}
+		}
+		else
+		{
+			// Hostile
+			if (TargetUnit.IsUndead || TargetUnit.IsDemon || TargetUnit.IsOrc || TargetUnit.IsFactionByIndex(8))	// Index 8 stands for Dungeon creatures
+			{
+				TargetUnit.PlayEffect(info.VisualEffect);
+				CombatWait(StartDelay);
+				TargetUnit.PlayOnHit;
+				DamageValue.Set(MinDamage, MaxDamage);
+				TargetUnit.DamageUnit(DamageValue);
+			}
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		HealValue.SetHeal(MinHeal, MaxHeal);
+		HealValue.Target = FriendlyDummy;	// Added by VIRTUOS GAMES
+		$hpheal = HealValue;
+	}
+}
+
+ability "BladeOfEpiphany"
+{
+	var DamageValue: combatdamage;
+	var HealValue: combatdamage;
+
+	const MinHeal = 10;
+	const MaxHeal = 10;
+	const MinDamage = 10;
+	const MaxDamage = 10;
+	const StartDelay = 2;
+
+	var Effect: effect"BladeOfEpiphany";
+
+	event OnActivate
+	{
+		StartAbility;
+
+		if (!TargetUnit.Valid)
+			TargetUnit = TargetCell.GetCorpse;
+		if (!TargetUnit.Valid)
+		{
+			FinishAction;
+			return;
+		}
+
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		if (Source.Team == TargetUnit.Team)
+		{
+			// Allied
+			if (TargetUnit.IsLiving && !TargetUnit.IsDemon && !TargetUnit.IsFactionByIndex(8))	// Index 8 stands for Dungeon creatures
+			{
+				// Heal
+				TargetUnit.PlayEffect(info.VisualEffect);
+//				Wait(StartDelay);
+				HealValue.SetHeal(MinHeal, MaxHeal);
+				if (!TargetUnit.Alive)
+					Resurrect(Source, TargetUnit, HealValue.Amount);
+				else
+				{
+					TargetUnit.HealUnit(HealValue);
+				}
+				Effect = TargetUnit.AddEffect(Source, "BladeOfEpiphany");
+			}
+		}
+		else
+		{
+			// Hostile
+			if (TargetUnit.IsUndead || TargetUnit.IsDemon || TargetUnit.IsOrc || TargetUnit.IsFactionByIndex(8))	// Index 8 stands for Dungeon creatures
+			{
+//				TargetUnit.PlayEffect(info.VisualEffect);
+//				Wait(StartDelay);
+				TargetUnit.PlayOnHit;
+				DamageValue.Set(MinDamage, MaxDamage);
+				TargetUnit.DamageUnit(DamageValue);
+			}
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "BladeOfEpiphany");
+		$creaturename = Source.GetName;
+		HealValue.SetHeal(MinHeal, MaxHeal);
+		HealValue.Target = FriendlyDummy;	// Added by VIRTUOS GAMES
+		$hpheal = HealValue;
+		$morale = Effect.Morale.AbsValue;
+		$initiative = Effect.Initiative.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "BladeOfEpiphany"
+{
+	event GetTooltip
+	{
+		$morale = Morale.AbsValue;
+		$initiative = Initiative.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+ability "BladeOfMercy"
+{
+	var DamageValue: combatdamage;
+	var HealValue: combatdamage;
+
+	const MinHeal = 10;
+	const MaxHeal = 10;
+	const MinDamage = 10;
+	const MaxDamage = 10;
+	const StartDelay = 2;
+
+	event OnActivate
+	{
+		StartAbility;
+
+		if (!TargetUnit.Valid)
+			TargetUnit = TargetCell.GetCorpse;
+		if (!TargetUnit.Valid)
+		{
+			FinishAction;
+			return;
+		}
+
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		if (Source.Team == TargetUnit.Team)
+		{
+			// Allied
+			if (TargetUnit.IsLiving && !TargetUnit.IsDemon && !TargetUnit.IsFactionByIndex(8))	// Index 8 stands for Dungeon creatures
+			{
+				// Heal
+				TargetUnit.PlayEffect(info.VisualEffect);
+//				Wait(StartDelay);
+				HealValue.SetHeal(MinHeal, MaxHeal);
+				if (!TargetUnit.Alive)
+					Resurrect(Source, TargetUnit, HealValue.Amount);
+				else
+				{
+					TargetUnit.HealUnit(HealValue);
+				}
+			}
+		}
+		else
+		{
+			// Hostile
+			if (TargetUnit.IsUndead || TargetUnit.IsDemon || TargetUnit.IsOrc || TargetUnit.IsFactionByIndex(8))	// Index 8 stands for Dungeon creatures
+			{
+//				TargetUnit.PlayEffect(info.VisualEffect);
+//				Wait(StartDelay);
+				TargetUnit.PlayOnHit;
+				DamageValue.Set(MinDamage, MaxDamage);
+				TargetUnit.DamageUnit(DamageValue);
+			}
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		HealValue.SetHeal(MinHeal, MaxHeal);
+		HealValue.Target = FriendlyDummy;	// Added by VIRTUOS GAMES
+		$hpheal = HealValue;
+	}
+}
+
+ability "SunStallion"
+{
+	var Effect: effect"SunStallion";
+
+	event OnActivate
+	{
+		StartAbility;
+
+		Effect = Source.AddEffect(Source, "SunStallion");
+		Source.VisualMorph(519779, "SunStallion", info.Effect1, "SunStallion", info.Effect2);
+		MultiAction;
+	}
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "SunStallion");
+		$creaturename = Source.GetName;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "SunStallion"
+{
+	event OnRemoved
+	{
+		if (Execute)
+		{
+			Owner.StartAnim("SunRiderMorphBack", Owner);
+		}
+	}
+}
+
+anim "SunRiderMorphBack"
+{
+	event OnActivate(Source: unit)
+	{
+		Source.VisualMorph(516763, "SunStallion", ability("SunStallion").Effect3, "SunStallion", ability("SunStallion").Effect4);
+	}
+}
+
+effect "Charge"
+{
+	const Percent = 10;
+
+	event OnModifyDamageDone
+	{
+		local Movement: float;
+		if (Simulation)
+			Movement = Owner.TravelDistanceSimulated;
+		else
+			Movement = Owner.TravelDistance;
+
+		Damage.ApplyBonus( 1.0 + ((Percent * 0.01) * Movement) );
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$percent = Percent;
+	}
+}
+
+effect "SpeedofLighttooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "Pacification"
+{
+	event GetTooltip
+	{
+		local Effect: effect"PacificationEffect";
+		Effect = HostileDummy.AddEffect(Source, "PacificationEffect");
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "Shielding"
+{
+	event GetTooltip
+	{
+		local Effect: effect"ShieldingEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "ShieldingEffect");
+		$percent = Effect.DamageLink.Value;
+		$creaturename = Owner.GetName;
+		$damageresistance = Effect.DamageLink.ForwardedValue;
+	}
+}
+
+effect "Bashing"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "BladeOfJudgment"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damagebonus = DamageBonus;
+	}
+}
+
+effect "DeadlyShot"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "Purity"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "Shielded"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damageresistance = MightReduction.AbsValue;
+	}
+}
+
+effect "PurifyingLightooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "Blinding Charge"
+{
+	const Percent = 10;
+
+	event OnModifyDamageDone
+	{
+		local Movement: float;
+		if (Simulation)
+			Movement = Owner.TravelDistanceSimulated;
+		else
+			Movement = Owner.TravelDistance;
+
+		Damage.ApplyBonus( 1.0 + ((Percent * 0.01) * Movement) );
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+    $percent = Percent;
+	}
+}
+
+effect "Sanctuary1"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "Sanctuary2"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "Sanctuary3"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+ability "Sanctuary1"
+{
+	var Effect: effect"Sanctuary1";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Sanctuary1");
+		$duration = Effect.MaxTurns;
+	}
+}
+
+ability "Sanctuary2"
+{
+	var Effect: effect"Sanctuary2";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Sanctuary2");
+		$duration = Effect.MaxTurns;
+	}
+}
+
+ability "Sanctuary3"
+{
+	var Effect: effect"Sanctuary3";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Sanctuary3");
+		$duration = Effect.MaxTurns;
+	}
+}
+
+ability "Sanctuary4"
+{
+	var Effect: effect"Sanctuary4";
+
+	var DamageValue: combatdamage;
+	var HealValue: combatdamage;
+
+	const CalcHeal = { HealValue.SetHeal(NewHealth, Mul: 1.0); };
+
+	const AllowMove = false;
+	const AllowReta =  false;
+	const AllowReturn = false;
+
+	const Heal = 20;
+
+	const HitEvent =
+	{
+		ExecuteTrigger;
+
+		local NewHealth: int;
+		NewHealth = TargetUnit.GetMaxHealth * TargetUnit.MaxUnits * Heal * 0.01;
+		CalcHeal;
+		TargetUnit.HealUnit(HealValue);
+	};
+
+	event OnActivate
+	{
+		AbilityBody;
+	}
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Source, "Sanctuary4");
+		$percent = Heal;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "Sanctuary4"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "BestialInstinct"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "ArmorPiercing"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$percent = DefensePenetration.AbsValue;
+	}
+}

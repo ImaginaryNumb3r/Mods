@@ -1,0 +1,512 @@
+
+ability "AvatarOfVoid_VoidQuake"
+{
+	
+	event OnActivate
+	{
+		local aTargets: unitarray;
+		local DamageValue: combatdamage;
+
+
+		if (Simulation)
+			return;
+			
+		StartAbility;
+					
+		local DamageBonus: float;
+		local HealthPercentage: float;
+
+		DamageBonus = 0.0;
+		HealthPercentage = 100.0 * Source.GetTotalHealth / ( Source.GetMaxHealth * Source.Num );	
+		
+		if (HealthPercentage <= HpLimitLv2)
+			DamageBonus = Lv3;
+		else if (HealthPercentage <= HpLimitLv1)
+			DamageBonus = Lv2;
+			
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, School: EAbilitySchool.Might, Flags: EDamageFlags.PlayHitAnim);
+		DamageValue.ApplyBonus( DamageBonus );
+	
+		Source.PlayAnim("VoidQuakeAnim");
+		Source.WaitForAnim;
+		for UnitsInSquare(It, Source.Cell.X - 1, Source.Cell.Y - 1, Source.Size + 2, Source.Size + 2)
+		{
+			local CurrentUnit: unit;
+			CurrentUnit = It.Unit;
+			if( CurrentUnit != Source)
+			{
+				aTargets.Add(CurrentUnit);
+				
+				CurrentUnit.PlayOnHit;
+				CurrentUnit.DamageUnit(DamageValue);
+			}	
+		}
+		KnockbackSurroundingUnits(Source, 2, 1, 1, aTargets);
+		Source.WaitForAnim;
+		
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{			
+		$bossname = Source.GetName;
+		local hpPercent:float;
+		hpPercent  = 100.0 * Source.GetTotalHealth / ( Source.GetMaxHealth * Source.Num );	
+		if(hpPercent <= HpLimitLv2 )
+			$percentage = Lv3*100;
+		else if ( hpPercent <= HpLimitLv1 )
+			$percentage = Lv2*100;
+		else
+			$percentage = Lv1*100;
+	}
+}
+
+ability "AvatarOfVoid_CircleOfTheVoid"
+{
+	event GetTooltip
+	{
+		local FriendlyEffect: effect"CircleOfTheVoid_BossAuraEffect";
+		FriendlyEffect = FriendlyDummy.AddEffect(Source, "CircleOfTheVoid_BossAuraEffect");
+		
+		$bossname = Source.GetName;
+		$abilityname = ability("AvatarOfVoid_CircleOfTheVoid").DisplayName;	
+		$damagereduce = 100 - FriendlyEffect.DamageReduce;
+		$healpercentage = FriendlyEffect.HealPercentage;
+
+		local EnemyEffect: effect"CircleOfTheVoid_DOTEffect";
+		EnemyEffect = HostileDummy.AddEffect(Source, "CircleOfTheVoid_DOTEffect");
+		$inCircleDamageReduce = 100 - EnemyEffect.ReducePercentage;
+		$inCircleDamage = EnemyEffect.DamageValue.Amount;
+	}
+}
+
+effect "CircleOfTheVoid_BossAuraEffect"
+{
+	var HealValue: combatdamage;	
+	event OnInit
+	{
+		HealValue.SetHeal(Owner.GetMaxHealth * Owner.Num * HealPercentage * 0.01, Scaling: EScaling.None, School: EAbilitySchool.Light, Flags: EDamageFlags.Raw);
+	}
+	event OnTick
+	{
+		Owner.HealUnit(HealValue);
+		Owner.PlayEffect(info.HealVFX);
+	}
+	event OnTakeDamage
+	{
+		if (!Damage.IsDOT)
+		{
+			local Effect: effect; 
+			Effect = Damage.Attacker.FindEffect("CircleOfTheVoid_InAuraEffect");
+			if( !Effect.Valid ) 
+			{
+				Damage.ApplyBonus( (100 - DamageReduce) * 0.01);
+				if (!Simulation)
+					AvatarOfVoid_SetLastAttacker(Owner, Damage.Attacker, 0);
+			}
+			else
+			{	if (!Simulation)
+					AvatarOfVoid_SetLastAttacker(Owner, Damage.Attacker, 1);
+			}
+		}
+		else
+		{
+			if (!Simulation)
+				AvatarOfVoid_SetLastAttacker(Owner, null, 0);
+		}
+	}
+	
+	event GetTooltip
+	{
+		$bossname = Owner.GetName;
+		$abilityname = ability("AvatarOfVoid_CircleOfTheVoid").DisplayName;
+		$rangedDamageReduce = 100 - DamageReduce;
+		$healpercent = HealPercentage;
+	}
+}
+
+effect "CircleOfTheVoid_InAuraEffect"
+{
+	event OnInit
+	{
+		local Effect: effect"CircleOfTheVoid_DOTEffect";
+		Effect = Owner.AddEffect(Source, "CircleOfTheVoid_DOTEffect");
+	}
+	event OnRemoved
+	{
+		local Effect: effect"CircleOfTheVoid_DOTEffect";
+		Effect = Owner.FindEffect("CircleOfTheVoid_DOTEffect");
+		if( Effect.Valid ) 
+			Effect.Remove;
+	}
+}
+
+effect "CircleOfTheVoid_DOTEffect"
+{
+	event GetTooltip
+	{
+		$percentage = 100*(1- ReducePercentage);
+		$damage = DamageValue.Amount.Amount;
+	}
+}
+
+effect "AvatarOfVoid_VoidDeflection"
+{
+	event OnDamage_TargetTaken
+	{
+		local NumAdjacentUnits: int;
+		NumAdjacentUnits = 0;
+		for UnitsInSquare(It, Owner.Cell.X - 1, Owner.Cell.Y - 1, Owner.Size + 2, Owner.Size + 2)
+		{
+			local CurrentUnit: unit;
+			CurrentUnit = It.Unit;
+			if( CurrentUnit != Damage.Attacker && CurrentUnit.Team != Owner.Team && CurrentUnit.FindEffectByName("ImmunitytoMagic") == 0)
+				NumAdjacentUnits++;
+		}
+		
+		if (Simulation && NumAdjacentUnits > 1)
+			return;
+		
+		if (NumAdjacentUnits >= 1)
+		{
+			local RandomNum: int;
+			RandomNum = Random(NumAdjacentUnits);	
+			for UnitsInSquare(It, Owner.Cell.X - 1, Owner.Cell.Y - 1, Owner.Size + 2, Owner.Size + 2)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if( CurrentTarget != Damage.Attacker && CurrentTarget.Team != Owner.Team && CurrentTarget.FindEffectByName("ImmunitytoMagic") == 0)
+				{
+					if (RandomNum == 0)
+					{
+						local ReturnDamage: combatdamage;
+						ReturnDamage.Set(Damage.Amount * Percentage / 100.0, Source: Owner, Scaling: EScaling.None, School: EAbilitySchool.None, Flags: EDamageFlags.PlayHit);
+						ReturnDamage.Flags = Damage.Flags | EDamageFlags.PlayHit;
+						ReturnDamage.School = Damage.School;
+						CurrentTarget.DamageUnit(ReturnDamage);
+						return;
+					}
+					else
+					{
+						RandomNum--;
+					}
+				}
+			}			
+		}
+	}
+	event GetTooltip
+	{
+		$percentage = Percentage;
+		$bossname = Owner.GetName;
+	}
+}
+
+effect "AvatarOfVoid_ColossusDeterrenceEffect"
+{
+	var CurrentRound: int;
+	event OnInit
+	{
+		CurrentRound = 0;
+	}
+	event OnTick
+	{
+		CurrentRound++;
+	}
+	event OnModifyDamageDone
+	{
+		if( 0 != CurrentRound ) 
+		{
+			Damage.ApplyBonus( (100 - DamageReduce) * 0.01);
+		}
+	}
+	event GetTooltip
+	{
+		$initiative = Initiative.AbsValue;
+		$percentage = DamageReduce;
+	}
+}
+
+effect "AvatarOfVoid_ColossusDeterrence"
+{
+	event GetTooltip
+	{
+		$bossname = Owner.GetName;
+		
+		local Effect: effect"AvatarOfVoid_ColossusDeterrenceEffect";
+		Effect = HostileDummy.AddEffect(Source, "AvatarOfVoid_ColossusDeterrenceEffect");
+		$percent = Effect.DamageReduce;
+	}
+}
+
+ability "AvatarOfVoid_Melee"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+		
+	event OnActivate
+	{			
+		if (!TargetUnit.ValidTarget)
+			return;
+			
+		StartAbility;
+		
+		TargetUnit.SetMainTarget;
+		AddLuck(Source);
+		
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		
+		if (Execute)
+		{
+			local EffectFX: vfx;
+			EffectFX = VFX_Beam(info.BeamFX, Source, "center", TargetUnit, "center");
+		}
+		
+		//Source.WaitForHit;	
+		
+		local Targets: unitarray;
+			Targets.Add(TargetUnit);
+				
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+		TargetUnit.PlayEffect(info.UnitHitVFX);
+		Knockback(Source, Targets);
+		
+		
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "AvatarOfVoid_CurseOfOblivion"
+{
+	var isHit : int;
+    
+	event OnTick
+	{
+		isHit = false;
+	}
+    
+	event OnTakeDamage
+ 	{
+ 		if (Simulation)
+ 			return;
+ 
+ 		if (isHit)
+ 			return;
+ 			
+ 		isHit = true;
+  		Damage.Amount = 0;
+
+		if (!Damage.Attacker.IsHero() && !Damage.IsRanged() && !Damage.IsDOT() )
+		{
+			if (Damage.Attacker.LastCell.Valid && Damage.Attacker.Cell.Valid && Damage.Attacker.LastCell != Damage.Attacker.Cell)
+				AddCommand(Owner, Damage.Attacker.Cell, null, ability("AvatarOfVoid_CurseOfOblivionMove"), ECommandType.Cast);
+		}
+  	}
+ 	
+ 	event GetTooltip
+ 	{
+ 		$bossname = Owner.GetName;
+ 	}
+}
+
+ability "AvatarOfVoid_CurseOfOblivionMove"
+{
+	event OnActivate
+	{
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+				StartAbility;
+				
+				var fExtraSize: float;
+				fExtraSize = 0;
+				if(TargetUnit.Size == 2)
+					fExtraSize = 0.5;
+					
+        //vfx play on unit 
+        TargetUnit.PlayEffect( info.StartVFX );  
+        //TargetUnit.WaitForAnim;  
+        CombatWait(3.8); 
+        
+        TargetUnit.PlaceOnMap(TargetUnit.LastCell);
+        TargetUnit.PlayEffect( info.TargetVFX ); 
+   	    //PlayEffect(info.TargetVFX, TargetUnit.LastCell.CenterX  + fExtraSize , TargetUnit.LastCell.CenterY  + fExtraSize);
+   	    CombatWait(0.5);
+			  
+        FinishAction;
+	}
+  
+	event GetTooltip
+	{	
+		$bossname = Source.GetName;
+	}
+}
+
+ability "AvatarOfVoid_VoidRift"
+{
+	event OnActivate
+    {
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+        StartAbility;
+
+ 		CreateVoidRift(Source, TargetCell, ECombatMapLevel.Play,MaxTurns);
+		
+        FinishAction;
+    }
+    
+    
+   event GetTooltip
+   {
+   		$turns = MaxTurns;
+   		$hpdamage = 2000;
+   }
+}
+
+ability "AvatarOfVoid_VoidRiftAbility"
+{
+	event OnActivate
+    {
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+        StartAbility;
+        
+        local aTargets: unitarray;
+        local aTargetCells: cellarray;
+        
+      for UnitsInSquare(It, Source.Cell.X - 2, Source.Cell.Y - 2, 6, 5)
+		  {
+			  local CurrentUnit: unit;
+			  CurrentUnit = It.Unit;
+			  if( CurrentUnit.Team != Source.Team )
+        {
+   				aTargets.Add(CurrentUnit);
+        }
+		}
+		
+    CheckVoidRiftPull(Source, aTargets, aTargetCells);
+
+    for UnitsInSquare(It, Source.Cell.X - 1, Source.Cell.Y - 1, 4, 3)
+		{
+			local attachUnit: unit;
+			attachUnit = It.Unit;
+			
+			// Damage Units
+	      local DamageRift : combatdamage;
+	    	DamageRift.Set(DamageValue, -1, Scaling: EScaling.None, School: EAbilitySchool.Primordial);
+
+		    attachUnit.DamageUnit(DamageRift);
+		}
+	    
+        FinishAction;
+	}
+}
+
+ability "AvatarOfVoid_VoidGate"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+
+	event OnActivate
+	{
+	//	const Turns = 2;
+	//	const DamagePercent = 0.03;
+	
+		StartAbility;
+		
+		AddLuck(Source);
+		
+		if (!TargetUnit.Valid || !TargetUnit.Alive)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		
+		TargetUnit.SetMainTarget;
+		
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		CalcDamage;
+		TargetUnit.DamageUnit(DamageValue);
+		
+		if(!Simulation)
+		{
+			local Gate: int;
+			Gate = AvatarOfVoid_CreateVoidGate(TargetUnit,Turns,DamagePercent);
+		
+			if(Gate)
+				TargetUnit.AddEffect(Source, "AvatarOfVoid_VoidGateEffect");
+		}
+		
+		FinishAction;
+		
+	}
+	
+	event GetTooltip
+	{
+		$turns = Turns;
+		$percentage = DamagePercent * 100;
+	}
+}
+
+//effect "AvatarOfVoid_VoidGateEffect"
+//{
+//	var DamageValue: combatdamage;
+//	
+//	event OnTick
+//	{	
+//		//no action
+//		Owner.AddEffect(Owner,"LossOfActionEffect");
+//	
+//		//suffer damage
+//		//DamageValue.Set(DamageOverTime, Source: Source, Scaling: EScaling.None, School: EAbilitySchool.Primordial, Flags: EDamageFlags.PlayHit);
+//	}
+//	
+//	event OnRemoved
+//	{	
+//		local Effect:effect;
+//		Effect = Owner.FindEffect("LossOfActionEffect");
+//		
+//		if( Effect.Valid ) 
+//			Effect.Remove;
+//	}	
+//}
+
+
+effect "AvatarOfVoid_MeleeTooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$abilityname =  ability("AvatarOfVoid_Melee").DisplayName;
+	}
+}
+
+effect "AvatarOfVoid_RangedTooltip"
+{
+	event GetTooltip
+	{
+		$maxTurn = Turns;
+		$percentage = DamagePercent;
+	}
+}
+

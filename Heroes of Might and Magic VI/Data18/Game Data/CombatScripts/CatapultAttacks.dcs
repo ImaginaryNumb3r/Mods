@@ -1,0 +1,352 @@
+/********************************************************
+ * Dynasty Combat Script: Catapult Attack Abilities     *
+ ********************************************************/
+
+ability "HavenCatapultAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(AdditionalAreaDamage, Source: Source.HeroUnit, Scaling: EScaling.All, School: EAbilitySchool.Might); };
+
+	const MinDamage = 10;
+	const MaxDamage = 10;
+
+	var AdditionalDamage: int = 0;
+	var AdditionalAreaDamage: int = 0;
+	var AdditionalAreaSize: int = 0;
+
+	event OnActivate
+	{
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Damage
+		TargetUnit.ToughnessDamage(Source, EAttackRange.Full, MinDamage + AdditionalDamage, MaxDamage + AdditionalDamage, EAbilitySchool.Might);
+
+		// Rank 2 area damage
+		if (AdditionalAreaDamage > 0 && AdditionalAreaSize > 0)
+		{
+			CalcDamage;
+			for UnitsInSquare(It, TargetCell, AdditionalAreaSize, AdditionalAreaSize)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if (!CurrentTarget.Alive || CurrentTarget == TargetUnit)
+					continue;
+				CurrentTarget.DamageUnit(DamageValue);
+			}
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "InfernoCatapultAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(AdditionalAreaDamage, Source: Source.HeroUnit, Scaling: EScaling.All, School: EAbilitySchool.Might); };
+
+	const MinDamage = 10;
+	const MaxDamage = 10;
+
+	var AdditionalDamage: int = 0;
+	var AdditionalAreaDamage: int = 0;
+	var AdditionalAreaSize: int = 0;
+
+	event OnActivate
+	{
+		local EffectiveDamage: float;
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Damage
+		TargetUnit.ToughnessDamage(Source, EAttackRange.Full, MinDamage + AdditionalDamage, MaxDamage + AdditionalDamage, EAbilitySchool.Might);
+
+		// Rank 2 area damage
+		if (AdditionalAreaDamage > 0 && AdditionalAreaSize > 0)
+		{
+			CalcDamage;
+			for UnitsInSquare(It, TargetCell, AdditionalAreaSize, AdditionalAreaSize)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if (!CurrentTarget.Alive || CurrentTarget == TargetUnit)
+					continue;
+				CurrentTarget.DamageUnit(DamageValue);
+			}
+		}
+		
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "NecropolisCatapultAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(AdditionalAreaDamage, Source: Source.HeroUnit, Scaling: EScaling.All, School: EAbilitySchool.Might); };
+
+	const MinDamage = 10;
+	const MaxDamage = 10;
+	
+	var AdditionalDamage: int = 0;
+	var AdditionalAreaDamage: int = 0;
+	var AdditionalAreaSize: int = 0;
+
+	event OnActivate
+	{
+		local Effect: vfx;
+		local Distance: float;
+		local EffectiveDamage: float;
+		const DistToSec = 200 * 0.67 * 0.001;
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+		if (Execute)
+		{
+			Effect = VFX_Bullet(info.BulletFX, Source, "shotpos", Distance);
+			CombatWait(Distance * DistToSec);
+			Source.PlayTargetHitEffect(info.HitFX);
+		}
+
+		// Damage
+		TargetUnit.ToughnessDamage(Source, EAttackRange.Full, MinDamage + AdditionalDamage, MaxDamage + AdditionalDamage, EAbilitySchool.Might);
+
+		// Rank 2 area damage
+		if (AdditionalAreaDamage > 0 && AdditionalAreaSize > 0)
+		{
+			CalcDamage;
+			for UnitsInSquare(It, TargetCell, AdditionalAreaSize, AdditionalAreaSize)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if (!CurrentTarget.Alive || CurrentTarget == TargetUnit)
+					continue;
+				CurrentTarget.DamageUnit(DamageValue);
+			}
+		}
+		
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "SanctuaryCatapultAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(AdditionalAreaDamage, Source: Source.HeroUnit, Scaling: EScaling.All, School: EAbilitySchool.Might); };
+
+	const MinDamage = 10;
+	const MaxDamage = 10;
+
+	var AdditionalDamage: int = 0;
+	var AdditionalAreaDamage: int = 0;
+	var AdditionalAreaSize: int = 0;
+
+	event OnActivate
+	{
+		local EffectiveDamage: float;
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Damage
+		TargetUnit.ToughnessDamage(Source, EAttackRange.Full, MinDamage + AdditionalDamage, MaxDamage + AdditionalDamage, EAbilitySchool.Might);
+
+		// Rank 2 area damage
+		if (AdditionalAreaDamage > 0 && AdditionalAreaSize > 0)
+		{
+			CalcDamage;
+			for UnitsInSquare(It, TargetCell, AdditionalAreaSize, AdditionalAreaSize)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if (!CurrentTarget.Alive || CurrentTarget == TargetUnit)
+					continue;
+				CurrentTarget.DamageUnit(DamageValue);
+			}
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "StrongholdCatapultAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(AdditionalAreaDamage, Source: Source.HeroUnit, Scaling: EScaling.All, School: EAbilitySchool.Might); };
+
+	const MinDamage = 10;
+	const MaxDamage = 10;
+
+	var AdditionalDamage: int = 0;
+	var AdditionalAreaDamage: int = 0;
+	var AdditionalAreaSize: int = 0;
+
+	event OnActivate
+	{
+		local EffectiveDamage: float;
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Damage
+		TargetUnit.ToughnessDamage(Source, EAttackRange.Full, MinDamage + AdditionalDamage, MaxDamage + AdditionalDamage, EAbilitySchool.Might);
+
+		// Rank 2 area damage
+		if (AdditionalAreaDamage > 0 && AdditionalAreaSize > 0)
+		{
+			CalcDamage;
+			for UnitsInSquare(It, TargetCell, AdditionalAreaSize, AdditionalAreaSize)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if (!CurrentTarget.Alive || CurrentTarget == TargetUnit)
+					continue;
+				CurrentTarget.DamageUnit(DamageValue);
+			}
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+
+ability "DungeonCatapultAttack"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(AdditionalAreaDamage, Source: Source.HeroUnit, Scaling: EScaling.All, School: EAbilitySchool.Might); };
+
+	const MinDamage = 10;
+	const MaxDamage = 10;
+
+	var AdditionalDamage: int = 0;
+	var AdditionalAreaDamage: int = 0;
+	var AdditionalAreaSize: int = 0;
+	
+	var CatapultUnit: unitpointer;
+
+	event OnActivate
+	{
+		local EffectiveDamage: float;
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+		
+		//Get Catapult Unit of Dungeon Catapult
+		CatapultUnit = Source.GetCatapultUnit();
+		
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		if (CatapultUnit != null && CatapultUnit.Valid())
+			CatapultUnit.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		
+		Source.WaitForHit;
+
+		// Damage
+		TargetUnit.ToughnessDamage(Source, EAttackRange.Full, MinDamage + AdditionalDamage, MaxDamage + AdditionalDamage, EAbilitySchool.Might);
+
+		// Rank 2 area damage
+		if (AdditionalAreaDamage > 0 && AdditionalAreaSize > 0)
+		{
+			CalcDamage;
+			for UnitsInSquare(It, TargetCell, AdditionalAreaSize, AdditionalAreaSize)
+			{
+				local CurrentTarget: unit;
+				CurrentTarget = It.Unit;
+				if (!CurrentTarget.Alive || CurrentTarget == TargetUnit)
+					continue;
+				CurrentTarget.DamageUnit(DamageValue);
+			}
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+		if (CatapultUnit != null && CatapultUnit.Valid())
+			CatapultUnit.WaitForAnim;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}

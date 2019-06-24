@@ -1,0 +1,1070 @@
+/********************************************************
+ * Dynasty Combat Script: Stronghold Summon Spells      *
+ ********************************************************/
+
+
+/********************************************************
+ *                    Summon Fire Elemental             *
+ ********************************************************/
+
+ability "SummonFireElemental"
+{
+	const SummonNum = 1;
+	const EffectName = "SummonedFireElementalEffect";
+	const HitTime = 0;
+	
+	event OnActivate
+	{
+		local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+
+	  EntityType = 513463; // Neutral/Units/Fire Elemental
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		
+		// Check Block Ignore invisible Unit when simulation
+		if (!TargetCell.Valid || TargetCell.BlockedSquareInvisible(EntityTypeSize, ECombatMapLevel.Play,Source.Team)/*BlockedSquare(EntityTypeSize, ECombatMapLevel.Play)*/)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		// Added for Invisible Units
+		local InvisibleUnits : unitarray;
+		local InvisibleUnit : unit;
+		local i: int;
+		local n: int;
+		local WaitForEffectFinished : int;
+		WaitForEffectFinished = 0;
+		
+		for UnitsInSquare(It, TargetCell.X, TargetCell.Y, EntityTypeSize, EntityTypeSize)
+		{
+			if(It.Unit.IsInvisible && It.Unit.Team != Source.Team && It.Unit.Alive )
+				InvisibleUnits.AddOnce(It.Unit);
+		}
+		
+		
+		// Remove the Invisible effect in the Blocked InvisibleUnit
+		n = InvisibleUnits.Num;
+		if(InvisibleUnits.Num > 0)
+		{
+			WaitForEffectFinished = 1;
+			for (i = 0; i < n; i++)
+			{
+				InvisibleUnit = InvisibleUnits.Get(i);
+				InvisibleUnit.RemoveInvisibleEffect;
+			}
+			TargetCell = Source.FindClosestEmptyCellFromOrigin(TargetCell,EntityTypeSize);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Summon entities
+	  Owner = Source.OwnerIndex;
+	  ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1)
+	  if ( ScaledNumber < 1 )
+	    ScaledNumber = 1;
+	  SummonedUnit = SummonUnit(EntityType, ScaledNumber, Owner, TargetCell);
+    if ( SummonedUnit.Valid )
+    {
+      local SummonEffect: effect"SummonedFireElementalEffect";
+      SummonEffect = Source.FindEffect(EffectName);    
+      if (SummonEffect.Valid )
+      {
+        if ( SummonEffect.SummonedUnit.Valid )
+          SummonEffect.SummonedUnit.Kill(Source);
+      }
+      else
+      {
+        SummonEffect = Source.AddEffect(Source, EffectName);
+      }
+		if (SummonEffect.Valid)
+			SummonEffect.SummonedUnit = SummonedUnit;
+    }
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+		
+		
+
+		FinishAction;
+		// Added for Invisible units
+		if(SummonedUnit.Valid)
+		{
+			if ( n > 0)
+			{
+				CombatWait(8);
+				for(i = 0; i < n; i++)
+				{
+					InvisibleUnit = InvisibleUnits.Get(i);
+					if ( InvisibleUnit.Valid && InvisibleUnit.GetMeleeCell(SummonedUnit).Valid)
+					{
+						if ( InvisibleUnit.CanAct)
+						{
+							ForceAttackCommand(InvisibleUnit,InvisibleUnit.Cell, SummonedUnit.Cell);
+							//AddCommand(InvisibleUnit, InvisibleUnit.GetMeleeCell(SummonedUnit), InvisibleUnit.Cell, InvisibleUnit.DefaultAttack, ECommandType.MeleeAttack);
+							CombatWait(6);
+						}
+					}
+				}
+			}
+		}
+		
+		if(SummonedUnit.Valid)
+		{
+			if(WaitForEffectFinished == 0)
+				CombatWait(8);
+			for UnitsInSquare(Attacker, SummonedUnit.Cell.X - 1, SummonedUnit.Cell.Y - 1, SummonedUnit.Size + 2, SummonedUnit.Size + 2)
+			{
+				if( Attacker.Unit.Team != SummonedUnit.Team && SummonedUnit.Alive && Attacker.Unit.IsInvisible)
+				{
+					Attacker.Unit.RemoveInvisibleEffect;
+					if (Attacker.Unit.CanAct)
+					{
+						ForceAttackCommand(Attacker.Unit, Attacker.Unit.Cell, SummonedUnit.Cell);
+						CombatWait(6);
+					}
+				}
+			}
+		}
+	}
+	
+	event GetTooltip
+	{
+		local ScaledNumber: int;
+		ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1)
+		  if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		$number = ScaledNumber;
+	}
+}
+
+effect "SummonedFireElementalEffect"
+{
+  var SummonedUnit: unit;
+  var Dummy: modifier"Dummy";
+}
+
+
+/********************************************************
+ *                    Summon Air Elemental              *
+ ********************************************************/
+
+ability "SummonAirElemental"
+{
+	//Fixed Confilct with InvisibleUnit 
+	const SummonNum = 1;
+	const EffectName = "SummonedAirElementalEffect";
+	const HitTime = 0;
+	
+	event OnActivate
+	{
+		local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+
+	  EntityType = 517039; // Neutral/Units/Air Elemental
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		
+		// Check Block Ignore invisible Unit when simulation
+		if (!TargetCell.Valid || TargetCell.BlockedSquareInvisible(EntityTypeSize, ECombatMapLevel.Play,Source.Team)/*BlockedSquare(EntityTypeSize, ECombatMapLevel.Play)*/)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		// Added for Invisible Units
+		local InvisibleUnits : unitarray;
+		local InvisibleUnit : unit;
+		local i: int;
+		local n: int;
+		local WaitForEffectFinished : int;
+		WaitForEffectFinished = 0;
+		
+		for UnitsInSquare(It, TargetCell.X, TargetCell.Y, EntityTypeSize, EntityTypeSize)
+		{
+			if(It.Unit.IsInvisible && It.Unit.Team != Source.Team && It.Unit.Alive )
+				InvisibleUnits.AddOnce(It.Unit);
+		}
+		
+		
+		// Remove the Invisible effect in the Blocked InvisibleUnit
+		n = InvisibleUnits.Num;
+		if(InvisibleUnits.Num > 0)
+		{
+			WaitForEffectFinished = 1;
+			for (i = 0; i < n; i++)
+			{
+				InvisibleUnit = InvisibleUnits.Get(i);
+				InvisibleUnit.RemoveInvisibleEffect;
+			}
+			TargetCell = Source.FindClosestEmptyCellFromOrigin(TargetCell,EntityTypeSize);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Summon entities
+	  Owner = Source.OwnerIndex;
+	  ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1);
+	  if ( ScaledNumber < 1 )
+	    ScaledNumber = 1;
+	  SummonedUnit = SummonUnit(EntityType, ScaledNumber, Owner, TargetCell);
+    if ( SummonedUnit.Valid )
+    {
+      local SummonEffect: effect"SummonedAirElementalEffect";
+      SummonEffect = Source.FindEffect(EffectName);    
+      if (SummonEffect.Valid )
+      {
+        if ( SummonEffect.SummonedUnit.Valid )
+          SummonEffect.SummonedUnit.Kill(Source);
+      }
+      else
+      {
+        SummonEffect = Source.AddEffect(Source, EffectName);
+      }
+			if (SummonEffect.Valid)
+	      SummonEffect.SummonedUnit = SummonedUnit;
+    }
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+		
+		// Added for Invisible units
+		if(SummonedUnit.Valid)
+		{
+			if ( n > 0)
+			{
+				CombatWait(8);
+				for(i = 0; i < n; i++)
+				{
+					InvisibleUnit = InvisibleUnits.Get(i);
+					if ( InvisibleUnit.Valid && InvisibleUnit.GetMeleeCell(SummonedUnit).Valid)
+					{
+						if ( InvisibleUnit.CanAct)
+						{
+							ForceAttackCommand(InvisibleUnit,InvisibleUnit.Cell, SummonedUnit.Cell);
+							//AddCommand(InvisibleUnit, InvisibleUnit.GetMeleeCell(SummonedUnit), InvisibleUnit.Cell, InvisibleUnit.DefaultAttack, ECommandType.MeleeAttack);
+							CombatWait(6);
+						}
+					}
+				}
+			}
+		}
+		
+		if(SummonedUnit.Valid)
+		{
+			if(WaitForEffectFinished == 0)
+				CombatWait(8);
+			for UnitsInSquare(Attacker, SummonedUnit.Cell.X - 1, SummonedUnit.Cell.Y - 1, SummonedUnit.Size + 2, SummonedUnit.Size + 2)
+			{
+				if( Attacker.Unit.Team != SummonedUnit.Team && SummonedUnit.Alive && Attacker.Unit.IsInvisible)
+				{
+					Attacker.Unit.RemoveInvisibleEffect;
+					if (Attacker.Unit.CanAct)
+					{
+						ForceAttackCommand(Attacker.Unit, Attacker.Unit.Cell, SummonedUnit.Cell);
+						CombatWait(6);
+					}
+				}
+			}
+		}
+	}
+
+	event GetTooltip
+	{
+		local ScaledNumber: int;
+		ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1)
+		  if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		$number = ScaledNumber;
+	}
+}
+
+effect "SummonedAirElementalEffect"
+{
+  var SummonedUnit: unit;
+  var Dummy: modifier"Dummy";
+}
+
+/********************************************************
+ *                  Summon Darkness Elemental           *
+ ********************************************************/
+
+ability "SummonDarknessElemental"
+{
+	// Fixed conflict with invisible units
+	const SummonNum = 1;
+	const EffectName = "SummonedDarknessElementalEffect";
+	const HitTime = 0;
+	
+	event OnActivate
+	{
+		local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+
+	  EntityType = 516686; // Neutral/Units/Shadow Elemental
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		// Check Block Ignore invisible Unit when simulation
+		if (!TargetCell.Valid || TargetCell.BlockedSquareInvisible(EntityTypeSize, ECombatMapLevel.Play,Source.Team)/*BlockedSquare(EntityTypeSize, ECombatMapLevel.Play)*/)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		// Added for Invisible Units
+		local InvisibleUnits : unitarray;
+		local InvisibleUnit : unit;
+		local i: int;
+		local n: int;
+		local WaitForEffectFinished : int;
+		WaitForEffectFinished = 0;
+		
+		for UnitsInSquare(It, TargetCell.X, TargetCell.Y, EntityTypeSize, EntityTypeSize)
+		{
+			if(It.Unit.IsInvisible && It.Unit.Team != Source.Team && It.Unit.Alive )
+				InvisibleUnits.AddOnce(It.Unit);
+		}
+		
+		
+		// Remove the Invisible effect in the Blocked InvisibleUnit
+		n = InvisibleUnits.Num;
+		if(InvisibleUnits.Num > 0)
+		{
+			WaitForEffectFinished = 1;
+			for (i = 0; i < n; i++)
+			{
+				InvisibleUnit = InvisibleUnits.Get(i);
+				InvisibleUnit.RemoveInvisibleEffect;
+			}
+			TargetCell = Source.FindClosestEmptyCellFromOrigin(TargetCell,EntityTypeSize);
+		}
+		
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Summon entities
+	  Owner = Source.OwnerIndex;
+	  ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1);
+	  if ( ScaledNumber < 1 )
+	    ScaledNumber = 1;
+	  SummonedUnit = SummonUnit(EntityType, ScaledNumber, Owner, TargetCell);
+    if ( SummonedUnit.Valid )
+    {
+      local SummonEffect: effect"SummonedDarknessElementalEffect";
+      SummonEffect = Source.FindEffect(EffectName);    
+      if (SummonEffect.Valid )
+      {
+        if ( SummonEffect.SummonedUnit.Valid )
+          SummonEffect.SummonedUnit.Kill(Source);
+      }
+      else
+      {
+        SummonEffect = Source.AddEffect(Source, EffectName);
+      }
+			if (SummonEffect.Valid)
+	      SummonEffect.SummonedUnit = SummonedUnit;
+    }
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+		
+		// Added for Invisible units
+		if(SummonedUnit.Valid)
+		{
+			if ( n > 0)
+			{
+				CombatWait(8);
+				for(i = 0; i < n; i++)
+				{
+					InvisibleUnit = InvisibleUnits.Get(i);
+					if ( InvisibleUnit.Valid && InvisibleUnit.GetMeleeCell(SummonedUnit).Valid)
+					{
+						if ( InvisibleUnit.CanAct)
+						{
+							ForceAttackCommand(InvisibleUnit,InvisibleUnit.Cell, SummonedUnit.Cell);
+							//AddCommand(InvisibleUnit, InvisibleUnit.GetMeleeCell(SummonedUnit), InvisibleUnit.Cell, InvisibleUnit.DefaultAttack, ECommandType.MeleeAttack);
+							CombatWait(6);
+						}
+					}
+				}
+			}
+		}
+		
+		if(SummonedUnit.Valid)
+		{
+			if(WaitForEffectFinished == 0)
+				CombatWait(8);
+			for UnitsInSquare(Attacker, SummonedUnit.Cell.X - 1, SummonedUnit.Cell.Y - 1, SummonedUnit.Size + 2, SummonedUnit.Size + 2)
+			{
+				if( Attacker.Unit.Team != SummonedUnit.Team && SummonedUnit.Alive && Attacker.Unit.IsInvisible)
+				{
+					Attacker.Unit.RemoveInvisibleEffect;
+					if (Attacker.Unit.CanAct)
+					{
+						ForceAttackCommand(Attacker.Unit, Attacker.Unit.Cell, SummonedUnit.Cell);
+						CombatWait(6);
+					}
+				}
+			}
+		}
+	}
+	
+	event GetTooltip
+	{
+		local ScaledNumber: int;
+		ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1)
+		  if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		$number = ScaledNumber;
+	}
+}
+
+effect "SummonedDarknessElementalEffect"
+{
+  var SummonedUnit: unit;
+  var Dummy: modifier"Dummy";
+}
+
+/********************************************************
+ *                   Summon Earth Elemental             *
+ ********************************************************/
+
+ability "SummonEarthElemental"
+{
+	// Fixed conflict with invisible units
+	const SummonNum = 1;
+	const EffectName = "SummonedEarthElementalEffect";
+	const HitTime = 0;
+	
+	event OnActivate
+	{
+		local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+
+	  EntityType = 517010; // Neutral/Units/Earth Elemental
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		// Check Block Ignore invisible Unit when simulation
+		if (!TargetCell.Valid || TargetCell.BlockedSquareInvisible(EntityTypeSize, ECombatMapLevel.Play,Source.Team)/*BlockedSquare(EntityTypeSize, ECombatMapLevel.Play)*/)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		// Added for Invisible Units
+		local InvisibleUnits : unitarray;
+		local InvisibleUnit : unit;
+		local i: int;
+		local n: int;
+		local WaitForEffectFinished : int;
+		WaitForEffectFinished = 0;
+		
+		for UnitsInSquare(It, TargetCell.X, TargetCell.Y, EntityTypeSize, EntityTypeSize)
+		{
+			if(It.Unit.IsInvisible && It.Unit.Team != Source.Team && It.Unit.Alive )
+				InvisibleUnits.AddOnce(It.Unit);
+		}
+		
+		
+		// Remove the Invisible effect in the Blocked InvisibleUnit
+		n = InvisibleUnits.Num;
+		if(InvisibleUnits.Num > 0)
+		{
+			WaitForEffectFinished = 1;
+			for (i = 0; i < n; i++)
+			{
+				InvisibleUnit = InvisibleUnits.Get(i);
+				InvisibleUnit.RemoveInvisibleEffect;
+			}
+			TargetCell = Source.FindClosestEmptyCellFromOrigin(TargetCell,EntityTypeSize);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Summon entities
+	  Owner = Source.OwnerIndex;
+	  ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1);
+	  if ( ScaledNumber < 1 )
+	    ScaledNumber = 1;
+	  SummonedUnit = SummonUnit(EntityType, ScaledNumber, Owner, TargetCell);
+    if ( SummonedUnit.Valid )
+    {
+      local SummonEffect: effect"SummonedEarthElementalEffect";
+      SummonEffect = Source.FindEffect(EffectName);    
+      if (SummonEffect.Valid )
+      {
+        if ( SummonEffect.SummonedUnit.Valid )
+          SummonEffect.SummonedUnit.Kill(Source);
+      }
+      else
+      {
+        SummonEffect = Source.AddEffect(Source, EffectName);
+      }
+			if (SummonEffect.Valid)
+				SummonEffect.SummonedUnit = SummonedUnit;
+    }
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+		
+		// Added for Invisible units
+		if(SummonedUnit.Valid)
+		{
+			if ( n > 0)
+			{
+				CombatWait(8);
+				for(i = 0; i < n; i++)
+				{
+					InvisibleUnit = InvisibleUnits.Get(i);
+					if ( InvisibleUnit.Valid && InvisibleUnit.GetMeleeCell(SummonedUnit).Valid)
+					{
+						if ( InvisibleUnit.CanAct)
+						{
+							ForceAttackCommand(InvisibleUnit,InvisibleUnit.Cell, SummonedUnit.Cell);
+							//AddCommand(InvisibleUnit, InvisibleUnit.GetMeleeCell(SummonedUnit), InvisibleUnit.Cell, InvisibleUnit.DefaultAttack, ECommandType.MeleeAttack);
+							CombatWait(6);
+						}
+					}
+				}
+			}
+		}
+		
+		if(SummonedUnit.Valid)
+		{
+			if(WaitForEffectFinished == 0)
+				CombatWait(8);
+			for UnitsInSquare(Attacker, SummonedUnit.Cell.X - 1, SummonedUnit.Cell.Y - 1, SummonedUnit.Size + 2, SummonedUnit.Size + 2)
+			{
+				if( Attacker.Unit.Team != SummonedUnit.Team && SummonedUnit.Alive && Attacker.Unit.IsInvisible)
+				{
+					Attacker.Unit.RemoveInvisibleEffect;
+					if (Attacker.Unit.CanAct)
+					{
+						ForceAttackCommand(Attacker.Unit, Attacker.Unit.Cell, SummonedUnit.Cell);
+						CombatWait(6);
+					}
+				}
+			}
+		}
+	}
+
+	event GetTooltip
+	{
+		local ScaledNumber: int;
+		ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1)
+		  if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		$number = ScaledNumber;
+	}
+}
+
+effect "SummonedEarthElementalEffect"
+{
+  var SummonedUnit: unit;
+  var Dummy: modifier"Dummy";
+}
+
+/********************************************************
+ *                   Summon Light Elemental             *
+ ********************************************************/
+
+ability "SummonLightElemental"
+{
+	const SummonNum = 1;
+	const EffectName = "SummonedLightElementalEffect";
+	const HitTime = 0;
+	
+	event OnActivate
+	{
+		local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+
+	  EntityType = 517054; // Neutral/Units/Light Elemental
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		// Check Block Ignore invisible Unit when simulation
+		if (!TargetCell.Valid || TargetCell.BlockedSquareInvisible(EntityTypeSize, ECombatMapLevel.Play,Source.Team)/*BlockedSquare(EntityTypeSize, ECombatMapLevel.Play)*/)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		// Added for Invisible Units
+		local InvisibleUnits : unitarray;
+		local InvisibleUnit : unit;
+		local i: int;
+		local n: int;
+		local WaitForEffectFinished : int;
+		WaitForEffectFinished = 0;
+		
+		for UnitsInSquare(It, TargetCell.X, TargetCell.Y, EntityTypeSize, EntityTypeSize)
+		{
+			if(It.Unit.IsInvisible && It.Unit.Team != Source.Team && It.Unit.Alive )
+				InvisibleUnits.AddOnce(It.Unit);
+		}
+		
+		
+		// Remove the Invisible effect in the Blocked InvisibleUnit
+		n = InvisibleUnits.Num;
+		if(InvisibleUnits.Num > 0)
+		{
+			WaitForEffectFinished = 1;
+			for (i = 0; i < n; i++)
+			{
+				InvisibleUnit = InvisibleUnits.Get(i);
+				InvisibleUnit.RemoveInvisibleEffect;
+			}
+			TargetCell = Source.FindClosestEmptyCellFromOrigin(TargetCell,EntityTypeSize);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Summon entities
+	  Owner = Source.OwnerIndex;
+	  ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1);
+	  if ( ScaledNumber < 1 )
+	    ScaledNumber = 1;
+	  SummonedUnit = SummonUnit(EntityType, ScaledNumber, Owner, TargetCell);
+    if ( SummonedUnit.Valid )
+    {
+      local SummonEffect: effect"SummonedLightElementalEffect";
+      SummonEffect = Source.FindEffect(EffectName);    
+      if (SummonEffect.Valid )
+      {
+        if ( SummonEffect.SummonedUnit.Valid )
+          SummonEffect.SummonedUnit.Kill(Source);
+      }
+      else
+      {
+        SummonEffect = Source.AddEffect(Source, EffectName);
+      }
+			if (SummonEffect.Valid)
+				SummonEffect.SummonedUnit = SummonedUnit;
+    }
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+		
+		// Added for Invisible units
+		if(SummonedUnit.Valid)
+		{
+			if ( n > 0)
+			{
+				CombatWait(8);
+				for(i = 0; i < n; i++)
+				{
+					InvisibleUnit = InvisibleUnits.Get(i);
+					if ( InvisibleUnit.Valid && InvisibleUnit.GetMeleeCell(SummonedUnit).Valid)
+					{
+						if ( InvisibleUnit.CanAct)
+						{
+							ForceAttackCommand(InvisibleUnit,InvisibleUnit.Cell, SummonedUnit.Cell);
+							//AddCommand(InvisibleUnit, InvisibleUnit.GetMeleeCell(SummonedUnit), InvisibleUnit.Cell, InvisibleUnit.DefaultAttack, ECommandType.MeleeAttack);
+							CombatWait(6);
+						}
+					}
+				}
+			}
+		}
+		
+		if(SummonedUnit.Valid)
+		{
+			if(WaitForEffectFinished == 0)
+				CombatWait(8);
+			for UnitsInSquare(Attacker, SummonedUnit.Cell.X - 1, SummonedUnit.Cell.Y - 1, SummonedUnit.Size + 2, SummonedUnit.Size + 2)
+			{
+				if( Attacker.Unit.Team != SummonedUnit.Team && SummonedUnit.Alive && Attacker.Unit.IsInvisible)
+				{
+					Attacker.Unit.RemoveInvisibleEffect;
+					if (Attacker.Unit.CanAct)
+					{
+						ForceAttackCommand(Attacker.Unit, Attacker.Unit.Cell, SummonedUnit.Cell);
+						CombatWait(6);
+					}
+				}
+			}
+		}
+	}
+
+	event GetTooltip
+	{
+		local ScaledNumber: int;
+		ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1)
+		  if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		$number = ScaledNumber;
+	}
+}
+
+effect "SummonedLightElementalEffect"
+{
+  var SummonedUnit: unit;
+  var Dummy: modifier"Dummy";
+}
+
+/********************************************************
+ *                   Summon Water Elemental             *
+ ********************************************************/
+
+ability "SummonWaterElemental"
+{
+	// Fixed conflict with invisible units.
+	const SummonNum = 1;
+	const EffectName = "SummonedWaterElementalEffect";
+	const HitTime = 0;
+	
+	event OnActivate
+	{
+		local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+
+	  EntityType = 517024; // Neutral/Units/Water Elemental
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		// Check Block Ignore invisible Unit when simulation
+		if (!TargetCell.Valid || TargetCell.BlockedSquareInvisible(EntityTypeSize, ECombatMapLevel.Play,Source.Team)/*BlockedSquare(EntityTypeSize, ECombatMapLevel.Play)*/)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		// Added for Invisible Units
+		local InvisibleUnits : unitarray;
+		local InvisibleUnit : unit;
+		local i: int;
+		local n: int;
+		local WaitForEffectFinished : int;
+		WaitForEffectFinished = 0;
+		
+		for UnitsInSquare(It, TargetCell.X, TargetCell.Y, EntityTypeSize, EntityTypeSize)
+		{
+			if(It.Unit.IsInvisible && It.Unit.Team != Source.Team && It.Unit.Alive )
+				InvisibleUnits.AddOnce(It.Unit);
+		}
+		
+		
+		// Remove the Invisible effect in the Blocked InvisibleUnit
+		n = InvisibleUnits.Num;
+		if(InvisibleUnits.Num > 0)
+		{
+			WaitForEffectFinished = 1;
+			for (i = 0; i < n; i++)
+			{
+				InvisibleUnit = InvisibleUnits.Get(i);
+				InvisibleUnit.RemoveInvisibleEffect;
+			}
+			TargetCell = Source.FindClosestEmptyCellFromOrigin(TargetCell,EntityTypeSize);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Summon entities
+	  Owner = Source.OwnerIndex;
+	  ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1);
+	  if ( ScaledNumber < 1 )
+	    ScaledNumber = 1;
+	  SummonedUnit = SummonUnit(EntityType, ScaledNumber, Owner, TargetCell);
+    if ( SummonedUnit.Valid )
+    {
+      local SummonEffect: effect"SummonedWaterElementalEffect";
+      SummonEffect = Source.FindEffect(EffectName);    
+      if (SummonEffect.Valid )
+      {
+        if ( SummonEffect.SummonedUnit.Valid )
+          SummonEffect.SummonedUnit.Kill(Source);
+      }
+      else
+      {
+        SummonEffect = Source.AddEffect(Source, EffectName);
+      }
+			if (SummonEffect.Valid)
+	      SummonEffect.SummonedUnit = SummonedUnit;
+    }
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+		
+		// Added for Invisible units
+		if(SummonedUnit.Valid)
+		{
+			if ( n > 0)
+			{
+				CombatWait(8);
+				for(i = 0; i < n; i++)
+				{
+					InvisibleUnit = InvisibleUnits.Get(i);
+					if ( InvisibleUnit.Valid && InvisibleUnit.GetMeleeCell(SummonedUnit).Valid)
+					{
+						if ( InvisibleUnit.CanAct)
+						{
+							ForceAttackCommand(InvisibleUnit,InvisibleUnit.Cell, SummonedUnit.Cell);
+							//AddCommand(InvisibleUnit, InvisibleUnit.GetMeleeCell(SummonedUnit), InvisibleUnit.Cell, InvisibleUnit.DefaultAttack, ECommandType.MeleeAttack);
+							CombatWait(6);
+						}
+					}
+				}
+			}
+		}
+		
+		if(SummonedUnit.Valid)
+		{
+			if(WaitForEffectFinished == 0)
+				CombatWait(8);
+			for UnitsInSquare(Attacker, SummonedUnit.Cell.X - 1, SummonedUnit.Cell.Y - 1, SummonedUnit.Size + 2, SummonedUnit.Size + 2)
+			{
+				if( Attacker.Unit.Team != SummonedUnit.Team && SummonedUnit.Alive && Attacker.Unit.IsInvisible)
+				{
+					Attacker.Unit.RemoveInvisibleEffect;
+					if (Attacker.Unit.CanAct)
+					{
+						ForceAttackCommand(Attacker.Unit, Attacker.Unit.Cell, SummonedUnit.Cell);
+						CombatWait(6);
+					}
+				}
+			}
+		}
+	}
+
+	event GetTooltip
+	{
+		local ScaledNumber: int;
+		ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1)
+		  if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		$number = ScaledNumber;
+	}
+}
+
+effect "SummonedWaterElementalEffect"
+{
+  var SummonedUnit: unit;
+  var Dummy: modifier"Dummy";
+}
+
+/********************************************************
+ *                   Summon Phoenix                     *
+ ********************************************************/
+
+ability "SummonPhoenix"
+{
+	const SummonNum = 1;
+	const EffectName = "SummonedPhoenixEffect";
+	const HitTime = 0;
+	
+	event OnActivate
+	{
+		local ScaledNumber: int;
+		local EntityType: int;
+		local Owner: int;
+		local SummonedUnit: unit;
+		local EntityTypeSize: int;
+
+	  EntityType = 517103; // Neutral/Units/Phoenix
+		EntityTypeSize = GetUnitTypeSize( EntityType );
+		// Check Block Ignore invisible Unit when simulation
+		if (!TargetCell.Valid || TargetCell.BlockedSquareInvisible(EntityTypeSize, ECombatMapLevel.Play,Source.Team)/*BlockedSquare(EntityTypeSize, ECombatMapLevel.Play)*/)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		if (Simulation)
+		{
+			SetValidTarget;
+			return;
+		}
+		
+		// Added for Invisible Units
+		local InvisibleUnits : unitarray;
+		local InvisibleUnit : unit;
+		local i: int;
+		local n: int;
+		local WaitForEffectFinished : int;
+		WaitForEffectFinished = 0;
+		
+		for UnitsInSquare(It, TargetCell.X, TargetCell.Y, EntityTypeSize, EntityTypeSize)
+		{
+			if(It.Unit.IsInvisible && It.Unit.Team != Source.Team && It.Unit.Alive )
+				InvisibleUnits.AddOnce(It.Unit);
+		}
+		
+		
+		// Remove the Invisible effect in the Blocked InvisibleUnit
+		n = InvisibleUnits.Num;
+		if(InvisibleUnits.Num > 0)
+		{
+			WaitForEffectFinished = 1;
+			for (i = 0; i < n; i++)
+			{
+				InvisibleUnit = InvisibleUnits.Get(i);
+				InvisibleUnit.RemoveInvisibleEffect;
+			}
+			TargetCell = Source.FindClosestEmptyCellFromOrigin(TargetCell,EntityTypeSize);
+		}
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		// Summon entities
+		Owner = Source.OwnerIndex;
+		ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1);
+		if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		SummonedUnit = SummonUnit(EntityType, ScaledNumber, Owner, TargetCell);
+		if ( SummonedUnit.Valid )
+		{
+			local SummonEffect: effect"SummonedPhoenixEffect";
+			SummonEffect = Source.FindEffect(EffectName);
+			if (SummonEffect.Valid )
+			{
+				if ( SummonEffect.SummonedUnit.Valid )
+					SummonEffect.SummonedUnit.Kill(Source);
+			}
+			else
+			{
+				SummonEffect = Source.AddEffect(Source, EffectName);
+			}
+			if (SummonEffect.Valid)
+				SummonEffect.SummonedUnit = SummonedUnit;
+		}
+
+		// Wait for source to finish the animation
+		Source.WaitForAnim;
+
+		FinishAction;
+		
+		// Added for Invisible units
+		if(SummonedUnit.Valid)
+		{
+			if ( n > 0)
+			{
+				CombatWait(8);
+				for(i = 0; i < n; i++)
+				{
+					InvisibleUnit = InvisibleUnits.Get(i);
+					if ( InvisibleUnit.Valid && InvisibleUnit.GetMeleeCell(SummonedUnit).Valid)
+					{
+						if ( InvisibleUnit.CanAct)
+						{
+							ForceAttackCommand(InvisibleUnit,InvisibleUnit.Cell, SummonedUnit.Cell);
+							//AddCommand(InvisibleUnit, InvisibleUnit.GetMeleeCell(SummonedUnit), InvisibleUnit.Cell, InvisibleUnit.DefaultAttack, ECommandType.MeleeAttack);
+							CombatWait(6);
+						}
+					}
+				}
+			}
+		}
+		
+		if(SummonedUnit.Valid)
+		{
+			if(WaitForEffectFinished == 0)
+				CombatWait(8);
+			for UnitsInSquare(Attacker, SummonedUnit.Cell.X - 1, SummonedUnit.Cell.Y - 1, SummonedUnit.Size + 2, SummonedUnit.Size + 2)
+			{
+				if( Attacker.Unit.Team != SummonedUnit.Team && SummonedUnit.Alive && Attacker.Unit.IsInvisible)
+				{
+					Attacker.Unit.RemoveInvisibleEffect;
+					if (Attacker.Unit.CanAct)
+					{
+						ForceAttackCommand(Attacker.Unit, Attacker.Unit.Cell, SummonedUnit.Cell);
+						CombatWait(6);
+					}
+				}
+			}
+		}
+	}
+
+	event GetTooltip
+	{
+		local ScaledNumber: int;
+		ScaledNumber = max(round(SummonNum.ScaleValue(EScaling.All | EScaling.Friendly)), 1)
+		  if ( ScaledNumber < 1 )
+			ScaledNumber = 1;
+		$number = ScaledNumber;
+	}
+}
+
+effect "SummonedPhoenixEffect"
+{
+	var SummonedUnit: unit;
+	var Dummy: modifier"Dummy";
+}

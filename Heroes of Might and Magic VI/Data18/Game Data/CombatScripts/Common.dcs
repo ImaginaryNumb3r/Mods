@@ -1,0 +1,477 @@
+/********************************************************
+ * Combat common definitions                            *
+ ********************************************************/
+
+enum EStat
+{
+	MightAttack, MagicAttack,
+	DarknessAttack, LightAttack, PrimordialAttack, AirAttack, WaterAttack, FireAttack, EarthAttack,
+	MightDefense, MagicDefense, DarknessDefense, LightDefense, PrimordialDefense, AirDefense, WaterDefense, FireDefense, EarthDefense,
+	MightResistance, MagicResistance, DarknessResistance, LightResistance, PrimordialResistance, AirResistance, WaterResistance, FireResistance, EarthResistance, LifeResistance, DeathResistance,
+	MightVulnerability, MagicVulnerability, DarknessVulnerability, LightVulnerability, PrimordialVulnerability, AirVulnerability, WaterVulnerability, FireVulnerability, EarthVulnerability, LifeVulnerability, DeathVulnerability,
+	MightMalus, MagicMalus, DarknessMalus, LightMalus, PrimordialMalus, AirMalus, WaterMalus, FireMalus, EarthMalus, LifeMalus, DeathMalus,
+	MightBonus, MagicBonus, DarknessBonus, LightBonus, PrimordialBonus, AirBonus, WaterBonus, FireBonus, EarthBonus, LifeBonus, DeathBonus,
+	Health, StackSize, Initiative, Movement, Morale, Luck, DefenseAgainstRanged, RangedDamageBonus, MinDamage, MaxDamage, GoodLuckBonus, BadLuckPenalty, RangedAttackPenalty, MovementLimit, Cover,
+	Stun, Root, MindControl, Shield, Silence, Retaliation, Haste, Slow, FirstRetaliation, LuckModifier, RangeType
+}
+
+enum EAbilityFlags
+{
+	OnFriendly       = 1 << 0,
+	OnHostile        = 1 << 1,
+	OnFriendlyCorpse = 1 << 2,
+	OnHostileCorpse  = 1 << 3,
+	OnEmptyCell      = 1 << 4,
+	DisplayName      = 1 << 5,
+	MoveTo           = 1 << 6,
+	FlyTo            = 1 << 7,
+	TeleportTo       = 1 << 8,
+	Action           = 1 << 9,
+	OnBlocked        = 1 << 10,
+	PersonalBased    = 1 << 11, 
+	Siege            = 1 << 12,
+	NoRetaliation    = 1 << 13,
+	Return           = 1 << 14,
+	NoCost           = 1 << 15,
+	MassFlyingText   = 1 << 16,
+	OnStartCombat    = 1 << 17,
+	OnStartTurn      = 1 << 18,
+	PlayNIS          = 1 << 19,
+	NeverDisplay     = 1 << 20,
+	AllowDeadUnits   = 1 << 21,
+	Test             = 1 << 31
+}
+
+enum EAbilitySchool
+{
+	None,
+	Might,
+	Magic,
+	Darkness = Magic,
+	Light,
+	Primordial,
+	Air,
+	Water,
+	Fire,
+	Earth,
+	MagicEnd,
+	Num = MagicEnd,
+
+	NumMagic = MagicEnd - Magic,
+}
+
+enum EAbilityReputation
+{
+	None,
+	First,
+	Life = First,
+	Death,
+	Num = Death
+}
+
+enum EMoveType
+{
+	Default,
+	KappaLeapAttack,
+	Flight,
+	Teleport,
+	OneCellSlide, 
+	Slide
+}
+
+enum EUnitMoveType
+{
+	None,
+	Walk,
+	Fly,
+	Teleport,
+}
+
+enum ETeam
+{
+	Left,
+	Right,
+	Attacker = Left,
+	Defender = Right
+}
+
+enum EScaledFlags
+{
+	Simulation = 1 << 31,
+	DontCalc   = 1 << 30,
+	Debug      = 1 << 29,
+}
+
+enum EDamageFlags
+{
+		Forwarded = 1 << 0,
+		Raw = 1 << 1,
+		Invalid = 1 << 2,
+		Immune = 1 << 3,
+		Test = 1 << 4,
+		eRetaliation = 1 << 5,
+		Force = 1 << 6,
+		PlayVisualEffect = 1 << 7,
+		PlayHitAnim = 1 << 8,
+		PlayHit = PlayVisualEffect | PlayHitAnim,
+		DontLog = 1 << 9,
+		Melee = 1 << 10,
+		Ranged = 1 << 11,
+		Simulation = EScaledFlags.Simulation,
+		DontCalc = EScaledFlags.DontCalc,
+		Debug = EScaledFlags.Debug,
+}
+
+enum EAbility
+{
+	Mind = 1 << 0,
+	Poison = 1 << 1,
+	Disease = 1 << 2,
+	ControlModifying = 1 << 3,
+	Blind = 1 << 4,
+	Lightning = 1 << 5,
+}
+
+enum ECreature
+{
+	Human = 1 << 0,
+	Faceless = 1 << 1,
+	Elf = 1 << 2,
+	Dwarf = 1 << 3,
+	Naga = 1 << 4,
+	Beastmen = 1 << 5,
+	Orc = 1 << 6,
+	Demon = 1 << 7,
+	Undead = 1 << 8,
+	Animal = 1 << 9,
+	Magical = 1 << 10,
+	Construct = 1 << 11,
+	Dragon = 1 << 12,
+	Elemental = 1 << 13,
+	Djinn = 1 << 14,
+	Phoenix = 1 << 15,
+}
+
+enum EAttackAnim
+{
+	Luck = 1 << 0,
+	Cast = 1 << 1,
+	DontBlend = 1 << 2,
+	DontRotate = 1 << 4
+}
+
+enum EAttackRange
+{
+	None,
+	Melee,
+	Ranged,
+	Half = Ranged,
+	Full
+}
+
+enum ECommandType
+{
+	None,
+	Move,
+	MeleeAttack,
+	RangedAttack,
+	Cast,
+	Defend,
+	Wait,
+	Skip,
+	Assist,
+	HeroCast, 
+	Retreat,
+}
+
+enum ERechargeInterval
+{
+	None  = 0,
+	Day   = 1,
+	Week  = 7,
+	Month = 28,
+	Year  = 336,
+	Combat = -1,
+}
+
+enum ECooldownType
+{
+	CombatTurn = 1,
+	Day = 2
+}
+
+enum ECommonAbilityFlags
+{
+	Mind = 1 << 0,
+	Poison = 1 << 1,
+	Disease = 1 << 2,
+	ControlModifying = 1 << 3,
+}
+
+enum EEffectFlags
+{
+	Visible		= 1 << 1,
+	Debuff		=	1 << 2,
+	Dispellable = 1 << 3,
+	Linked		= 1 << 4,
+	GameTurns	= 1 << 5,
+	Refresh		= 1 << 8,
+	Static		= 1 << 9,
+	Binary		= 1 << 10,
+	Stack			= 1 << 11,
+	ExpireOnTick = 1 << 12,
+	DontShowStackNumberEffect = 1 << 14,
+	OnStartCombat = 1 << 16,
+	AllowDuplicate = 1 << 17,
+	ShowInAttributes = 1 << 18,
+	Activate = 1 << 19,
+	ComponentsOnly = 1 << 22,
+	StayOnCorpse = 1 << 23,
+	StackSource = 1 << 26,
+	NullSource = 1 << 28,
+}
+
+
+enum ECombatMapLevel
+{
+	Ground = 1 << 0,
+	Play = 1 << 1,
+	Sky = 1 << 2,
+	Max = 1 << 3,
+	NumMapLevels = 3
+}
+
+enum ECombatUnitFlags
+{
+	Destroyed      = 1 << 0,
+	Ranged         = 1 << 1,
+	Fly            = 1 << 2,
+	Teleport       = 1 << 3,
+	Summoned       = 1 << 4,
+	Living         = 1 << 5,
+	CantAct        = 1 << 6, 
+	Garrisoned     = 1 << 7,
+	Creature       = 1 << 8,
+	Dead           = 1 << 9,
+	HasStackNumber = 1 << 10,
+	VisibleCorpse  = 1 << 11,
+	Gated          = 1 << 12,
+	Tag            = 1 << 30,
+}
+
+enum ECombatRetreatDisableReasonFlag
+{
+	Artifact = 1 << 0
+}
+
+enum EScaling
+{
+	None = 0,
+	Stats = 1 << 0,
+	Num   = 1 << 1,
+	Level = 1 << 2,
+	Last,
+	All   = Last * 2 - 3,
+	HalfRange = 1 << 3,
+	FullRange = 1 << 4,
+	Friendly = 1 << 5,
+	Damage = Num | Level,
+	Heal = Num | Level | Friendly
+}
+
+enum EFactionUniqueId
+{
+	Haven      = 213420753,
+	Academy    = 213420754,
+	Sanctuary  = 213420755,
+	Necropolis = 311960006,
+	Neutral    = 99060001,
+	Inferno    = 99060002,
+	Elementals = 99060003,
+	Stronghold = 112254218,
+	Dungeon    = 510038,
+}
+
+/*
+	MultiHitAbilityBody:
+
+	-AllowMove: Odamegy targethoz
+	-Lejatsza az attack animot, majd minden hit-re:
+	-HitEvent
+	-AllowReta: Target retázik
+	-AllowReturn: Visszamegy a hejére ha attack&return-os
+	-FinishTriggerAction
+
+	Variables:
+	 StartCell: Attack&Return
+	 NumHits, HitIndex: hit eventekhez
+*/
+const MultiHitAbilityBody =
+{
+		local StartCell: cell;
+		local NumHits: int;
+		local HitIndex: int;
+
+		if (AllowMove)
+		{
+			if (Execute)
+			{
+				// Move if needed
+				StartCell = Source.Cell;
+				Source.Move(0, Path, TargetUnit);
+			}
+		}
+
+		AddLuck(Source);
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, NumHits);
+
+		// Process hit events
+		for (HitIndex = 0; HitIndex < NumHits; HitIndex++)
+		{
+			Source.WaitForHit;
+			HitEvent;
+		}
+
+		if (AllowReta)
+		{
+			// Check retaliation
+			TargetUnit.Retaliate(Source);
+		}
+
+		if (AllowReturn)
+		{
+			if (Execute && (info.Flags & EAbilityFlags.Return))
+			{
+				// Wait for source to finish the animation
+				Source.WaitForAnim;
+
+				// Return if possible and needed
+				Path.Reverse;
+				Source.Move(0, Path, null);
+			}
+		}
+
+		FinishTriggerAction;
+}
+
+const MultiHitAttackBody =
+{
+		local StartCell: cell;
+		local NumHits: int;
+		local HitIndex: int;
+
+		if (AllowMove)
+		{
+			if (Execute)
+			{
+				// Move if needed
+				StartCell = Source.Cell;
+				Source.Move(0, Path, TargetUnit);
+			}
+		}
+
+		AddLuck(Source);
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		CalcDamage;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, NumHits);
+
+		// Process hit events
+		for (HitIndex = 0; HitIndex < NumHits; HitIndex++)
+		{
+			Source.WaitForHit;
+			HitEvent;
+		}
+
+		if (AllowReta)
+		{
+			// Check retaliation
+			TargetUnit.Retaliate(Source);
+		}
+
+		if (AllowReturn)
+		{
+			if (Execute && (info.Flags & EAbilityFlags.Return))
+			{
+				// Wait for source to finish the animation
+				Source.WaitForAnim;
+
+				// Return if possible and needed
+				Path.Reverse;
+				Source.Move(0, Path, null);
+			}
+		}
+
+		FinishTriggerAction;
+}
+
+/*
+	AbilityBody:
+
+	- AllowMove: Odamegy targethoz
+	- Lejatsza az attack animot, megvarja az elso hit-et, majd
+	- HitEvent
+	- AllowReta: Target retázik
+	- AllowReturn: Visszamegy a hejére ha attack&return-os
+	- FinishAction
+
+	Variables: StartCell (attack&return)
+*/
+const AbilityBody =
+{
+		local StartCell: cell;
+
+		if (AllowMove)
+		{
+			if (Execute)
+			{
+				// Move if needed
+				StartCell = Source.Cell;
+				Source.Move(0, Path, TargetUnit);
+			}
+		}
+
+		AddLuck(Source);
+
+		StartAbility;
+
+		TargetUnit.SetMainTarget;
+
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		HitEvent;
+
+		if (AllowReta)
+			TargetUnit.Retaliate(Source);
+
+
+		if (AllowReturn)
+		{
+			if (Execute && (info.Flags & EAbilityFlags.Return))
+			{
+				Source.WaitForAnim;
+	
+				Path.Reverse;
+				Source.Move(0, Path, null);
+			}
+		}
+
+		FinishAction;
+}

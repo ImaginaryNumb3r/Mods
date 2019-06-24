@@ -1,0 +1,431 @@
+<TownScreenConfig>
+	<Faction>
+		<name>Necropolis</name>
+		<scenario_file>TownScreenScene.scn</scenario_file>
+
+		<building> <!-- MAIN BUILDING -->
+			<type>main</type>
+			<entityID>Village Hall</entityID>
+			<entityID>Town Hall</entityID>
+			<entityID>City Hall</entityID>
+			<entityID>Capitol</entityID>
+		</building>
+		<building> <!-- WALL -->
+			<type>wall</type>
+			<entityID>Basic Fortification</entityID>
+			<entityID>Advanced Fortification</entityID>
+			<entityID>Superior Fortification</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>7</creatureSlotID>
+			<entityID>Spider Temple</entityID>
+			<entityID>Spider Sanctum</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>1</creatureSlotID>
+			<entityID>Graveyard</entityID>
+			<entityID>Boneyard</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>2</creatureSlotID>
+			<entityID>Crypt</entityID>
+			<entityID>Ravenous Crypt</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>3</creatureSlotID>
+			<entityID>Ruined Tower</entityID>
+			<entityID>Haunted Tower</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>4</creatureSlotID>
+			<entityID>Sepulcher</entityID>
+			<entityID>Mausoleum</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>5</creatureSlotID>
+			<entityID>Pestilent Tomb</entityID>
+			<entityID>Pestilent Catacomb</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>6</creatureSlotID>
+			<entityID>Vampire Mansion</entityID>
+			<entityID>Vampire Palace</entityID>
+		</building>
+		<building> <!-- TAVERN -->
+			<type>tavern</type>
+			<entityID>Hall of Heroes</entityID>
+			<entityID>Hall of the Immortals</entityID>
+		</building>
+		<building> <!-- MARKET PLACE -->
+			<type>market_place</type>
+			<entityID>Marketplace</entityID>
+		</building>
+		<building> <!-- ALTAR OF ETERNAL SERVITUDE -->
+			<type>altar_of_eternal_servitude</type>
+			<entityID>Altar of Eternal Servitude</entityID>
+		</building>
+	</Faction>
+	<Faction>
+		<name>Haven</name>
+		<scenario_file>TownScreenScene.scn</scenario_file>
+
+		<building> <!-- MAIN BUILDING -->
+			<type>main</type>
+			<entityID>Village Hall</entityID>
+			<entityID>Town Hall</entityID>
+			<entityID>City Hall</entityID>
+			<entityID>Capitol</entityID>
+		</building>
+		<building> <!-- WALL -->
+			<type>wall</type>
+			<entityID>Basic Fortification</entityID>
+			<entityID>Advanced Fortification</entityID>
+			<entityID>Superior Fortification</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>7</creatureSlotID>
+			<entityID>Transept of Heaven</entityID>
+			<entityID>Transept of Elysium</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>1</creatureSlotID>
+			<entityID>Barracks</entityID>
+			<entityID>Garrison</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>2</creatureSlotID>
+			<entityID>Loophole Tower</entityID>
+			<entityID>Marksman Tower</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>3</creatureSlotID>
+			<entityID>Chapel of Light</entityID>
+			<entityID>Cathedral of Light</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>4</creatureSlotID>
+			<entityID>Griffin Aviary</entityID>
+			<entityID>Griffin Tower</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>5</creatureSlotID>
+			<entityID>Altar of Radiance</entityID>
+			<entityID>Altar of Resplendence</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>6</creatureSlotID>
+			<entityID>Chapel of the Holy Sun</entityID>
+			<entityID>Priory of the Holy Sun</entityID>
+		</building>
+		<building> <!-- MARKET PLACE -->
+			<type>market_place</type>
+			<entityID>Marketplace</entityID>
+			<entityID>Advanced Marketplace</entityID>
+		</building>
+		<building> <!-- TAVERN -->
+			<type>tavern</type>
+			<entityID>Hall of Heroes</entityID>
+		</building>
+		<building> <!-- RESURRECTION ALTAR -->
+			<type>resurrection_altar</type>
+			<entityID>Resurrection Altar</entityID>
+		</building>
+		<building> <!-- STATUE OF REVELATION -->
+			<type>statue_of_revelation</type>
+			<entityID>Statue of Revelation</entityID>
+		</building>
+	</Faction>
+	<Faction>
+		<name>Stronghold</name>
+		<scenario_file>TownScreenScene.scn</scenario_file>
+
+		<building> <!-- MAIN BUILDING -->
+			<type>main</type>
+			<entityID>Village Hall</entityID>
+			<entityID>Town Hall</entityID>
+			<entityID>City Hall</entityID>
+			<entityID>Capitol</entityID>
+		</building>
+		<building> <!-- WALL -->
+			<type>wall</type>
+			<entityID>Basic Fortification</entityID>
+			<entityID>Advanced Fortification</entityID>
+			<entityID>Superior Fortification</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>7</creatureSlotID>
+			<entityID>Cyclops Mound</entityID>
+			<entityID>Cyclops Hill</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>1</creatureSlotID>
+			<entityID>War Tent</entityID>
+			<entityID>War Pavilion</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>2</creatureSlotID>
+			<entityID>Goblin Slums</entityID>
+			<entityID>Goblin Shacks</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>3</creatureSlotID>
+			<entityID>Harpy Nest</entityID>
+			<entityID>Harpy Colony</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>5</creatureSlotID>
+			<entityID>Centaur Camp</entityID>
+			<entityID>Centaur Outpost</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>4</creatureSlotID>
+			<entityID>Dream Lodge</entityID>
+			<entityID>Vision Lodge</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>6</creatureSlotID>
+			<entityID>Hut of Rage</entityID>
+			<entityID>Hut of Fury</entityID>
+		</building>
+		<building> <!-- MARKET PLACE -->
+			<type>market_place</type>
+			<entityID>Marketplace</entityID>
+			<entityID>Advanced Marketplace</entityID>
+		</building>
+		<building> <!-- TAVERN -->
+			<type>tavern</type>
+			<entityID>Hall of Heroes</entityID>
+		</building>
+	</Faction>
+	<Faction>
+		<name>Sanctuary</name>
+		<scenario_file>TownScreenScene.scn</scenario_file>
+
+		<building> <!-- MAIN BUILDING -->
+			<type>main</type>
+			<entityID>Village Hall</entityID>
+			<entityID>Town Hall</entityID>
+			<entityID>City Hall</entityID>
+			<entityID>Capitol</entityID>
+		</building>
+		<building> <!-- WALL -->
+			<type>wall</type>
+			<entityID>Basic Fortification</entityID>
+			<entityID>Advanced Fortification</entityID>
+			<entityID>Superior Fortification</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>7</creatureSlotID>
+			<entityID>Misty Mountain</entityID>
+			<entityID>Cloudy Mountain</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>1</creatureSlotID>
+			<entityID>Reef Barrier</entityID>
+			<entityID>Reef Rampart</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>2</creatureSlotID>
+			<entityID>Coral Sanctuary</entityID>
+			<entityID>Pearl Sanctuary</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>3</creatureSlotID>
+			<entityID>Enchanted Pond</entityID>
+			<entityID>Blessed Pond</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>4</creatureSlotID>
+			<entityID>Sacred Source</entityID>
+			<entityID>Sanctified Source</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>6</creatureSlotID>
+			<entityID>Sunken Arena</entityID>
+			<entityID>Sunken Dojo</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>5</creatureSlotID>
+			<entityID>Frost Shrine</entityID>
+			<entityID>Frost Miya</entityID>
+		</building>
+		<building> <!-- MARKET PLACE -->
+			<type>market_place</type>
+			<entityID>Marketplace</entityID>
+			<entityID>Advanced Marketplace</entityID>
+		</building>
+		<building> <!-- TAVERN -->
+			<type>tavern</type>
+			<entityID>Hall of Heroes</entityID>
+		</building>
+	</Faction>
+	<Faction>
+		<name>Inferno</name>
+		<scenario_file>TownScreenScene.scn</scenario_file>
+
+		<building> <!-- MAIN BUILDING -->
+			<type>main</type>
+			<entityID>Village Hall</entityID>
+			<entityID>Town Hall</entityID>
+			<entityID>City Hall</entityID>
+			<entityID>Capitol</entityID>
+		</building>
+		<building> <!-- WALL -->
+			<type>wall</type>
+			<entityID>Basic Fortification</entityID>
+			<entityID>Advanced Fortification</entityID>
+			<entityID>Superior Fortification</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>7</creatureSlotID>
+			<entityID>Pit of Bile</entityID>
+			<entityID>Pit of Hate</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>1</creatureSlotID>
+			<entityID>House of Madness</entityID>
+			<entityID>House of Delirium</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>3</creatureSlotID>
+			<entityID>Hall of Temptations</entityID>
+			<entityID>Hall of Forbidden Desires</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>2</creatureSlotID>
+			<entityID>Howling Kennels</entityID>
+			<entityID>Raging Kennels</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>5</creatureSlotID>
+			<entityID>Hall of Torment</entityID>
+			<entityID>Hall of Agony</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>6</creatureSlotID>
+			<entityID>Pen of Mayhem</entityID>
+			<entityID>Pen of Chaos</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>4</creatureSlotID>
+			<entityID>Spawning Chamber</entityID>
+			<entityID>Spawning Hive</entityID>
+		</building>
+		<building> <!-- MARKET PLACE -->
+			<type>market_place</type>
+			<entityID>Chaos Crucible</entityID>
+		</building>
+		<building> <!-- TAVERN -->
+			<type>tavern</type>
+			<entityID>Hall of Heroes</entityID>
+		</building>
+		<building> <!-- INFERNAL GATE -->
+			<type>infernal_gate</type>
+			<entityID>Infernal Gate</entityID>
+		</building>
+	</Faction>
+	<Faction>
+		<name>Dungeon</name>
+		<scenario_file>TownScreenScene.scn</scenario_file>
+
+		<building> <!-- MAIN BUILDING -->
+			<type>main</type>
+			<entityID>Village Hall</entityID>
+			<entityID>Town Hall</entityID>
+			<entityID>City Hall</entityID>
+			<entityID>Capitol</entityID>
+		</building>
+		<building> <!-- WALL -->
+			<type>wall</type>
+			<entityID>Basic Fortification</entityID>
+			<entityID>Advanced Fortification</entityID>
+			<entityID>Superior Fortification</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>7</creatureSlotID>
+			<entityID>Dragon Spire</entityID>
+			<entityID>Dragon Pinnacle</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>1</creatureSlotID>
+			<entityID>Halls of the Unseen Hand</entityID>
+			<entityID>Halls of the Black Heart</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>2</creatureSlotID>
+			<entityID>Shadow Arena</entityID>
+			<entityID>Shadow Ring</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>3</creatureSlotID>
+			<entityID>Altar of Eyes</entityID>
+			<entityID>Pillar of Eyes</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>4</creatureSlotID>
+			<entityID>Manticore Lair</entityID>
+			<entityID>Scorpicore Lair</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>5</creatureSlotID>
+			<entityID>Chamber of Whispers</entityID>
+			<entityID>Chamber of Secrets</entityID>
+		</building>
+		<building> <!-- RECRUIT -->
+			<type>recruit</type>
+			<creatureSlotID>6</creatureSlotID>
+			<entityID>Maze</entityID>
+			<entityID>Labyrinth</entityID>
+		</building>
+		<building> <!-- TAVERN -->
+			<type>tavern</type>
+			<entityID>Hall of Heroes</entityID>
+		</building>
+		<building> <!-- MARKET PLACE -->
+			<type>market_place</type>
+			<entityID>Marketplace</entityID>
+			<entityID>Advanced Marketplace</entityID>
+		</building>
+	</Faction>
+</TownScreenConfig>

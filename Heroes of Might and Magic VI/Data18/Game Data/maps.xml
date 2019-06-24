@@ -1,0 +1,85 @@
+<Maplist>
+  <GameMode mode="Multi_Duel">
+  </GameMode>
+  <GameMode mode="Multi_Standard">
+    <Map value="A_Bridge_Too_Far.scn" />
+    <Map value="Brimstones_Gold.scn" />
+    <Map value="Feuding_Duchies.scn" />
+    <Map value="Silence.scn" />
+    <Map value="Broken_Alliance.scn" />
+    <Map value="Fortress_of_Honour.scn" />
+    <Map value="Haven_4_multiplayer.scn" />
+    <Map value="Archipelago_of_the_Ancients.scn" /> 
+    <Map value="Stronghold_2_multiplayerv1.1.scn" />
+    <Map value="Inferno_1_multiplayer.scn" />
+    <Map value="multi_TreeOfPlenty_4p_FFA.scn" />
+    <Map value="Sanctuary_3_multiplayerv1.2.scn" />
+    <Map value="Rise_to_Powerv1.1.scn" />
+    <Map value="Multiplayer_1.scn" />
+    <Map value="Brave_New_Worldv1.1.scn" />
+    <Map value="Necropolis_3_multiplayerv1.2.scn" />
+    <Map value="test_multi_1v1.scn" />
+    <Map value="test_64168_multi_siege_defend.scn" />
+    <Map value="GymLevel_Creature_stats.scn" />
+    <Map value="DungeonMap1_MP.scn" />
+    <Map value="DungeonMap2_MP.scn" />
+    <Map value="DungeonMap3_MP.scn" />
+    <Map value="DungeonMap4_MP.scn" />
+    <Map value="NecroMap1_MP.scn" />
+    <Map value="NecroMap2_MP.scn" />
+    <Map value="NecroMap3_MP.scn" />
+    <Map value="NecroMap4_MP.scn" />
+    <Map value="MP_TheAnniversary.scn" />
+    <Map value="MP_DLC2_1.scn" />
+    <Map value="MP_DLC2_2.scn" />
+    <Map value="MP_CastleXeen.scn" />
+    <Map value="MP_DLC1_1.scn" />
+    <Map value="MP_DLC1_2.scn" />
+    <Map value="MP_GoldMaster.scn" />
+  </GameMode>
+  <GameMode mode="Multi_Saved">
+  </GameMode>
+  <GameMode mode="Single_Duel">
+  </GameMode>
+  <GameMode mode="Single_Skirmish">
+    <Map value="A_Bridge_Too_Far.scn" />
+    <Map value="Brimstones_Gold.scn" />
+    <Map value="Feuding_Duchies.scn" />
+    <Map value="Silence.scn" />
+    <Map value="Broken_Alliance.scn" />
+    <Map value="Fortress_of_Honour.scn" />
+    <Map value="Haven_4_multiplayer.scn" />
+    <Map value="Archipelago_of_the_Ancients.scn" /> 
+    <Map value="Stronghold_2_multiplayerv1.1.scn" />
+    <Map value="Inferno_1_multiplayer.scn" />
+    <Map value="multi_TreeOfPlenty_4p_FFA.scn" />
+    <Map value="Sanctuary_3_multiplayerv1.2.scn" />
+    <Map value="Rise_to_Powerv1.1.scn" />
+    <Map value="Multiplayer_1.scn" />
+    <Map value="Brave_New_Worldv1.1.scn" />
+    <Map value="Necropolis_3_multiplayerv1.2.scn" />
+    <Map value="test_multi_1v1.scn" />
+    <Map value="GymLevel_Creature_stats.scn" />
+    <Map value="DungeonMap1_MP.scn" />
+    <Map value="DungeonMap2_MP.scn" />
+    <Map value="DungeonMap3_MP.scn" />
+    <Map value="DungeonMap4_MP.scn" />
+    <Map value="NecroMap1_MP.scn" />
+    <Map value="NecroMap2_MP.scn" />
+    <Map value="NecroMap3_MP.scn" />
+    <Map value="NecroMap4_MP.scn" />
+    <Map value="MP_TheAnniversary.scn" />
+    <Map value="MP_DLC2_1.scn" />
+    <Map value="MP_DLC2_2.scn" />
+    <Map value="MP_CastleXeen.scn" />
+    <Map value="MP_DLC1_1.scn" />
+    <Map value="MP_DLC1_2.scn" />
+    <Map value="MP_GoldMaster.scn" />
+  </GameMode>
+  <GameMode mode="Single_Scenario">
+    <Map value="FPP_Map_2v1.2.scn" unlockable="true" />
+    <Map value="SP_TheAnniversary.scn" unlockable="true" />
+    <Map value="SP_CastleXeen.scn" unlockable="true" />
+    <Map value="SP_GoldMaster.scn" />
+  </GameMode>
+</Maplist>

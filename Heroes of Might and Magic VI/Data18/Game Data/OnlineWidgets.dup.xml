@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OnlineWidgets>
+<!--   <OnlineWidget> -->
+<!--     <FilePath>ManageWidget.swf</FilePath> -->
+<!--     <ImagePath>../SourceAssets/Textures/General/Online/widgetButton_manageBg.png</ImagePath> -->
+<!--   </OnlineWidget> -->
+  <OnlineWidget>
+    <Name>News</Name>
+    <Title>OnlineWidget.Title.News</Title>
+    <FilePath>NewsWindow.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_news.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>Chat</Name>
+    <Title>OnlineWidget.Title.Chat</Title>
+    <FilePath>DynastyChatWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_Chat.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>Skype</Name>
+    <Title>OnlineWidget.Title.Skype</Title>
+    <FilePath>SkypeWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_Skype.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>LeaderBoards</Name>
+    <Title>OnlineWidget.Title.LeaderBoards</Title>
+    <FilePath>LeaderBoardsWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_leaderboards.png</ImagePath>
+  </OnlineWidget>     <!--
+  <OnlineWidget>
+    <Name>ForumWindow</Name>
+    <Title>OnlineWidget.Title.Forum</Title>
+    <FilePath>ForumWindow.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_forum.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>TipsWidget</Name>
+    <Title>OnlineWidget.Title.Tips</Title>
+    <FilePath>TipsWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_tips.png</ImagePath>
+  </OnlineWidget>   -->
+  <OnlineWidget>
+    <Name>NotesWidget</Name>
+    <Title>OnlineWidget.Title.Notes</Title>
+    <FilePath>NotesWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_Notes.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>FriendsWidget</Name>
+    <Title>OnlineWidget.Title.Friends</Title>
+    <FilePath>FriendsWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_friends.png</ImagePath>
+  </OnlineWidget>
+  <OnlineWidget>
+    <Name>TitlesWidget</Name>
+    <Title>Titles</Title>
+    <FilePath>TitlesWidget.swf</FilePath>
+    <ImagePath>../SourceAssets/Textures/General/Icons/Widgets/Wdgs_backgroundinfo.png</ImagePath>
+  </OnlineWidget>
+-->
+</OnlineWidgets>

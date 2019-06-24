@@ -1,0 +1,955 @@
+/********************************************************
+ * Dynasty Combat Script: Inferno Abilities             *
+ ********************************************************/
+
+ability "ExplodingSpikes"
+{
+	var DamageValue: combatdamage;
+	var AreaBonus: int = 0;
+	const CalcDamage = { DamageValue.Set(-1, -1, Mul: 1.0 + DamageBonus * 0.01, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate
+	{
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Full, null);
+		Source.WaitForHit;
+
+		local Area: int;
+		Area = DamageArea + AreaBonus;
+
+		CalcDamage;
+
+		for UnitsInSquare(It, TargetCell, Area, Area)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+
+			if (!CurrentTarget.Alive || CurrentTarget == Source || CurrentTarget.Team == Source.Team)
+				continue;
+
+			CurrentTarget.DamageUnit(DamageValue);
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		$percent = DamageBonus;
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "BoundlessHate"
+{
+	var DamageValue: combatdamage;
+	const Damage = 15;
+	const CalcDamage = { DamageValue.Set(Damage, School: EAbilitySchool.Fire); };
+
+	event OnActivate
+	{
+		local CurrentTarget: unitpointer;
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Full, null);
+		Source.WaitForHit;
+
+		CalcDamage;
+
+		for AllCreatures(It)
+		{
+			CurrentTarget = It.Unit;
+
+			if (!CurrentTarget.Alive || CurrentTarget.Team == Source.Team)
+				continue;
+
+			CurrentTarget.PlayOnHit;
+			CurrentTarget.PlayEffect(info.HitFX);
+			CurrentTarget.DamageUnit(DamageValue);
+		}
+		
+		Source.WaitForAnim;
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "PitfiendRetaliation"
+{
+	event OnActivate
+	{
+		local Targets: unitarray;
+		local i: int;
+		local n: int;
+		local Target: unit;
+		local DamageValue: combatdamage;
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		Source.GetHatefulRetaliationUnits(Targets);
+		Targets.AddOnce(TargetUnit);
+
+		// Attack
+		AddLuck(Source);
+
+//		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Full, null);
+		Source.WaitForHit;
+
+		DamageValue.Set(-1, -1, Scaling: EScaling.All);
+
+		TargetUnit.PlayOnHit;
+		TargetUnit.DamageUnit(DamageValue);
+
+		DamageValue.ClearDefaultAttack;
+
+		n = Targets.Num;
+		for (i = 0; i < n; i++)
+		{
+			Target = Targets.Get(i);
+			if (Target == TargetUnit)
+				continue;
+			Target.PlayOnHit;
+			Target.DamageUnit(DamageValue);
+		}
+
+//		Source.WaitForAnim;
+	}
+}
+
+ability "BlindCharge"
+{
+	var DamageValue: combatdamage;
+
+	event OnActivate
+	{
+		const ToughnessDamage = 1;
+
+		StartAbility;
+
+		DamageValue.Set(-1, -1, Scaling: EScaling.Num | EScaling.Stats, Flags: EDamageFlags.PlayHit);
+
+		DisableStop;
+			
+			Source.GetChargePath(Path, TargetCell, Source.GetMovement);
+			for ChargeAttack(It, Source, Path, Speed, "", "ChargeLoop", "ChargeEnd")
+			{
+				if (!It.Unit.Alive)
+					continue;
+
+				It.WaitForHit;
+				It.Unit.SetSecondaryTarget;
+
+				if (It.Unit.HasToughness)
+				{
+					It.Unit.ToughnessDamage(Source, 0, ToughnessDamage, ToughnessDamage, 0);
+				}
+				else
+				{
+					if (Execute)
+					{
+						It.Unit.PlayEffect(info.vsHit);
+						It.Unit.PlayOnHitAnim;
+					}
+					It.Unit.DamageUnit(DamageValue);
+				}
+			}
+			Source.WaitForAnim;
+			Source.FinishChargeAttack(Path);
+
+		EnableStop;
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		$structuraldamage = ToughnessDamage;
+	}
+}
+
+ability "Building_RainOfFire"
+{
+	var DamageValue: combatdamage;
+
+	event OnActivate
+	{
+		const StartDelay = 1;
+		const Interval = 1;
+		const Damage = 100;
+
+
+		StartAbility;
+
+		PlayEffect(info.VisualEffect, GetMapCenterX, GetMapCenterY);
+		CombatWait(StartDelay);
+
+		local Targets: unitarray;
+		local CurrentTarget: unit;
+		local i: int;
+		local n: int;
+		local UnitInterval: float;
+
+		DamageValue.Set(Damage);
+
+		n = 0;
+		for AllCreatures(It)
+		{
+			CurrentTarget = It.Unit;
+
+			if ( !CurrentTarget.Alive || CurrentTarget.Team == Source.Team || !CurrentTarget.IsOnPlayingLevel || CurrentTarget.IsInCastle)
+				continue;
+
+			Targets.Add(CurrentTarget);
+			n++;
+		}
+
+		if (n > 1)
+			UnitInterval = Interval / (n - 1).ToFloat;
+
+		for (i = 0; i < n; i++)
+		{
+			if (i > 0)
+				CombatWait(UnitInterval);
+
+			CurrentTarget = Targets.Get(i);
+			CurrentTarget.DamageUnit(DamageValue);
+			if (Execute)
+				CurrentTarget.PlayOnHitAnim;
+		}
+
+		FinishAction;
+	}
+}
+
+ability "WakeOfChaos_Swallow"
+{
+	event OnActivate
+	{
+		const Turns = 10;
+
+		StartAbility;
+		DisableStop;
+
+		if (Execute)
+		{
+			Source.WakeOfChaosWorm_Swallow(TargetUnit, Turns);
+		}
+
+		EnableStop;
+		FinishAction;
+	}
+}
+
+ability "ManaStealer"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+
+	event OnActivate
+	{
+		local HitTime: float;
+
+		AddLuck(Source);
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+
+		CalcDamage;
+
+		if (Execute)
+		{
+			Source.WaitForHit;
+			local Effect: vfx;
+			Effect = VFX_Imp(info.VisualFX, Source, TargetUnit, "center", "AttackRanged", HitTime);
+		}
+		CombatWait(HitTime);
+
+		TargetUnit.PlayEffect(info.HitFX);
+		TargetUnit.DamageUnit(DamageValue);
+		
+		// Mana steal 
+		local TargetHero: unit;
+		local SourceHero: unit;
+		TargetHero = GetHero(TargetUnit.Team);
+		SourceHero = GetHero(Source.Team);
+		
+		if (Execute && TargetHero.Valid && SourceHero.Valid)
+		{
+			TargetHero.PlayEffect(info.ManaLeechFX);
+			local ManaAmount: float;
+			ManaAmount = (ManaPercent * 0.01) * GetMaxMana(TargetUnit.Team);
+
+			ManaTransfer(Source, TargetUnit.Team, Source.Team, ManaAmount);
+			
+			//local Text: localizedstring;
+			//Text.Init("CombatLog.Updated.BreederManaSteal");
+			//Text.Add(Source);
+			//Text.Add(ManaAmount.ToInt);
+			//Text.Add(TargetUnit);
+			//Text.Add(Source);
+			//Text.Log();
+		}
+		
+		// Wait for source to finish the animation
+//		Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "ManaStealer upgd"
+{
+	var DamageValue: combatdamage;
+	const CalcDamage = { DamageValue.Set(MinDamage, MaxDamage, Scaling: EScaling.All, Flags: EDamageFlags.PlayHitAnim); };
+
+	event OnActivate
+	{
+		local HitTime: float;
+
+		AddLuck(Source);
+
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		// Set main target, and check for pretaliation OnAction events
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+
+		CalcDamage;
+
+		if (Execute)
+		{
+			Source.WaitForHit;
+			local Effect: vfx;
+			Effect = VFX_Imp(info.VisualFX, Source, TargetUnit, "center", "AttackRanged", HitTime);
+		}
+		CombatWait(HitTime);
+
+		TargetUnit.PlayEffect(info.HitFX);
+		TargetUnit.DamageUnit(DamageValue);
+		
+		// Mana steal 
+		local TargetHero: unit;
+		local SourceHero: unit;
+		TargetHero = GetHero(TargetUnit.Team);
+		SourceHero = GetHero(Source.Team);
+		
+		if (Execute && TargetHero.Valid && SourceHero.Valid)
+		{
+			TargetHero.PlayEffect(info.ManaLeechFX);
+			local ManaAmount: float;
+			ManaAmount = (ManaPercent * 0.01) * GetMaxMana(TargetUnit.Team);
+
+			ManaTransfer(Source, TargetUnit.Team, Source.Team, ManaAmount);
+			
+			//local Text: localizedstring;
+			//Text.Init("CombatLog.Updated.BreederManaSteal");
+			//Text.Add(Source);
+			//Text.Add(ManaAmount.ToInt);
+			//Text.Add(TargetUnit);
+			//Text.Add(Source);
+			//Text.Log();
+		}
+		
+		// Wait for source to finish the animation
+//		Source.WaitForAnim;
+
+		// Check retaliation
+		TargetUnit.Retaliate(Source);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "GatingPostKill"
+{
+	var Dummy: modifier"Dummy";
+	var EntityCell: cell;
+	var EntitySize: int;
+
+	event OnInit
+	{
+		EntityCell = Owner.Cell;
+		EntitySize = Owner.Size;
+	}
+
+	event OnKilled
+	{
+		PlayEffect(info.vsDestroy, EntityCell.CenterX + (EntitySize - 1) * 0.5, EntityCell.CenterY + ( EntitySize - 1) * 0.5);
+		Remove();
+	}
+}
+
+ability "AbyssGate"
+{
+	event OnActivate
+	{
+		const HealAmount = 100;
+		const Delay = 3.0;
+		local HealValue: combatdamage;
+
+
+		StartAbility;
+
+		TargetUnit = GetCurrentUnit;
+		if (!TargetUnit.Valid || !TargetUnit.Alive)
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		SetValidTarget;
+		HealValue.SetHeal(HealAmount);
+
+		if (!Simulation)
+		{
+			local Effect: effect"AbyssGated";
+			Effect = TargetUnit.AddEffect(TargetUnit, "AbyssGated");
+			if ( Effect.Valid )
+			{
+			  Effect.HealValue = HealValue;
+			}
+
+			local Gate: unit;
+			Gate = null;
+			Gate = AbyssGate(TargetUnit);
+
+			//if (Gate.Valid)
+			//{
+			//	local GateEffect: effect;			
+			//	GateEffect = Gate.AddEffect(Gate, "GatingPostKill");
+			//}
+
+			CombatWait(3.0);
+			TargetUnit.AddEffect(Source, "LossOfActionEffect");
+			TargetUnit.RemoveFromMapAndOrder;
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$duration = tooltip_duration;
+	}
+}
+
+effect "AbyssGated"
+{
+	var HealValue: combatdamage;
+
+	event OnRemoved
+	{
+		Owner.HealUnit(HealValue);
+	}
+}
+
+ability "MesmerizingKiss"
+{
+	var Effect: effect"MesmerizingKiss";
+
+	event GetTooltip
+	{
+		Effect = HostileDummy.AddEffect(Source, "MesmerizingKiss");
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "MesmerizingKiss"
+{
+	event OnDamage_TargetTaken
+	{
+		if (Simulation)
+			return;
+
+		Remove;
+	}
+}
+
+ability "RetractableSpikes"
+{
+	var DamageValue: combatdamage;
+	var AreaBonus: int = 0;
+	const CalcDamage = { DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit); };
+
+	event OnActivate
+	{
+		// Activate the ability (consume resources, activate cooldown etc)
+		StartAbility;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Full, null);
+		Source.WaitForHit;
+
+		local Area: int;
+		Area = DamageArea + AreaBonus;
+
+		CalcDamage;
+
+		for UnitsInSquare(It, TargetCell, Area, Area)
+		{
+			local CurrentTarget: unit;
+			CurrentTarget = It.Unit;
+
+			if (!CurrentTarget.Alive || CurrentTarget == Source || CurrentTarget.Team == Source.Team)
+				continue;
+
+			CurrentTarget.DamageUnit(DamageValue);
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+		CalcDamage;
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "BlindedByRage"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "DementedLaughterTarget"
+{
+	event GetTooltip
+	{
+		$minmaxdamage_enemy = MinDamage.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "DementedLaughterSelf"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$minmaxdamage_ally = MinDamage.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "FireproofSkin"
+{
+	event GetTooltip
+	{
+		$damageresistance = DamageModifier.AbsValue;
+	}
+}
+
+effect "Hateful Reta tooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Source: Owner, Scaling: EScaling.All, School: EAbilitySchool.Fire);
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "InfernalArmor"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "InLove"
+{
+	event GetTooltip
+	{
+		$percent = 100 - Reduction.AbsValue;
+		$creaturename = Owner.GetName;
+		$percentremaining = Reflect;
+	}
+}
+
+effect "MentalImmunity"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "SadisticLove"
+{
+	event GetTooltip
+	{
+		$percent = 100 - Reduction.AbsValue;
+		$creaturename = Owner.GetName;
+		$percentremaining = Reflect;
+	}
+}
+
+effect "LinkedGating"
+{
+	event GetTooltip
+	{
+		local Effect: effect"LinkedGatingEffect";
+		Effect = FriendlyDummy.AddEffect(Source, "LinkedGatingEffect");
+		$percent = Effect.Percent.Value;
+	}
+}
+
+effect "LinkedGatingEffect"
+{
+	event GetTooltip
+	{
+		$percent = Percent.Value;
+	}
+}
+
+effect "BladeOfHatredEffect"
+{
+	event OnTakeDamage
+	{
+		if (Simulation)
+			return;
+		Remove;
+	}
+
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "Multiplication"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$percent = SpawnComponent.PercentageValue;
+	}
+}
+effect "BladeOfHatred"
+{
+	event GetTooltip
+	{
+		local Effect: effect"BladeOfHatredEffect";
+		Effect = HostileDummy.AddEffect(Owner, "BladeOfHatredEffect");
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "DementedLaughter"
+{
+	event GetTooltip
+	{
+		local Effect: effect;
+		Effect = FriendlyDummy.AddEffect(Owner, "DementedLaughterSelf");
+		$creaturename = Owner.GetName;
+		$minmaxdamage_enemy = Value;
+		$minmaxdamage_ally = Value;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "HatefulRetaliation"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Source: Owner, Scaling: EScaling.All, School: EAbilitySchool.Fire);
+		$hpdamage = DamageValue;
+	}
+}
+
+effect "EyeOfGluttony"
+{
+	event GetTooltip
+	{
+		local Effect: effect"EyeOfGluttonyEffect";
+		Effect = HostileDummy.AddEffect(Owner, "EyeOfGluttonyEffect");
+		$creaturename = Owner.GetName;
+		$damagebonus = Effect.DamageBonus.AbsValue;
+	}
+}
+
+effect "Insatiable"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "MesmerizingThreat"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "TasteOfPain"
+{
+	var Effect: effect"TasteOfPainEffect";
+	var Hit: int = false;
+
+	event OnCauseDamage
+	{
+		if (Simulation)
+			return;
+			
+		Hit = true;
+	}
+
+	event OnPostAction
+	{
+		if (Simulation)
+			return;
+
+		if (Hit)
+		{
+			if (!Effect.Valid)
+				Effect = Owner.AddEffect(Owner, "TasteOfPainEffect", DamageIncrease);
+			if (Effect.Valid)
+				Effect.Stacks = 1;
+			Hit = false;
+		}
+	}
+
+	event OnTakeDamage
+	{
+		if (Simulation)
+			return;
+
+		if (!Effect.Valid)
+			Effect = Owner.AddEffect(Owner, "TasteOfPainEffect", DamageIncrease);
+		if (Effect.Valid && Effect.Stacks < MaxStacks)
+			Effect.Stacks++;
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damagebonus = DamageIncrease;
+		$number = MaxStacks;
+	}
+}
+
+effect "TasteOfPainEffect"
+{
+	var Stacks: int = 0;
+	var DamageBonus: float = 0;
+
+	event OnInit(Bonus: int)
+	{
+		DamageBonus = Bonus * 0.01;
+	}
+
+	event OnModifyDamageDone
+	{
+		Damage.ApplyBonus(1.0 + DamageBonus * Stacks);
+	}
+
+	event GetTooltip
+	{
+		$damagebonus = (1.0 + DamageBonus * Stacks).Percentage;
+	}
+}
+
+effect "Mana Stealer tooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$percent = ability("ManaStealer").ManaPercent;
+	}
+}
+
+effect "Voracious tooltip"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+ability "Gating1"
+{
+	var BonusMultiplier: int = 0;
+
+	event OnActivate
+	{
+		const Turns = 1;
+		const Percentage = 25;
+
+		StartAbility;
+
+		if (TargetUnit.GetTier != 1 || !TargetUnit.IsDemon || TargetUnit.IsSummoned || !TargetUnit.CanBeSummonSource)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		NeedTarget_Square(1, EAbilityFlags.OnEmptyCell, TargetUnit.Size, TargetUnit.Size);
+
+		InfernoGating(1, TargetUnit, GetTarget(1), Turns, Percentage * (1.0+BonusMultiplier*0.01));
+		SpendAbilityCost(1);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$duration = Turns;
+	}
+}
+
+ability "Gating2"
+{
+	var BonusMultiplier: int = 0;
+
+	event OnActivate
+	{
+		const Turns = 1;
+		const Percentage = 50;
+		local Rank1: ability"Gating1";
+
+		StartAbility;
+
+		if (TargetUnit.GetTier == 0 || TargetUnit.GetTier > 2 || !TargetUnit.IsDemon || TargetUnit.IsSummoned || !TargetUnit.CanBeSummonSource)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		NeedTarget_Square(1, EAbilityFlags.OnEmptyCell, TargetUnit.Size, TargetUnit.Size);
+
+		if (TargetUnit.GetTier == 1)
+		{
+			InfernoGating(1, TargetUnit, GetTarget(1), Rank1.Turns, Rank1.Percentage * (1.0+BonusMultiplier*0.01));
+			SpendAbilityCost(1);
+		}
+		else
+		{
+			InfernoGating(2, TargetUnit, GetTarget(1), Turns, Percentage * (1.0+BonusMultiplier*0.01));
+			SpendAbilityCost(2);
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$duration = Turns;
+	}
+}
+
+ability "Gating3"
+{
+	var BonusMultiplier: int = 0;
+
+	event OnActivate
+	{
+		const Turns = 1;
+		const Percentage = 75;
+		local Rank1: ability"Gating1";
+		local Rank2: ability"Gating2";
+
+		if (TargetUnit.GetTier == 0 || !TargetUnit.IsDemon || TargetUnit.IsSummoned || !TargetUnit.CanBeSummonSource)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		NeedTarget_Square(1, EAbilityFlags.OnEmptyCell, TargetUnit.Size, TargetUnit.Size);
+
+		if (TargetUnit.GetTier == 1)
+		{
+			InfernoGating(1, TargetUnit, GetTarget(1), Rank1.Turns, Rank1.Percentage * (1.0+BonusMultiplier*0.01));
+			SpendAbilityCost(1);
+		}
+		else if (TargetUnit.GetTier == 2)
+		{
+			InfernoGating(2, TargetUnit, GetTarget(1), Rank2.Turns, Rank2.Percentage * (1.0+BonusMultiplier*0.01));
+			SpendAbilityCost(2);
+		}
+		else
+		{
+			InfernoGating(3, TargetUnit, GetTarget(1), Turns, Percentage * (1.0+BonusMultiplier*0.01));
+			SpendAbilityCost(3);
+		}
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$duration = Turns;
+	}
+}
+
+ability "Gating4"
+{
+	var BonusMultiplier: int = 0;
+
+	event OnActivate
+	{
+		const Turns = 0;
+		const Percentage = 100;
+
+		if (TargetUnit.GetTier == 0 || !TargetUnit.IsDemon || TargetUnit.IsSummoned || !TargetUnit.CanBeSummonSource)
+		{
+			SetInvalidTarget;
+			return;
+		}
+		NeedTarget_Square(1, EAbilityFlags.OnEmptyCell, TargetUnit.Size, TargetUnit.Size);
+
+		InfernoGating(4, TargetUnit, GetTarget(1), Turns, Percentage * (1.0+BonusMultiplier*0.01));
+		SpendAbilityCost(4);
+
+		FinishAction;
+	}
+	event GetTooltip
+	{
+		$duration = Turns;
+	}
+}
+
+ability "CerberusAttack"
+{
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}

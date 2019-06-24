@@ -1,0 +1,959 @@
+// coder : mitko
+
+//effect "OutOfTimeEffect"
+//{
+//	var ActionCount:int;
+//
+//	event OnInit
+//	{
+//		ActionCount = 0;
+//	}
+//
+//	event OnTakeDamage
+//	{
+//		Owner.PlayEffect(info.vsProc);
+//	}
+//
+//	event OnTakeAction
+//	{
+//		if (ActionCount > 0)
+//			Remove();
+//
+//		if (Action.Command.Unit.Valid && Action.Command.Unit.Team != Owner.Team && (Action.Command.Type == ECommandType.MeleeAttack || Action.Command.Type == ECommandType.RangedAttack || Action.Command.Type == ECommandType.Cast))
+//		{
+//			if (Action.Command.Type == ECommandType.Cast)
+//				Owner.PlayEffect(info.vsProc);
+//			
+//			ActionCount = ActionCount + 1;
+//		}
+//	}
+//}
+
+effect "Undead"
+{
+	event GetTooltip
+	{
+		$damageresistance = Resist.AbsValue;
+	}
+}
+
+effect "AshasEmbrace"
+{
+	event GetTooltip
+	{
+		$magicvulnerability = DarknessVulnerability.AbsValue;
+	}
+}
+
+effect "OutOfTimeEffect"
+{
+
+	//event OnTakeAction
+	//{
+	
+	//	var Effect: effect"OutOfTimeEffect";
+	//	Effect = Owner.AddEffect( Owner , "OutOfTimeEffect" );
+	
+	//	local Text: localizedstring;
+	//	local AttackerUnit: unit;
+	//	
+	//	// print into log
+	//	Text.Init("CombatLog.Updated.FailedHittingVampire");
+	//	Text.Add(Action.Source);
+	//	Text.Add(Owner);
+	//	Text.Add(info.DisplayName);
+	//	Text.Log();
+	//}
+	
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+ability "Necromancy1"
+{
+	const Percent = 4;
+	const TierLimit = 2;
+	const Delay = 1.0;
+
+	var Bonus: int = 0;
+
+	event OnActivate
+	{
+		TargetUnit = TargetCell.GetUnit;
+		if (!TargetUnit.Valid)
+			TargetUnit = TargetCell.GetCorpse;
+
+		if (!TargetUnit.Valid || TargetUnit.Team != Source.Team)
+			return;
+
+		if (TargetUnit.GetTier > TierLimit)
+			return;
+
+		if (!TargetUnit.IsFactionByIndex(3) || TargetUnit.IsWarMachine()) //Necropolis
+			return;
+
+		if ( TargetUnit.GetTotalHealth >= TargetUnit.GetMaxHealth * TargetUnit.MaxUnits )
+			return; // WTS#78087: Necromancy - nem jelenik meg a kek grid azok alatt, akikre castolhato
+
+		SetValidTarget;
+
+		StartAbility;
+
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		PlayEffect(info.MapEffect, GetMapCenterX, GetMapCenterY);
+
+		local HealValue: combatdamage;
+		HealValue.SetHeal(GetArmyTotalHealth(Source.Team) * Percent * 0.01 * (1.0 + (Bonus * 0.01)), Scaling: EScaling.None);
+		if (TargetUnit.Alive)
+		{
+			TargetUnit.PlayEffect(info.vsHit);
+			TargetUnit.HealUnit(HealValue);
+		}
+		else
+		{
+			TargetUnit.PlayEffect(info.ResurrectionEffect);
+			CombatWait(Delay);
+			Resurrect(Source, TargetUnit, HealValue.Amount);
+			TargetUnit.PlayEffect(info.vsHit);
+		}
+
+		FinishAction;
+	}
+}
+
+ability "Necromancy2"
+{
+	const Percent = 8;
+	const TierLimit = 3;
+
+	var Bonus: int = 0;
+
+	event OnActivate
+	{
+		TargetUnit = TargetCell.GetUnit;
+		if (!TargetUnit.Valid)
+			TargetUnit = TargetCell.GetCorpse;
+
+		if (!TargetUnit.Valid || TargetUnit.Team != Source.Team)
+			return;
+
+		if (TargetUnit.GetTier > TierLimit)
+			return;
+
+		if (!TargetUnit.IsFactionByIndex(3) || TargetUnit.IsWarMachine()) //Necropolis
+			return;
+
+		if ( TargetUnit.GetTotalHealth >= TargetUnit.GetMaxHealth * TargetUnit.MaxUnits )
+			return; // WTS#78087: Necromancy - nem jelenik meg a kek grid azok alatt, akikre castolhato
+
+		SetValidTarget;
+
+		StartAbility;
+
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		PlayEffect(info.MapEffect, GetMapCenterX, GetMapCenterY);
+
+		local HealValue: combatdamage;
+		HealValue.SetHeal(GetArmyTotalHealth(Source.Team) * Percent * 0.01 * (1.0 + (Bonus * 0.01)), Scaling: EScaling.None);
+		if (TargetUnit.Alive)
+		{
+			TargetUnit.PlayEffect(info.vsHit);
+			TargetUnit.HealUnit(HealValue);
+		}
+		else
+		{
+			TargetUnit.PlayEffect(info.ResurrectionEffect);
+			CombatWait(Delay);
+			Resurrect(Source, TargetUnit, HealValue.Amount);
+			TargetUnit.PlayEffect(info.vsHit);
+		}
+		FinishAction;
+	}
+}
+
+ability "Necromancy3"
+{
+	const Percent = 10;
+	const TierLimit = 3;
+
+
+	var Bonus: int = 0;
+
+	event OnActivate
+	{
+		TargetUnit = TargetCell.GetUnit;
+		if (!TargetUnit.Valid)
+			TargetUnit = TargetCell.GetCorpse;
+
+		if (!TargetUnit.Valid || TargetUnit.Team != Source.Team)
+			return;
+
+		if (TargetUnit.GetTier > TierLimit)
+			return;
+
+		if (!TargetUnit.IsFactionByIndex(3) || TargetUnit.IsWarMachine()) //Necropolis
+			return;
+
+		if ( TargetUnit.GetTotalHealth >= TargetUnit.GetMaxHealth * TargetUnit.MaxUnits )
+			return; // WTS#78087: Necromancy - nem jelenik meg a kek grid azok alatt, akikre castolhato
+
+		SetValidTarget;
+
+		StartAbility;
+
+		TargetUnit.SetMainTarget;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		PlayEffect(info.MapEffect, GetMapCenterX, GetMapCenterY);
+
+		local HealValue: combatdamage;
+		HealValue.SetHeal(GetArmyTotalHealth(Source.Team) * Percent * 0.01 * (1.0 + (Bonus * 0.01)), Scaling: EScaling.None);
+		if (TargetUnit.Alive)
+		{
+			TargetUnit.PlayEffect(info.vsHit);
+			TargetUnit.HealUnit(HealValue);
+		}
+		else
+		{
+			TargetUnit.PlayEffect(info.ResurrectionEffect);
+			CombatWait(Delay);
+			Resurrect(Source, TargetUnit, HealValue.Amount);
+			TargetUnit.PlayEffect(info.vsHit);
+		}
+		FinishAction;
+	}
+}
+
+ability "Necromancy4"
+{
+	const Percent = 16;
+	const TierLimit = 3;
+	
+	var Bonus: int = 0;
+
+	event OnActivate
+	{
+		local iSize: int;
+		iSize = 3;
+		local TotalHealAmount: float;
+		TotalHealAmount = 0.0;
+
+		StartAbility;
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		PlayEffect(info.MapEffect, GetMapCenterX, GetMapCenterY);
+
+		// Get units sorted by damage
+		local TargetUnits: unitarray;
+		local CurrentUnit: unit;
+		local CurrentDamage: float;
+		local iUnit: int;
+		local ItUnit: unit;
+		local ItDamage: float;
+		for UnitsInSquare(It, TargetCell, 3, 3)
+		{
+			CurrentUnit = It.Unit;
+			if (!CurrentUnit.Valid || (CurrentUnit.Team != Source.Team) || !CurrentUnit.ValidTarget)
+				continue;
+			if (CurrentUnit.GetTier > TierLimit)
+				continue;
+			if (!CurrentUnit.IsFactionByIndex(3) || CurrentUnit.IsWarMachine()) //Necropolis
+				continue;
+
+			CurrentDamage = CurrentUnit.GetMaxHealth * CurrentUnit.MaxUnits - CurrentUnit.GetTotalHealth;
+			if (CurrentDamage <= 0)
+				continue;
+			for (iUnit = 0; iUnit < TargetUnits.Num; iUnit++)
+			{
+				ItUnit = TargetUnits.Get(iUnit);
+				ItDamage = ItUnit.GetMaxHealth * ItUnit.MaxUnits - ItUnit.GetTotalHealth;
+				if (CurrentDamage > ItDamage)
+					break;
+			}
+			TargetUnits.Insert(CurrentUnit, iUnit);
+			TotalHealAmount = TotalHealAmount + CurrentDamage;
+		}
+
+		// Add corpses to list
+		local iCorpse: int;
+		local Corpses: unitarray;
+		GetCorpses(Corpses);
+		for (iCorpse = 0; iCorpse < Corpses.Num; iCorpse++)
+		{
+			CurrentUnit = Corpses.Get(iCorpse);
+			if (!CurrentUnit.Valid || !CurrentUnit.Cell.Valid || (CurrentUnit.Team != Source.Team))
+				continue;
+			if (CurrentUnit.GetTier > TierLimit)
+				continue;
+			if (!CurrentUnit.IsFactionByIndex(3)) //Necropolis
+				continue;
+			if (GetCellDistance(CurrentUnit.Cell.X, CurrentUnit.Cell.Y, CurrentUnit.Size, TargetCell.X, TargetCell.Y, iSize) > 0.0)
+				continue;
+			CurrentDamage = CurrentUnit.GetMaxHealth * CurrentUnit.MaxUnits - CurrentUnit.GetTotalHealth;
+			if (CurrentDamage <= 0)
+				continue;
+			for (iUnit = 0; iUnit < TargetUnits.Num; iUnit++)
+			{
+				ItUnit = TargetUnits.Get(iUnit);
+				ItDamage = ItUnit.GetMaxHealth * ItUnit.MaxUnits - ItUnit.GetTotalHealth;
+				if (CurrentDamage > ItDamage)
+					break;
+			}
+			TargetUnits.Insert(CurrentUnit, iUnit);
+			TotalHealAmount = TotalHealAmount + CurrentDamage;
+		}
+
+		local MaxTotalHeal: float;
+		MaxTotalHeal = GetArmyTotalHealth(Source.Team) * Percent * 0.01;
+		if ( TotalHealAmount > MaxTotalHeal )
+			TotalHealAmount = MaxTotalHeal;
+
+		local RemainingUnitCount: int;
+		local HealAmount: float;
+		RemainingUnitCount = TargetUnits.Num;
+	// ugyvannak rendezve hogy a legserultebb van elol
+	// elsore a leg 'egeszsegesebbet' kell gyogyitani
+		for (iUnit = TargetUnits.Num-1; iUnit >= 0; iUnit--)
+		{
+			CurrentUnit = TargetUnits.Get(iUnit);
+			local ActualHealed: float;
+			ActualHealed = CurrentUnit.GetMaxHealth * CurrentUnit.MaxUnits - CurrentUnit.GetTotalHealth;
+
+			HealAmount = TotalHealAmount / RemainingUnitCount;
+			if ( ActualHealed > HealAmount )
+				ActualHealed = HealAmount;
+			RemainingUnitCount--;
+			if (CurrentUnit.Alive)
+			{
+				CurrentUnit.PlayEffect(info.vsHit);
+				local HealValue: combatdamage;
+				HealValue.SetHeal(HealAmount * (1.0 + (Bonus * 0.01)), Scaling: EScaling.None);
+				CurrentUnit.HealUnit(HealValue);
+			}
+			else
+			{
+				CurrentUnit.PlayEffect(info.ResurrectionEffect);
+				CombatWait(Delay);
+				Resurrect(Source, CurrentUnit, HealAmount * (1.0 + (Bonus * 0.01)));
+				TargetUnit.PlayEffect(info.vsHit);
+			}
+			TotalHealAmount = TotalHealAmount - ActualHealed;
+		}
+
+		FinishAction;
+	}
+}
+
+effect "Lich_NecromanticChanneling_Effect"
+{
+	var MyTargetUnit: unit;
+	var TotalDamage: float;
+	const HealPercentage = 20;
+
+	event OnInit
+	{
+		TotalDamage = 0;
+	}
+
+	event OnCauseDamage
+	{
+		if (Simulation || !MyTargetUnit.ValidTarget || !Damage.Target.ValidTarget)
+			return;
+		if ( !Damage.Target.IsLiving() )
+			return;
+
+		TotalDamage = TotalDamage + Damage.Amount;
+
+	// ennek OnPostActionban kene lennie, dehat az nem hivodik ...
+		CombatWait(0.5);
+		local HealValue: combatdamage;
+		HealValue.SetHeal(TotalDamage * HealPercentage * 0.01, Scaling: EScaling.None);
+		MyTargetUnit.HealUnit(HealValue);
+		MyTargetUnit.PlayEffect(info.HealTarget);
+		Remove();
+	}
+
+/*
+	event OnPostAction
+	{
+		if ( !MyTargetUnit.ValidTarget )
+			return;
+
+		if ( TotalDamage > 0 )
+		{
+			Wait(0.5);
+			local HealValue: combatdamage;
+
+			HealValue.SetHeal(TotalDamage * HealPercentage * 0.01, EScaling.None);
+			MyTargetUnit.HealUnit(HealValue);
+			MyTargetUnit.PlayEffect(info.HealTarget);
+			Remove();
+		}
+	}
+*/
+	event GetTooltip
+	{
+		$percent = HealPercentage;
+	}
+}
+
+ability "Lich_NecromanticChanneling"
+{
+	var HeroEffect: effect"Lich_NecromanticChanneling_Effect";
+	const EffectName = "Lich_NecromanticChanneling_Effect";
+
+	event OnActivate
+	{
+		if ( Source == TargetUnit )
+			return;
+		if (!TargetUnit.ValidTarget)
+			return;
+		if (TargetUnit.IsLiving())
+			return; // WTS#77297: HOMMVI-5314 - [Abilities][Necropolis] The Lich's ability "Life Drain" works o...
+
+		if ( TargetUnit.GetMaxHealth * TargetUnit.MaxUnits <= TargetUnit.GetTotalHealth )
+			return;
+
+		StartAbility;
+		
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		if ( Source.Team == TargetUnit.Team )
+		{
+			if (Simulation)
+			{
+				SetValidTarget;
+				return;
+			}
+
+			HeroEffect = Source.AddEffect(Source, EffectName);
+			if (HeroEffect.Valid)
+				HeroEffect.MyTargetUnit = TargetUnit;
+			if ( TargetUnit.ValidTarget )
+				TargetUnit.PlayEffect(Source,info.SpellTarget);
+		}
+
+		MultiAction;
+	}
+	event GetTooltip
+	{
+		HeroEffect = FriendlyDummy.AddEffect(Source, EffectName);
+		$creaturename = Source.GetName;
+		$percent = HeroEffect.HealPercentage;
+		$duration = HeroEffect.MaxTurns;
+	}
+}
+
+ability "BreathOfVermin"
+{
+	event OnActivate
+	{
+		if (!TargetUnit.ValidTarget || !TargetCell.Valid)
+			return;
+
+		local Effect: effect"BreathOfVermin";
+	
+		if (Execute)
+		{
+			Source.Move(0, Path, TargetUnit);
+		}
+
+		StartAbility;
+		TargetUnit.SetMainTarget;
+
+		// Start animation
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.Melee, null);
+		Source.WaitForHit;
+		
+		TargetUnit.AddEffect(Source, "BreathOfVermin");
+		TargetUnit.PlayEffect(info.MainTargetFX);
+		
+		local CurrentTarget: unit;
+		for UnitsInSquare(It, TargetCell, 3, 3)
+		{
+			CurrentTarget = It.Unit;
+			if (CurrentTarget != TargetUnit && CurrentTarget.ValidTarget && CurrentTarget.Team != Source.Team)
+			{
+				CurrentTarget.AddEffect(Source, "BreathOfVermin");
+				CurrentTarget.PlayEffect(info.SecondaryTargetFX);
+			}
+		}
+		FinishAction;
+	}
+	
+	event GetTooltip
+	{
+		local Effect: effect"BreathOfVermin";
+		Effect = HostileDummy.AddEffect(Source, "BreathOfVermin");
+		$mightpower = Effect.MightAttack.AbsValue;
+		$mightdefense = Effect.MightDefense.AbsValue;
+		$duration = Effect.MaxTurns;
+		$hpdamage = Effect.Damage.Value;
+	}
+}
+
+effect "BreathOfVermin"
+{
+	event GetTooltip
+	{
+		$mightpower = MightAttack.AbsValue;
+		$mightdefense = MightDefense.AbsValue;
+		$duration = MaxTurns;
+		$hpdamage = Damage.Value;
+	}
+}
+
+ability "DanceOfDecay"
+{
+	event GetTooltip
+	{
+		$hpdamage = "10";
+		$turn = "1";
+	}
+}
+
+ability "DualForms"
+{
+	event OnActivate
+	{
+		const StartDelay = 1;
+		const EntityType1 = 206650624;
+		const EntityType2 = 206650121;
+
+		StartAbility;
+
+		if (Source.IsEntityType(EntityType1))
+			Source.Morph(EntityType2, "TransformStart", "TransformEnd");
+		else
+			Source.Morph(EntityType1, "TransformStart", "TransformEnd");
+		SetValidTarget;
+
+		if ( !Simulation && Source.CanWait() )
+		{
+			NativeWaitNoLog;
+		}
+		else
+		{
+			MultiAction;
+		}
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+ability "DualFormsUpgrade"
+{
+	event OnActivate
+	{
+		const StartDelay = 1;
+		const EntityType1 = 206650653;
+		const EntityType2 = 206650165;
+
+		StartAbility;
+
+		if (Source.IsEntityType(EntityType1))
+			Source.Morph(EntityType2, "TransformStart", "TransformEnd");
+		else
+			Source.Morph(EntityType1, "TransformStart", "TransformEnd");
+		SetValidTarget;
+
+		if ( !Simulation && Source.CanWait() )
+		{
+			NativeWaitNoLog;
+		}
+		else
+		{
+			MultiAction;
+		}
+	}
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+ability "FreezingWeb"
+{
+	var Effect: effect"FreezingWebEffect";
+
+	event GetTooltip
+	{
+		Effect = HostileDummy.AddEffect(Source, "FreezingWebEffect");
+		$creaturename = Source.GetName;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+ability "Unraveling"
+{
+	var DamageValue: combatdamage;
+	var HealValue: combatdamage;
+
+	event OnActivate
+	{
+		StartAbility;
+
+		if (TargetUnit.Team != Source.Team || !TargetUnit.IsUndead)
+		{
+			SetInvalidTarget;
+			return;
+		}
+
+		Source.StartAttack(TargetUnit, TargetCell, EAttackRange.None, null);
+		Source.WaitForHit;
+
+		DamageValue.Set(Damage, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+
+		local BonusHeal: int = 0;
+
+		for UnitsInSquare(It, TargetUnit.Cell.X - 1, TargetUnit.Cell.Y - 1, TargetUnit.Size + 2, TargetUnit.Size + 2)
+		{
+			if (It.Unit == TargetUnit || !It.Unit.ValidTarget || !It.Unit.IsLiving)
+				continue;
+
+			BonusHeal = BonusHeal + It.Unit.DamageUnit_ReturnValue(DamageValue);
+		}
+		HealValue.SetHeal(Heal, Scaling: EScaling.All);
+		TargetUnit.PlayEffect(info.vsHit);
+		TargetUnit.HealUnit(HealValue);
+		if (TargetUnit.ValidTarget)
+		{
+			HealValue.SetHeal(BonusHeal, Scaling: EScaling.None);
+			TargetUnit.HealUnit(HealValue);
+		}
+
+		FinishAction;
+	}
+
+	event GetTooltip
+	{
+		DamageValue.Set(Damage, Scaling: EScaling.All);
+		$hpheal = DamageValue;
+		HealValue.SetHeal(Heal, Scaling: EScaling.All);
+	}
+}
+
+effect "AllegianceToAsha"
+{
+	event GetTooltip
+	{
+		$damageresistance = "TODO";
+	}
+}
+
+effect "AuraOfPutrescence"
+{
+	event GetTooltip
+	{
+		local Effect: effect"AuraOfPutrescenceEffect";
+		Effect = HostileDummy.AddEffect(Source, "AuraOfPutrescenceEffect");
+		$creaturename = Owner.GetName;
+		$percent = Effect.Health.AbsValue;
+		$duration = Effect.MaxTurns;
+		$number = Effect.Stacks;
+	}
+}
+
+effect "AuraOfPutrescenceEffect"
+{
+	event GetTooltip
+	{
+		$percent = Health.AbsValue;
+		$duration = MaxTurns;
+		$number = Stacks;
+	}
+}
+
+effect "BalefulGaze upgrade"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$hpdamage = Damage.Amount.Amount;
+		$duration = MaxTurns;
+	}
+}
+
+effect "Doom"
+{
+	event GetTooltip
+	{
+		$healingresistance = Reduction.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "DoomTooltip"
+{
+	var Effect: effect"Doom";
+
+	event GetTooltip
+	{
+		Effect = FriendlyDummy.AddEffect(Owner, "Doom");
+		$healingresistance = Effect.Reduction.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "Incorporeal"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damageresistance = Reduction.AbsValue;
+	}
+}
+
+effect "SuperIncorporeal"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damageresistance = Reduction.AbsValue;
+	}
+}
+ability "OutOfTime"
+{	
+	var Effect: effect"OutOfTimeEffect";
+	event OnActivate
+	{
+		StartAbility;
+		Effect = Source.AddEffect( Source , "OutOfTimeEffect" );
+		MultiAction;
+	}
+
+	event GetTooltip
+	{
+		$creaturename = Source.GetName;
+	}
+}
+
+effect "OutOfTime"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "SuperVampiricEmbrace"
+{
+	event GetTooltip
+	{
+		$percent = Recovery.AbsValue;
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "VenomousTouchArachnid basic"
+{
+	event GetTooltip
+	{
+		local Effect: effect"VenomousTouchArachnidEffect";
+		Effect = HostileDummy.AddEffect(Source, "VenomousTouchArachnidEffect");
+		$creaturename = Owner.GetName;
+		$hpdamage = Effect.Damage.Amount.Amount;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "VenomousTouchArachnid upgrade"
+{
+	event GetTooltip
+	{
+		local Effect: effect"VenomousTouchArachnidEffect upg";
+		Effect = HostileDummy.AddEffect(Source, "VenomousTouchArachnidEffect upg");
+		$creaturename = Owner.GetName;
+		$hpdamage = Effect.Damage.Amount.Amount;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "VenomousTouchArachnidEffect upg"
+{
+	event GetTooltip
+	{
+		$hpdamage = Damage.Amount.Amount;
+		$duration = MaxTurns;
+	}
+}
+
+effect "WebbingSpearsPassive"
+{
+	event GetTooltip
+	{
+		local Effect: effect"WebbingSpears";
+		Effect = HostileDummy.AddEffect(Source, "WebbingSpears");
+		$cmovement = Effect.Movement.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "NoRestForTheWicked"
+{
+	var Modifier1: modifier"ModifyAbility";
+	var Modifier2: modifier"ModifyAbility";
+	var Modifier3: modifier"ModifyAbility";
+	var Modifier4: modifier"ModifyAbility";
+
+	event OnCreate
+	{
+		Modifier1.Init(ability("Necromancy1"), Bonus, Percent);
+		Modifier2.Init(ability("Necromancy2"), Bonus, Percent);
+		Modifier3.Init(ability("Necromancy3"), Bonus, Percent);
+		Modifier4.Init(ability("Necromancy4"), Bonus, Percent);
+	}
+
+	event GetTooltip
+	{
+		$percent = Percent;
+	}
+}
+
+effect "AshasEmbracetooltip"
+{
+	event GetTooltip
+	{
+		local Effect: effect"AshasEmbrace";
+		Effect = HostileDummy.AddEffect(Owner, "AshasEmbrace");
+		$magicvulnerability = Effect.DarknessVulnerability.AbsValue;
+		$duration = Effect.MaxTurns;
+	}
+}
+
+effect "BalefulGaze basic"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$hpdamage = Damage.Amount.Amount;
+	}
+}
+
+effect "DeadFlesh"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damageresistance = DamageModifier.AbsValue;
+	}
+}
+
+effect "FreezingWebEffect"
+{
+	event GetTooltip
+	{
+		$duration = MaxTurns;
+	}
+}
+
+effect "OldBones"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$damageresistance = DamageModifier.AbsValue;
+	}
+}
+
+effect "VampiricEmbrace"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+		$percent = RecoveryComponent.AbsValue;
+	}
+}
+
+effect "VenomousTouchArachnidEffect"
+{
+	event GetTooltip
+	{
+		$hpdamage = Damage.Amount.Amount;
+		$duration = MaxTurns;
+	}
+}
+
+effect "WebbingSpears"
+{
+	event GetTooltip
+	{
+		$cmovement = Movement.AbsValue;
+		$duration = MaxTurns;
+	}
+}
+
+effect "Contagion"
+{
+	event GetTooltip
+	{
+		$creaturename = Owner.GetName;
+	}
+}
+
+effect "RageAgainstTheLiving"
+{
+	event GetTooltip
+	{
+		$damagebonus = Damage;
+		$cmovement = Movement;
+	}
+}
+
+ability "SkeletonAttack"
+{
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "LichAttack"
+{
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "GhoulAttack"
+{
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
+
+ability "WraithAttack"
+{
+	event GetTooltip
+	{
+		local DamageValue: combatdamage;
+		DamageValue.Set(-1, -1, Scaling: EScaling.All, Flags: EDamageFlags.PlayHit);
+		$hpdamage = DamageValue;
+	}
+}
