@@ -1,0 +1,175 @@
+Voices:
+	- isec
+	- byubatta (railgun shot)
+
+Secret Techs:
+	- T-Rex
+	- Cosmonauts
+
+Credits:
+	- Mig Eater (Ray Sub)
+	- The Darkest Elf (Iron Fist)
+	- 
+
+Other: Atomic Noodles for helping
+
+
+Name of the Mod: Reasonable Revenge
+Description: No op units, as small as possible, rebalances and more fun. Maintain the original look
+Crash Report: 
+ - Against Iraq, lategame
+ - Drednaught
+
+===================================================================
+	Allied:
+===================================================================
+ + Germany
+-------------------------------------------------------------------
+Veteran: Grizly Tank, Dolphin, Guardian GIs (remove Grizly)
+Bonus: Engineering - Tanks are built 15% faster built and have 15% more armor
+
+Description: For allied standards, Germany have the superior ground control with an improved Tank Destroyer and are able to suplement losses in their tank division vey quickly.
+
+-------------------------------------------------------------------
+ + France
+-------------------------------------------------------------------
+Veteran: Mirage Tank, Chrono Legionaire, Aegis Cruiser
+Bonus: Heavy Fortification - Defenses have 20% more health, Buildngs have 10% more health
+
+Description: The French are a heavy, yet versatile faction. Strong defenses like a more durable Grand Cannons greatly aid a strongly macro oriented gameplay, while veteran Chrono Legionares and IFVs add to the mobility of the faction.
+
+-------------------------------------------------------------------
+ + USA
+-------------------------------------------------------------------
+Veteran: Seal, Tanya, Destroyer (and Hornet)
+Bonus: Armaments Industry - Units cost 15% less
+
+Description: While lacking a powerful unique unit, the United States make that up with a strong presence in air, naval and ground forces. Strong Destroyers will provide an advantage in naval conflicts, while cheaper tanks allow for easier ground control. Airborne can be landed anywhere on the map and the now veteran Seals can traverse the map almost without limits.
+
+-------------------------------------------------------------------
+ + United Kingdom
+-------------------------------------------------------------------
+Veteran: IFV, Harrier, GI
+Bonus: Bootcamps - Infantry is trained 15% faster and moves 15% faster
+
+Description: The UK's infantry forces are the best of all allied nations, able to reach enemy forces in unmatched speed. Veteran Prism tanks and Snipers make this faction powerful in long range and their air forces are only second to South Korea.
+
+-------------------------------------------------------------------
+ + South Korea
+-------------------------------------------------------------------
+Veteran: Rocketeer, Aircraft Carrier, Nighthawk
+Bonus: Agile Maneuvers - Units move 15% faster
+
+Descrption: South Korea focuses on very fast forces that can traverse the map quickly. With Black Eagles and veteran Rocketeers they have the best aircraft in the game. They can win sieges with veteran Aircraft carriers and even on land their forces will always have a speed advantage over the enemy.
+
+
+Leftover units: Battlebus, Aegis
+===================================================================
+	Soviet Union:
+===================================================================
+ - Russia
+-------------------------------------------------------------------
+Veteran: Rhino Tank, Typhoon Attack Submarine, Tesla Trooper
+Unique Unit: Vlad's Dreadnaught
+Bonus: Tank Army - units produce 20% faster
+
+Description: Russia can easily outproduce the motherland's enemies on land and have the best fleet for naval conflicts. With versatile Tesla Tanks and veteran Troopers, their proficiency in Tesla Technology is unmatched.
+
+
+-------------------------------------------------------------------
+ - Libya
+-------------------------------------------------------------------
+Veteran: Siege Chopper, Giant Squid, Flak Truck
+Bonus: Dune Adjustments - Units move 20% faster
+
+Description: Within the union, Libya is unique in possessing a soviet force that can not only outshoot, but also outmaneuver enemy forces. Veteran Siege Choppers can soften up enemy bases, allowing Demolition trucks to finish them off within seconds.
+
+-------------------------------------------------------------------
+ - Iraq
+-------------------------------------------------------------------
+Veteran: War Miner, Sea Scorpion, Kirov
+Bonus: Leading Supplier - 15% more income
+
+Description: Being a leading supplier of raw materials in the union, Iraq can sell their ore for higher prices to gain a deciding ecomic advantage over enemies. Iraq's force of veteran War Miners will harvest reliably and Desolators can render hordes of enemy infantry useless.
+
+-------------------------------------------------------------------
+ - Cuba
+-------------------------------------------------------------------
+Veteran: V3, Dreadnaught, Boris
+Bonus: Mass Fortification - Builds defenses 20% faster
+
+Description: Cuba specialises in long range ballistics in the form of Veteran V3 Launchers and Dreadnaughts. The long range forces are often well protected by strongly fortified positions that Cuba can create in unmatched speed.
+
+-------------------------------------------------------------------
+ + North Korea
+-------------------------------------------------------------------
+Veteran: Conscripts, Apocalypse Tank, Flak Trooper
+Bonus: Forced Conscription - Infantry is 20% cheaper
+Unique Unit: Iron/Nuclear Dragon - Nuclear Cannon or Iron Fist
+
+Descrption: Instead of strong individual units, China can deploy a vast amount of tank and infantry forces to outnumber its enemies. Cheap armies of veteran conscripts can gain control of the battlefield early and veteran Kirovs can crack defenses of heavily fortified enemies.
+
+===================================================================
+	Yuri Factions:
+===================================================================
+ - Psi Corps
+-------------------------------------------------------------------
+Main Tech: Mind Control
+Veteran: Yuri Clone, Boomer, Magnetron
+Unique Unit: (better) Mastermind, Psi Commando
+Bonus: Master Architect: Defenses and units are built 15% faster
+
+Description: The Psi Corps can seize control of the battlefield with the most powerful psychic abilities, such as veteran Masterminds, Yuri Primes and Psi Amplifiers. Forces and bases can be established in almost alien speed and veteran Boomers can decimate structures early from the unseen.
+
+-------------------------------------------------------------------
+ + Antarctic HQ
+-------------------------------------------------------------------
+Main Tech: Genetics
+Veteran: Brute, Giant Squid, Initiate
+Unique Unit: Bio-Corrupter
+Bonus: Mass Cloning - Infantry is 15% cheaper and moves 15% faster (maybe change to 15% faster and 15% more armor)
+
+Description: The technological headquaters in Antarctica focuses on bio manipulation to corrupt the battlefield. It can turn enemy forces into mindless brutes via Bio Corrupters and smash forces with veteran Brutes and a genetically modified Tyrannosarus. And due to advancements in cloning, infantry can be produced at little cost.
+
+-------------------------------------------------------------------
+ + Lunar Uplink
+-------------------------------------------------------------------
+Main Tech: Anti Gravity
+Veteran: Yuri Prime, Floating Disk, Chaos Drone (maybe Gattling Gunner?)
+Unique Unit: Cosmonaut
+Bonus: Grav Engines - Units move 15% faster
+
+Description: Focusing on the most advanced technologies mankind can offer, the Lunar Uplink division has the strongest force of Disks and Magnetrons in Yuri's army. New generation engines make units move faster and Cosmonauts strike at the heart of an enemy without warning.
+
+-------------------------------------------------------------------
+ + African Dominion
+-------------------------------------------------------------------
+Main Tech: Ground control
+Veteran: Slave Miner, Ray Sub, Gatling Tank
+Unique Unit: Hover Lasher/Raider Tank
+Bonus: Slavery - 15% more income
+
+Description: Nesting deep in the jungles and deserts of Africa, the Dominion is not only the hidden economic power behind Yuri's agenda but also a secret recruiting ground. Dominion's Hover Lashers can reach every part of the battlefield with ease.
+
+-------------------------------------------------------------------
+ + Greenland Labs
+-------------------------------------------------------------------
+Main Tech: Production and Chemicals
+Veteran: Lasher, Virus, Gattling Ship
+Unique Unit: Chaos Launcher (V3 with Chaos Gas), or maybe repair Disk?
+Bonus: Primary Facilities - Tanks are 15% cheaper
+
+Descrption: Hidden in the barren north, Yuri has located the core of his production facilities in Greenland. Here, waves and waves of disposable tank forces are created, driven by mindless puppets. Responsible for the most insidious chemicals of Yuri's army, these laboratories also create the best Chaos Drones and Virus.
+
+
+TODO Units: 
+ - Repair Disk http://www.moddb.com/mods/edge-of-war/images/floating-disk#imagebox9
+
+ - Magne Disk? (every side could have its own disk)
+ - Gatling Trooper http://www.moddb.com/mods/edge-of-war/images/gattling-trooper#imagebox
+
+
+Assets:
+ - Yuri Command Center
+ - Psychic Amplifier 
+ - Psychic Beacon (big psychic sensor?)

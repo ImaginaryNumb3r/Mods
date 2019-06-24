@@ -1,0 +1,65 @@
+[LBP]
+LBMCVersion=0.99.112
+LBPVersion=3
+[Options]
+ModName=Reasonble Revenge
+ModAuthor=Imaginary Number
+ModVersion=<y.mm.dd.hh.mm>
+ModVersionBox=1
+ModDateBox=1
+ModDateYear=2017
+ModDateMonth=07
+ModDateDay=06
+ModDescription=Balance mod, mostly
+ModCampaigns=Broken Campaigns
+ModType=0
+ModWebsite=http://www.website.com
+ModUpdateCheck=http://www.website.com/mod/mod.upd
+ModScrnFormat=SCRN%04d.pcx
+ModSnapFormat=Map%04d.yrm
+IsForRA2=0
+ShutdownLB=0
+TXOpt=0
+FA2Opt=0
+Params=0
+GameMode=1
+MapIndex=0
+[Files]
+0=C:\Spiele\EA Games\The First Decade\Command & Conquer Red Alert(tm) II\AR2\Backup\rulesmd.ini
+1=C:\Spiele\EA Games\The First Decade\Command & Conquer Red Alert(tm) II\AR2\Backup\rulesmd.ini
+MixEncrypt=0
+Side3Mix=0
+UseAres=False
+[FileNodeIDs]
+0=interface
+1=ini
+[Installer]
+WindowIcon=1
+OldSaves=1
+ResetGameConfig=0
+CRC=1
+Instdir=Just another YR mod
+DSP=1
+ShowInfoPage=0
+InfoPageTitle=Information
+InfoPageButton=Information
+ShowInstDetails=1
+AutoClose=1
+XPStyle=0
+TextColour0=00
+BGColour0=FF
+TextColour1=00
+BGColour1=FF
+TextColour2=00
+BGColour2=FF
+[InfoPageText]
+LastLine=0
+0=This text will appear on the Information Page (if you have one).$\n$\nWebsite URLs will be turned into hyperlinks automatically.$\n
+[Compression]
+CompressionMethod=3
+Solid=1
+GenPat=1
+FLAC=1
+PatchMinSize=16
+PatchBlockSize=2
+UpdateOnly=0

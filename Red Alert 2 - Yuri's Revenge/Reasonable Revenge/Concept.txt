@@ -1,0 +1,75 @@
+Allied:
+ + Germany
+Main Tech: Tank Forces
+Veteran: Grizly
+Unique Unit: Tank Destroyer, Heavy Tank (tnkdest.zip)
+
+ + French
+Main Tech: Fortifications
+Veteran: Mirage
+Unique Unit: Grand Cannon, ?
+
+ + America
+Main Tech: Rapid Reinforcements
+Veteran: GI, Seal
+Unique Unit: Paratroopers?
+
+ + United Kingdom
+Main Tech: Long Range
+Veteran: Prism Tank
+Unique Unit: Snipers
+
+ + South Korea
+Main Tech: Aircraft
+Veteran: Black Eagle
+Unique Unit: Black Eagle, Fortress Bomber
+
+
+Soviet Union:
+ - Russia
+Main Tech: Tesla Technology
+Veteran: V3
+Unique Unit: Tesla Tank, Vladimir's Dreadnaught
+
+ - Libya
+Main Tech: Tesla Technology
+Veteran: V3
+Unique Unit:
+
+ - Iraq
+Main Tech: Radiation and nukes
+Veteran: V3
+Unique Unit:
+
+
+ - Cuba
+Main Tech: Explosives and rockets
+Veteran: V3
+Unique Unit: ICBM (LRS Launcher.rar)
+
+ + China
+Veteran: Conscripts
+
+ + North Korea?
+
+Yuris:
+ - Psi Corps
+Main Tech: Mind Control
+Veteran: Yuri Clone, Initiate
+Unique Unit: Mastermind, Psi Amplifier
+
+ + Antarctica
+Main Tech: Genetics
+Veteran: Brute
+Unique Unit: Bio Corrupter, Tyrannosaurus
+
+ + Lunar Uplink
+Main Tech: Hover, speed, lazerz
+Veteran: Magnetron
+Unique Unit: Cosmonaut, Hover Lasher
+
+ + Scoprion Cell?
+Main Tech: Spam?
+Veteran: Slave Miner
+Unique Unit: Cosmonaut, Hover Lasher
+

@@ -1,0 +1,13 @@
+[General]
+Name=Reasonable Revenge
+Author=ImaginaryNumb3r
+Description=Yes
+ModType=mod
+AllowTX=yes
+UseAres=yes
+
+[Uninstall]
+0=interface\antarctica.pcx
+1=interface\dominion.pcx
+2=interface\greenland.pcx
+3=interface\lunar.pcx

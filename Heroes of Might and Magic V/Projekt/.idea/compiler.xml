@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Annotation profile for com.github.ImaginaryNumb3r:new-balance-era:1.0" enabled="true">
+        <sourceOutputDir name="Code/target/generated-sources/annotations" />
+        <sourceTestOutputDir name="Code/target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="New Balance Era" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="New Balance Era" target="12" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

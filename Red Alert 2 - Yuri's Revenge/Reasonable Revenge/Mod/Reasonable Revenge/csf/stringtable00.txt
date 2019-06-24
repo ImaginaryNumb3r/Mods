@@ -1,0 +1,22 @@
+[Header]
+Language=0
+
+[Table]
+NAME:LunarUplink=Mondkommando
+Name:China=China
+MenuText:China=? and have cheaper units
+LoadBrief:China=Expandable forces?
+Name:AntarcticHQ=Arktisches HQ
+MenuText:AntarcticHQ=Das Mondkommandos hat Kosmonauten und anti-grav Waffen
+Name:Antarctic=Antarktis
+LoadBrief:AntarcticHQ=The technological headquaters in Antarctica focuses on bio mani
+MenuText:LunarUplink=Das Mondkommandos hat Kosmonauten und anti-grav Waffen
+Name:Moon=Mond
+LoadBrief:LunarUplink=Focus
+Name:AfricanDominion=Afrikanisches Herrschaftsgebiet
+LoadBrief:AfricanDominion=Nesting deep in the jungles and deserts of Africa, the Dominion is not only the hidden economic power behind Yuri's agenda but also a secret recruiting ground. Dominion's Hover Lashers can reach every part of the battlefield with ease.
+Name:Africa=Zentralafrika
+Name:GreenlandLabs=Grönland Laboratorien
+Name:Greenland=Grönland
+LoadBrief:GreenlandLabs=Hidden in the barren north, Yuri has located the core 
+
