@@ -1,0 +1,67 @@
+1600            // health 
+30              // damage
+110             // rangeattack
+30              // chargedamage
+120             // walk destruction radius
+10
+10
+10
+10
+10
+10
+10
+10
+10
+10
+15	//1	attack a velocity
+15	//2	attack a velocity
+15	//3	attack a velocity
+0 	//4	attack a velocity
+0	//5	attack a velocity
+15	//6	attack a velocity
+15	//7	attack a velocity
+15	//8	attack a velocity
+0	//9	attack a velocity
+15	//10 attack a velocity
+0	//1 attack b velocity
+0	//2 attack b velocity
+0	//3 attack b velocity
+0	//4 attack b velocity
+5	//5 attack b velocity
+5	//6 attack b velocity
+0	//7 attack b velocity
+0	//8 attack b velocity
+10 	//9 attack b velocity
+10 	//10 attack b velocity
+15	//1	attack c velocity
+15	//2	attack c velocity
+15	//3	attack c velocity
+0 	//4	attack c velocity
+0	//5	attack c velocity
+15	//6	attack c velocity
+15	//7	attack c velocity
+15	//8	attack c velocity
+0	//9	attack c velocity
+15	//10 attack c velocity
+0	//1 attack d velocity
+0	//2 attack d velocity
+0	//3 attack d velocity
+0	//4 attack d velocity
+5	//5 attack d velocity
+5	//6 attack d velocity
+0	//7 attack d velocity
+0	//8 attack d velocity
+10 	//9 attack d velocity
+10 	//10 attack d velocity
+50	//chargeA velocity
+50 	//chargeA velocity
+50 	//chargeA velocity
+50 	//chargeA velocity
+50 	//chargeA velocity
+50 	//chargeA velocity
+0	//5	shoveA velocity
+15	//6	shoveA velocity
+15	//7	shoveA velocity
+15	//8	shoveA velocity
+0	//9	shoveA velocity
+15	//10 shoveA velocity

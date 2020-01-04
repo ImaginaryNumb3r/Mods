@@ -1,0 +1,14 @@
+1				//	scale of soul tether icon
+-84				//	x position soul tether icon (206 center, -84 side,)
+-47				//	y position soul tether icon (-35 lower, )
+48				//	x position for number soul tether ammount relative to soul tether icon
+48				//	y position for number soul tether ammount relative to soul tether icon
+1				//	scale of number soul tether ammount
+5				//	x position for icon relative to ring 
+1				//	y position for icon relative to ring
+1				//	artifact icon scale
+-20				//	x position artifact icon (206 center, -84 side,)
+-47				//	y position artifact icon (-35 lower, )
+48				//	x position for number
+48				//	y position for number
+1				//	scale of number ammount

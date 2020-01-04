@@ -1,0 +1,16 @@
+'-100 100 50'	//gib_backa.md3  (forward, right, up)
+'-100 -100 50'	//gib_backb.md3
+'200 0 100'		//gib_heada.md3
+'-100 200 50'	//gib_headb.md3
+'100 -200 50'	//gib_headc.md3
+'100 0 0'		//gib_jawa.md3
+'50 100 0'		//gib_jawb.md3 
+'-50 -100 0'	//gib_jawc.md3
+'50 -300 0'		//gib_tongue_left.md3
+'-50 300 0'		//gib_tongue_right.md3
+'200 100 100'	//gib_small.md3
+'-200 -200 100'	//gib_small.md3 
+'-100 100 50'	//gib_med.md3
+'100 -100 50'	//gib_med.md3
+'-50 50 25'		//gib_large.md3 
+'50 -50 25'		//gib_large.md3

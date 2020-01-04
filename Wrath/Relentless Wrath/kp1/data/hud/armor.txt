@@ -1,0 +1,6 @@
+-92		//	x armor
+-9		//	y armor
+-14		//	x separation
+-92		//	x darmor
+-27		//	y darmor
+0.5		// scale

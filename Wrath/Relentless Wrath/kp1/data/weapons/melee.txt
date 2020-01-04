@@ -1,0 +1,19 @@
+models/weapons/melee/v_gauntlet.md3
+4			//	x (forward)
+-7			//	y (side)
+-7			//	z (up )
+1			//	scale
+<<<<<<< .mine
+0			//	x angles (yellow gizmo)
+0			//	y angles (blue gizmo)
+0			//	z angles (red gizmo)||||||| .r2658
+0			//x angles (yellow gizmo)
+0			//y angles (blue gizmo)
+0			//z angles (red gizmo)=======
+0			//x angles (yellow gizmo)
+0			//y angles (blue gizmo)
+0			//z angles (red gizmo)
+1024        //lunge velocity multiplier
+160         //lunge jump height on ground
+96          //lunge jump height on air
+>>>>>>> .r3474

@@ -1,0 +1,18 @@
+40				//	spitter damage	(400 DPS, 10 ammo/sec)
+70				//	spitter damage	(280 DPS, 8 ammo/sec, stunlock)
+0.1				//	time fire 1
+0.25			//	time fire 2
+models/weapons/spitter/v_spitter.md3
+12				//	x (forward)
+-5				//	y (side)
+-7				//	z (up )
+1				//	scale
+0				//	x angles (yellow gizmo)
+0				//	y angles (blue gizmo)
+0				//	z angles (red gizmo)
+'.25 .25 .25' 	//	bboxsizeproj1;
+'2 2 2'			//	bboxsizeproj2;
+3072			//	spitter vel projectile
+2048			//	spitter vel projectile2
+5				//	number of primary fire sound variations
+3  				//	number of secondary fire sound variations

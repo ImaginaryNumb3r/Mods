@@ -1,0 +1,16 @@
+32 			// artifact_lightlev
+'1 1 1' 	// artifact_light_col
+24 			// dark_helm_lightlev
+'.7 .7 1'	// dark_helm_light_col
+32 			// dark_armor_lightlev
+'.7 .7 1' 	// dark_armor_light_col
+20 			// dark_shard_lightlev
+'.7 .7 1' 	// dark_shard_light_col
+24 			// helm_lightlev
+'.9 .9 1' 	// helm_light_col
+32 			// armor_lightlev
+'.9 .9 1' 	// armor_light_col
+20 			// shard_lightlev
+'.9 .9 1' 	// shard_light_col
+32 			// cofferkey_lightlev
+'1 1 1' 	// cofferkey_light_col

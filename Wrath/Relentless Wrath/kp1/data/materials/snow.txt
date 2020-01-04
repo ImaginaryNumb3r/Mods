@@ -1,0 +1,5 @@
+0.4
+0.7
+snow
+textures/e1m1/e1m1_grnd1_1
+textures/terrain/snow

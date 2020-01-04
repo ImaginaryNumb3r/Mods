@@ -1,0 +1,27 @@
+250             //	health
+1               //	walk speed
+50              //	walk think % chance to attack, else keep walking
+10              //	run speed
+1               //	run time cycle duration
+75              //	run think roll
+1               //	attack type (melee[1] or projectile[2])
+20              //	attack damage
+.5              //	attack time
+25              //	attack think % chance to attack, else keep runing
+0.3             //	pre-attack time
+30              //	secondary attack damage
+1               //	secondary attack time
+0.5             //	secondary pre-attack time
+25              //	damage needed to pain
+.5              //	pain time
+10              //	pain think % chance to attack or walk
+32 32 64        //	bbox
+4096            //	far
+2048            //	mid 
+128             //	near
+1000            //	projectile velocity
+50              //	roll dice (pain)
+75				//	zigzag chance
+45            	//	zigzag max deviance
+10				//	zigzag min deviance
+50				//	chance to attack on wakeup

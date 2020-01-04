@@ -1,0 +1,33 @@
+6 			//wve1
+5.5 		//wve2
+5	 		//wve3	
+4 			//wve4
+5 			//wve5
+6.5 		//wve6
+6 			//wve7
+6 			//wve8	
+5.5 		//wve9
+5.5 		//wve10
+4	 		//wve11
+3.5 		//wve12
+5 			//wve13
+5.5 		//wve14
+180			//health
+15			//damage projectile
+150			//damage explosion 
+'-10 -10 -32'	//bbox negative
+'10 10 32'	//bbox
+'4 4 4'		//projectile bbox
+1536			//proj_vel
+0			//dice roll idle, 70% attack instead walk
+0.8			//dice roll walk, 80% attack instead walk
+0.8			//dice roll attack, 80% run instead attack (fire)
+0.5			//dice roll aa, 80% attack instead run
+15			//damage projectile explosion
+15			//radius projectile explosion
+25			// pain damage low
+50			// pain damage medium
+75			// pain damage high
+200			// death explosion monster damage
+192			// death explosion radius
+50          // attack damage to monsters (PROJECTILE) 

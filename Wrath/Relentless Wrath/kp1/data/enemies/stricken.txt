@@ -1,0 +1,28 @@
+1600            //  health
+50              //  walk think % chance to attack, else keep walking
+50              //  run think % chance to attack, else keep running
+30              //  attack damage (PROJECTILE)
+50				//  attack think % chance to attack, else keep running
+40              //	secondary attack damage (MELEE)
+400             //	damage needed to pain
+100				//	roll dice (pain chance)
+100             //  pain think % chance to attack, else run
+48 48 44        //  bbox
+-48 -48 -32     //  negative bbox
+4096            //  far
+2048            //  mid 
+128             //  near
+1200            //  PROJECTILE velocity
+0             	//  splash damage
+64              //  splash radius
+100        		//  zigzag chance
+45        		//  zigzag max deviance
+10        		//  zigzag min deviance
+14        		//  stepheight (added to sv_stepheight 16)
+1000        	//  "low health" attack health threshold
+135				//	"low health" attack spread deviance
+256            	//	death explosion radius
+100            	//	death explosion damage
+300            	//	death explosion monster damage
+96 				//  walk radius destruction
+100             //  attack damage to monsters (PROJECTILE) 

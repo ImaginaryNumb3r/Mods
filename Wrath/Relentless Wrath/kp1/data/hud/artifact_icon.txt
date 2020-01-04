@@ -1,0 +1,24 @@
+1		// icon scale
+-64		// icon slot 1 radial x pos A
+-294	// icon slot 1 radial y pos 
+-16		// icon slot 2 radial x pos B
+-232	// icon slot 2 radial y pos 
+32		// icon slot 3 radial x pos C
+-294	// icon slot 3 radial y pos
+80		// icon slot 4 radial x pos D
+-232	// icon slot 4 radial y pos
+128		// icon slot 5 radial x pos E
+-294	// icon slot 5 radial y pos
+312		// icon slot 6 radial x pos F
+-294	// icon slot 6 radial y pos
+360		// icon slot 7 radial x pos G
+-232	// icon slot 7 radial y pos
+408		// icon slot 8 radial x pos H
+-294	// icon slot 8 radial y pos
+456		// icon slot 9 radial x pos I
+-232	// icon slot 9 radial y pos
+504		// icon slot 10 radial x pos J
+-294	// icon slot 10 radial y pos
+
+
+

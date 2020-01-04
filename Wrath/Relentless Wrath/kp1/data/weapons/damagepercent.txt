@@ -1,0 +1,3 @@
+0.1		//low damage pain (10%)
+0.5		//medium damage pain (50%)
+0.9		//high damage pain (90%)

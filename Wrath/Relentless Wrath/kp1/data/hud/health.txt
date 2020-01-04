@@ -1,0 +1,4 @@
+-156		//	x health
+-27			//	y health
+-30			// x separation
+1			// scale

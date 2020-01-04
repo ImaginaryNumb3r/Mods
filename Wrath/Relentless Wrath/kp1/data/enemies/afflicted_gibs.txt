@@ -1,0 +1,14 @@
+'100 0 300'			//gib_head.md3		(forward, right, up)
+'100 200 200'		//gib_arm_r_a.md3
+'-100 100 200'		//gib_arm_r_b.md3
+'-100 -200 200'		//gib_arm_l_a.md3
+'100 -100 200'		//gib_arm_l_b.md3
+'-50 100 100'		//gib_leg_r_a.md3
+'50 100 100'		//gib_leg_r_b.md3
+'50 -100 100'		//gib_leg_l_a.md3
+'-50 -100 100'		//gib_leg_l_b.md3
+'100 100 300'       //velocity "models/gibs/gib_small.md3"
+'-100 -100 200'     //velocity "models/gibs/gib_small.md3"
+'-50 50 300'        //velocity "models/gibs/gib_med.md3"
+'50 -50 200'        //velocity "models/gibs/gib_med.md3"
+

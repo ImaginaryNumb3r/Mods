@@ -1,0 +1,28 @@
+6 		//wvel1
+5 		//wvel2
+4	 	//wvel3	(STEP)
+5 		//wvel4
+6 		//wvel5
+6 		//wvel6
+5 		//wvel7
+4 		//wvel8	(STEP)
+5 		//wvel9
+6 		//wvel10
+6		//wta1
+5		//wta2
+4		//wta3
+0		//wta4
+0		//wta5
+0		//wta6
+0		//wta7
+0		//wta8
+0		//wta9
+0		//wta10
+'10 10 60' 	//bbox
+120 		//health
+2 			//damage (each bullet)
+5			// ammount of bullets
+25		// pain damage low
+50		// pain damage medium
+75		// pain damage high
+-90	// over damage

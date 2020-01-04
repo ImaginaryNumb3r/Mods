@@ -1,0 +1,5 @@
+18 // coachgun ammo
+25 // fang ammo
+2 // retcher  ammo
+6 // cannon ammo
+1 // ??? - maybe hsotgun?

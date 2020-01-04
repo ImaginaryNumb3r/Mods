@@ -1,0 +1,26 @@
+25				//	damage fire 1 (20 projectiles) (500 / 1.7 = 295 DPS)
+1.7				//	time fire 1
+1.97			//	time fire 2
+.6				//	shotgun spread fire 1
+models/weapons/shotgun/v_shotgun.md3
+10.5			//	x (forward)
+-7				//	y (side)
+-9.5			//	z (up )
+0				//	scale
+models/weapons/view/shotgun/secondary_flash.mdl
+.25				//	scale muzzleflash pos1
+13				//	z muzzleflash pos1
+-6.8			//	x muzzleflash pos1
+2				//	y muzzleflash pos1
+0				//	x angles (yellow gizmo/up)
+-3				//	y angles (blue gizmo)
+0				//	z angles (red gizmo)
+'2 2 2' 		//	bbox for tracebox (positive values)
+20				//	buckshot counts
+0.8				//	viewzoomvalue
+2048			//	projectyile speed
+500             //	projectile damage (per projectile)
+10              //	drunk factor vertical
+100             //	drunk factor horizontal
+0.1             //	drunk time refresh
+2 2 2           // bbox projectile

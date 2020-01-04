@@ -1,0 +1,15 @@
+'100 0 200'			//velocity "models/enemies/invader/gibs/gib_head.md3" (forward, right, up)
+'-50 -100 100'		//velocity "models/enemies/invader/gibs/gib_arm_l.md3"
+'50 100 100'		//velocity "models/enemies/invader/gibs/gib_arm_r.md3"
+'50 50 100'			//velocity "models/enemies/invader/gibs/gib_body_r.md3"
+'-50 -50 100'		//velocity "models/enemies/invader/gibs/gib_body_l.md3"
+'100 100 100'		//velocity "models/enemies/invader/gibs/gib_hair_a.md3"
+'-100 0 200'		//velocity "models/enemies/invader/gibs/gib_hair_b.md3"
+'100 -100 100'		//velocity "models/enemies/invader/gibs/gib_hair_c.md3"
+'50 -100 0'			//velocity "models/enemies/invader/gibs/gib_leg_l.md3"
+'-50 100 0'			//velocity "models/enemies/invader/gibs/gib_leg_r.md3"
+'100 100 300'       //velocity "models/gibs/gib_small.md3"
+'-100 -100 200'     //velocity "models/gibs/gib_small.md3"
+'-50 50 300'        //velocity "models/gibs/gib_med.md3"
+'50 -50 200'        //velocity "models/gibs/gib_med.md3"
+

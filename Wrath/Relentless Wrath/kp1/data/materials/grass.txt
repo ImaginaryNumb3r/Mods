@@ -1,0 +1,3 @@
+0.1
+0.7
+textures/terrain/hub1_veg

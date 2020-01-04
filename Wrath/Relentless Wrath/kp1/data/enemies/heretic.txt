@@ -1,0 +1,23 @@
+1000			//    health
+8				//    walk speed
+50				//    walk think % chance to attack, else keep walking
+50				//    chance to attack on wakeup
+16				//    run speed
+1				//    run cycle duration
+50				//    run think % chance to attack, else keep runing
+512				//    CHASE speed
+1200			//    PROJECTILE velocity
+30				//    PROJECTILE attack damage
+50				//    PROJECTILE attack think % chance to attack again, else keep runing
+30				//    MELEE attack damage
+60				//    damage needed to pain
+75				//    pain chance %
+100				//    pain think % chance to attack or run
+64 64 64		//    bbox
+4096			//    mid (distance for projectile attack)
+384				//    near (distance to chase)
+111				//    melee (distance to bite)
+100				//    zigzag chance
+45				//    zigzag max deviance
+20				//    zigzag min deviance
+120             //    radius damage destruction

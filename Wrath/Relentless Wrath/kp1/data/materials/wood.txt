@@ -1,0 +1,9 @@
+0.4
+0.7
+textures/e1m2/e1m2_wd1_1
+textures/e1m2/e1m2_wd1_2
+textures/e1m2/e1m2_wd1_3
+textures/e1m2/e1m2_wd2_1
+textures/common/clip_wood
+textures/common/clipall_wood
+models/objects/decor/tree_fallen

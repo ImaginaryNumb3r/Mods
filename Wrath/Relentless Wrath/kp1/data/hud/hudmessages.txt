@@ -1,0 +1,8 @@
+-232		//	x origin
+-505		//	y origin
+40			//	y distance to nex mssg
+0.00625 	//	alphafading
+0.125		// 	y pos fading
+0.0125 		//	alpha fade in
+113			//	x origin
+-299		//	y origin

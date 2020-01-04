@@ -1,0 +1,9 @@
+-104	//	x
+-315	//	y
+2       // scale
+0		// flag shader for radial stuff
+120		// artifactinfo pos x
+-171	// artifactinfo pos y
+198		// bigicon pos x
+-285	// bigicon pos y
+1		// flag shader for marker radial

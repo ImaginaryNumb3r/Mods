@@ -1,0 +1,8 @@
+400			//health
+20			//damage
+-12 -12 -32	//bbox negative
+12 12 24	//bbox
+25			// pain damage low
+50			// pain damage medium
+75			// pain damage high
+-50			// over damage

@@ -1,0 +1,23 @@
+100				//	damage modifier fire1 (500 DPS + 100 splash)
+400				//	damage modifier fire2 (800 DPS + 400 splash)
+0.2				//	time fire 1
+.5 				//	time fire 2
+models/weapons/cannon/v_cannon.md3
+17				//	x (forward)  34
+-9				//	y (side)	-18
+-9				//	z (up )		-18
+.5				//	scale
+0 				//	slagcannon spread fire 1		
+0.02 			//	slagcannonangle variation (x)
+-0.0125			//	slagcannonangle variation (y)
+0				//	x angles (yellow gizmo)
+0				//	y angles (blue gizmo)
+0				//	z angles (red gizmo)
+'2 2 2' 		// 	bboxsizeproj1;
+'6 6 6' 		// 	bboxsizeproj2;
+1280			//	speed 1
+1280			//	speed 2
+32				//	splash radius 1
+128				//	splash radius 2
+20				//	slagsplashdamage 1
+200				//	slagsplashdamage 2

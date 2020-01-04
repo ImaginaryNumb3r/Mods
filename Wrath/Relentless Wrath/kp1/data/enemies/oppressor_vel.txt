@@ -1,0 +1,29 @@
+6 			//wvel1
+5.5 		//wvel2
+5.5	 		//wvel3	
+6 			//wvel4
+6.5 		//wvel5
+6.5 		//wvel6
+6 			//wvel7
+6 			//wvel8	
+5.5 		//wvel9
+5.5 		//wvel10
+6.5 		//wvel11
+6.5 		//wvel12
+6.5 		//wtoattakvel1
+0 			//wtoattakvel2
+0 			//wtoattakvel3	
+0 			//wtoattakvel4
+0 			//wtoattakvel5
+1000 		//health
+5			//damage
+'20 20 80' 	//bbox
+'2 2 2'		//projectile bbox
+1280 		//proj_vel
+0.5			//dice roll idle, 70% attack instead walk
+0.8			//dice roll attack, 80% attack instead walk
+0.8			//dice roll paina, 80% run instead attack
+0.8			//dice roll painb, 80% run instead attack
+25			// pain damage low
+50			// pain damage medium
+75			// pain damage high

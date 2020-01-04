@@ -1,0 +1,5 @@
+680		//	x
+-505	//	y
+-50		// key separation x
+2       // scale keys
+0	// flag shader for key hud

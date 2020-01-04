@@ -1,0 +1,23 @@
+300				//	damage modifier fire1 (360 DPS + 300 splash)
+100				//	No damage modifier fire2 for voidbombs (300 DPS + 300 splash)
+0.8				//	time fire 1
+1				//	time fire 2
+models/weapons/retcher/v_retcher.md3
+17				//	x (forward)
+-10				//	y (side)
+-14				//	z (up )
+1				//	scale
+0				//	x angles (yellow gizmo)
+0				//	y angles (blue gizmo)
+0				//	z angles (red gizmo)
+'2.5 2.5 2.5'	//	bboxsizeproj1;
+'2.5 2.5 2.5'	//	bboxsizeproj2;
+300				//	splash damage
+64				//	splash radius
+64				//	aoe radius
+3.5				//	aoe time
+20				//	aoe damage
+0.5				//	aoe timerefresh in seconds
+288             //	projectile z velocity
+1280			//	projectile velocity
+2				//	projectile gravity
