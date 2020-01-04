@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Annotation profile for com.github.ImaginaryNumb3r:might-and-magic:1.0" enabled="true">
+        <sourceOutputDir name="Code/target/generated-sources/annotations" />
+        <sourceTestOutputDir name="Code/target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="Might-and-Magic" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="might-and-magic" target="12" />
+      <module name="Might-and-Magic" target="12" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

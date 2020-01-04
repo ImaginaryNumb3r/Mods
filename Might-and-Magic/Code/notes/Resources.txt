@@ -1,0 +1,45 @@
+Resources:
+    - https://grayface.github.io/mm/ext/
+    - https://sites.google.com/site/sergroj/mm
+    - https://www.celestialheavens.com/forum/10/10423?start=200
+    - https://www.celestialheavens.com/forum/10/10423
+    - Item Modification: https://www.youtube.com/watch?v=lipriutf3SI
+
+    Reference Manuals:
+    - https://sites.google.com/site/sergroj/mm/mmextension
+    - https://grayface.github.io/mm/ext/ref/
+
+
+Remarks:
+    - A Monster Buff is actually their "status": Like "Stoned" or "Summoned"
+
+Interesting Hooks:
+- getStatisticEffect
+- doBadThingToPlayer
+- GetSkill
+- CalcDamageToMonster
+- CastTelepathy
+- CalcSpellDamage
+- CalcStatBonusBySkills
+
+Skill Effect: in SimplePlayerHook
+
+
+Interesting Structs:
+ - CommonMonsterProps
+ - SpellBuff
+ - const.MonsterBuff
+ - const.PartyBuff
+ - const.PlayerBuff
+ - CastSpell
+
+Monster Statuses:
+		DayOfProtection = 13,
+		HourOfPower = 14,
+		Shield = 15,
+		StoneSkin = 16,
+		Bless = 17,
+		Heroism = 18,
+		Haste = 19,
+		PainReflection = 20,
+		Hammerhands = 21,

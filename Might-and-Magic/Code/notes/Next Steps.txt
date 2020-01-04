@@ -1,0 +1,104 @@
+ # Monsters
+Overall, later monsters deal far too little damage.
+Less rats in later dungeons.
+Wights need to be more powerful, Plague Zombies slightly less powerful, Ghosts slightly more powerful
+Wights and Ghosts need better AC or physical resistance
+Gold is a bit too little in the beginning and far too abundant in the mid to late game.
+-> Also mitigate with more expensive spells.
+Improved versions of undead have resistance to spirit magic (to resist turn undead)
+Turn Undead: 10 SP and long recovery time (also balance some spells like heroism and bless -> too expensive compared to similar buffs)
+Medusa: Better ranged attack, fire arrows, spells
+
+More Difficult:
+    - Behemoth (maybe with ranged attacks?)
+
+ # Alchemy
+- How to do it:
+Effects are defined in the "POTIONS.txt" file -> Then put it into the event.lod
+
+Goals:
+    - Reconsider potitions. Some potions could cure multiple afflictions
+    - Healing potion on each level:
+        - Blue Potion: Removes Afraid
+        - Green Potion: Heals SP
+        - Divine Cure/Power are easier to create
+    - Compound Potion:
+        - Green/Red: Potion that heals SP and HP
+    - Black Potions:
+        - Revives character
+        - Add more powerful effects: (for effects see: http://shrines.rpgclassics.com/pc/mm7/enchantment.shtml)
+            - Regenerates SP, HP
+            - Permanent Swift Potion
+            - of Phoenix
+            - of Force
+            - of Shadows
+            - of Dragon
+            - of Eclipse
+            - of Darkness
+            - of Demon Slaying
+            - of Carnage (explosive impact)
+            - of Acid/Thunderbolt/Ice/Infernos
+            - immunities... Disease/Insanity/Stone...
+            - and a Troll potion: does nothing
+            - of David (Titan Slaying)
+    - Cure Paralysis: Now a compound potion
+    White Potions
+        - Divine Cure: to red + yellow/orange (from yellow/orange + red/orange)
+        - Divine Power: to blue + yellow/green (from yellow/green + blue/green)
+
+
+Candidates for removal:
+    - Shield (blue and purple)
+    - Stoneskin (yellow and orange)
+    - Stone to Flesh (now white potion)
+
+
+- Goals:
+Blue potions should not heal SP anymore, red potions should be more potent.
+A potion that cures "drunk" state.
+All Catalysts have higher value (start with 5).
+Normal Power: 1, 5, 10, 20, 50
+Catalyst Power: 5, 10, 20, 30, 75
+
+
+ # Magic Rebalance:
+All Buffs: Cost slightly more. Between 20-30 sp cost.
+Change the description to fit the new numbers
+
+- How to do it:
+Try swapping the rows in the "SPELLS.txt" file to change mastery level -> Then put it into the events.lod
+
+
+- Spirit:
+Slightly less mana cost
+Removed Fate: Moves to Mind magic and becomes "Focus" -> Improves Archery skill.
+? Shared Life: More even distribution so everybody has the same percentage of HP left.
+? Protection From Magic: Moved to here from Body magic
+
+- Mind Magic:
+? Telepathy: Replaced with "Focus" -> Improves accuracy and Archery skill.
+Charm: Becomes "Novice" skill. Improves Merchant skill of party member.
+Mind Blast: Expert level skill, much more damage.
+? Telekinesis: Moved to here from Earth magic.
+
+- Body:
+? Regeneration: Much less healing per minute, less duration
+? Removed "Protection From Magic"
+? New Spell: "Day of Protection" from Light Magic
+
+- Fire:
+
+- Air:
+Invisibility: Becomes Grandmaster Skill
+Starburst: Becomes Master skill, requires more SP. SP is lowered to current level on GM mastery.
+
+- Water:
+
+- Earth:
+
+- Dark:
+Control Undead: Is treated as a "light" spell, so enemies don't resist it.
+Dark Grasp: Replaces "Sacrifice" This spell surrounds the target with the power of raw darkness, rendering it unable to fire missile attacks or cast spells, slowing its movement, halving its armor class, and halving the damage it does in melee combat.
+
+Light:
+Sunray: Can alternate between fire and light damage. Will prefer the damage type that the monster is less resistant to.

@@ -1,0 +1,101 @@
+spell.Spell	SpellPointsNormal	SpellPointsExpert	SpellPointsMaster	SpellPointsGM	DelayNormal	DelayExpert	DelayMaster	DelayGM	DamageAdd	DamageDiceSides
+	0	0	0	0	0	0	0	0	0	0
+Torch Light	1	1	0	0	60	60	60	40	0	0
+Fire Bolt	4	4	4	4	90	80	70	60	0	4
+Fire Resistance	3	3	3	3	120	120	120	120	0	0
+Fire Aura	10	15	20	25	120	120	120	120	0	0
+Haste	15	15	15	15	120	120	120	120	0	0
+Fireball	8	8	8	8	100	100	90	80	0	6
+Fire Spike	10	10	10	10	150	150	150	150	0	12
+Immolation	15	15	15	30	120	120	120	120	0	11
+Meteor Shower	25	25	25	25	100	100	100	90	8	1
+Inferno	30	30	30	30	90	90	90	80	15	2
+Incinerate	35	35	35	35	95	90	90	80	20	17
+Wizard Eye	1	1	1	0	60	60	60	60	0	0
+Feather Fall	2	2	2	2	120	120	120	100	0	0
+Air Resistance	3	3	3	3	120	120	120	120	0	0
+Sparks	4	6	8	10	110	110	110	110	2	1
+Jump	5	5	5	5	90	90	70	50	0	0
+Shield	8	8	8	8	120	120	120	120	0	0
+Lightning Bolt	8	8	8	8	90	80	70	60	8	8
+Invisibility	60	60	60	45	250	250	250	250	0	0
+Implosion	17	17	17	15	90	90	90	80	10	12
+Fly	25	25	25	25	250	250	250	250	0	0
+Starburst	30	30	30	30	90	90	90	90	20	1
+Awaken	1	1	1	1	60	60	60	20	0	0
+Poison Spray	3	4	5	6	110	100	90	70	5	2
+Water Resistance	3	3	3	3	120	120	120	120	0	0
+Ice Bolt	2	2	2	2	110	100	90	80	0	3
+Water Walk	12	12	12	12	150	150	150	150	0	0
+Recharge Item	8	8	8	8	120	120	120	120	0	0
+Acid Burst	6	6	6	6	120	120	110	100	8	8
+Enchant Item	15	15	15	15	220	220	220	220	0	0
+Town Portal	35	35	35	25	200	200	200	200	0	0
+Ice Blast	20	20	20	20	110	110	110	100	15	12
+Lloyd's Beacon	45	45	45	45	250	250	250	250	0	0
+Stun	1	1	1	1	60	60	60	60	0	1
+Slow	4	6	7	8	150	130	130	130	0	0
+Earth Resistance	3	3	3	3	120	120	120	120	0	0
+Deadly Swarm	3	3	3	2	150	140	130	120	3	4
+Stone Skin	10	20	15	15	120	120	120	120	0	0
+Blades	8	8	8	8	150	150	140	130	9	9
+Stone to Flesh	10	10	10	10	140	140	140	140	0	0
+Rock Blast	13	13	13	13	110	140	130	120	0	10
+Telekinesis	15	15	15	10	150	150	150	130	0	0
+Death Blossom	20	20	20	20	100	100	100	90	20	2
+Mass Distortion	25	25	25	25	100	100	100	100	30	0
+Detect Life	1	1	0	0	50	50	50	50	0	0
+Bless	10	30	30	25	90	120	120	120	0	0
+Fate	3	3	3	3	90	90	90	90	0	0
+Turn Undead	4	4	4	4	120	120	120	120	0	0
+Remove Curse	5	5	5	5	120	120	120	120	0	0
+Preservation	5	5	5	5	120	120	120	120	0	0
+Heroism	15	30	30	25	90	120	120	120	0	0
+Spirit Lash	25	25	25	25	100	100	100	100	10	15
+Raise Dead	30	30	30	30	240	240	240	240	0	0
+Shared Life	25	25	25	25	150	150	150	150	0	0
+Resurrection	45	45	45	45	1000	1000	1000	1000	0	0
+Remove Fear	1	1	1	1	120	120	120	120	0	0
+Mind Blast	5	4	3	2	120	110	100	90	5	4
+Mind Resistance	3	3	3	3	120	120	120	120	0	0
+Telepathy	1	1	1	1	110	100	90	80	0	0
+Charm	5	5	5	5	90	80	70	60	0	0
+Cure Paralysis	8	8	8	8	120	120	120	120	0	0
+Berserk	12	12	12	12	150	150	150	150	0	0
+Mass Fear	15	15	15	15	80	80	80	80	0	0
+Cure Insanity	20	20	20	20	120	120	120	120	0	0
+Psychic Shock	20	20	20	20	135	135	135	120	10	15
+Enslave	30	30	30	30	120	120	120	120	0	0
+Cure Weakness	1	1	1	1	120	120	120	120	0	0
+Heal	3	3	3	3	100	100	100	100	0	0
+Body Resistance	3	3	3	3	120	120	120	120	0	0
+Harm	4	4	4	4	110	100	90	80	4	5
+Regeneration	10	10	10	10	100	90	80	70	0	0
+Cure Poison	8	8	8	8	120	120	120	120	0	0
+Hammerhands	10	10	10	10	120	120	120	120	0	0
+Cure Disease	15	15	15	15	120	120	120	120	0	0
+Protection from Magic	20	20	20	20	120	120	120	120	0	0
+Flying Fist	25	25	25	25	90	90	90	80	20	12
+Power Cure	30	30	30	30	120	120	120	120	0	0
+Light Bolt	5	5	5	5	110	100	90	80	0	4
+Destroy Undead	9	9	9	9	120	110	100	90	16	16
+Dispel Magic	10	10	10	10	120	110	100	90	0	0
+Paralyze	25	25	25	25	160	140	120	100	0	0
+Summon Elemental	25	25	25	25	120	120	120	120	0	0
+Day of the Gods	40	40	40	40	500	500	500	500	0	0
+Prismatic Light	35	35	35	35	135	135	120	100	20	2
+Day of Protection	55	55	55	55	450	450	450	450	0	0
+Hour of Power	45	45	45	45	250	250	250	250	0	0
+Sunray	40	40	45	40	120	120	140	120	15	30
+Divine Intervention	55	55	55	55	300	300	300	300	0	0
+Reanimate	10	10	10	10	140	140	140	140	0	0
+Toxic Cloud	15	15	15	15	120	110	100	90	25	10
+Vampiric Weapon	20	20	20	20	120	100	90	120	0	0
+Shrinking Ray	15	20	25	25	140	130	120	120	0	0
+Shrapmetal	25	25	35	45	90	90	80	70	6	6
+Control Undead	25	25	20	20	120	120	100	80	0	0
+Pain Reflection	40	40	40	40	110	110	110	110	0	0
+Sacrifice	45	45	45	45	200	200	200	150	0	0
+Dragon Breath	65	65	65	60	150	150	150	125	25	25
+Armageddon	100	100	100	100	250	250	250	250	50	5
+Souldrinker	80	80	80	80	220	220	220	220	25	8

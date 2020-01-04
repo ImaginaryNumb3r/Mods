@@ -1,0 +1,37 @@
+Class	HP Base	HP Factor	SP Base	SP Factor	SP Stats
+Barbarian	40	5	0	0	-
+Cavalier		7		0	-
+Champion		9		0	-
+BlackKnight		9		0	-
+Pirate	35	4	5	1	I
+Rogue		6		1	I
+Spy		8		2	I
+Assassin		8		2	I
+Mercenary	35	5	5	1	P
+Initiate		6		1	P
+Master		8		2	P
+Ninja		8		2	P
+Guard	30	4	5	1	P
+Crusader		5		2	P
+Hero		6		3	P
+Villain		6		3	P
+Ninja	30	3	5	1	I
+WarriorMage		4		2	I
+MasterArcher		6		3	I
+Sniper		6		3	I
+Hunter	30	4	5	1	IP
+Monster Hunter		5		2	IP
+Inquisitor		6		3	IP
+Blood Knight		6		3	IP
+Shaman	20	2	15	3	P
+Priest		3		4	P
+PriestLight		4		6	P
+PriestDark		4		6	P
+Witch	20	2	15	3	IP
+GreatDruid		3		4	IP
+ArchDruid		4		6	IP
+Warlock		4		6	IP
+Travel Mage	25	2	10	3	I
+Wizard		3		4	I
+ArchMage		4		5	I
+Lich		4		5	I

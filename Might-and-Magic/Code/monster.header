@@ -1,0 +1,4 @@
+Default Monster Data					Stats								Movement and Combat					Attack 1			Attack 2			    spell.Spell Attack		    spell.Spell Attack 2		Resistances										Misc
+#	Name	Picture	LVL	 HP 	AC	 EXP 	Treasure	Quest	Fly	Move	AI Type	Hst	Spd	Rec	Pref	Bonus	Type	Damage	Miss	Att%	Type	Damage	Miss	Use%	Spl,Mas,Skil	Use%	Spl,Mas,Skil	Fire	Air	Water	Earth	Mind	Spirit	Body	Light	Dark	Phys	Special
+																																						
+	A		0																																			

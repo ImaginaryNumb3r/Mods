@@ -1,0 +1,3 @@
+Fixing Ordering of Monsters:
+Groups can be reordered. I also need to change some of the portraits -> Switch Giant Bat B and C. Also the Warlocks
+Increase level AND SIZE of some early monsters like Spiders and Bats

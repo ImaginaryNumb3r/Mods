@@ -1,0 +1,89 @@
+ # Game Mechanics
+Cannot open doors/travel as long as enemies are nearby.
+
+ # Alchemy
+Alchemy: Easier requirements for ranking up?
+Blue potions should not heal SP anymore, red potions should be more potent.
+A potion that cures "drunk" state.
+
+
+ # Magic
+Levels in magic schools counteract the resistance of enemies towards that school (at least for status debuffs).
+
+Ideas:
+    - Move Regeneration to Earth/Water magic
+    - Resurrection gets replaced with "Finger of Death"
+    - Fire Arrows: Could replace Fire Aura and apply additional fire damage to all arrows
+    - Something that can heal drunks?
+    - Poison enemy
+    - Mass Curse
+    - Mass Weakness
+    - Earthquake
+    - Storm Arrows: Additional damage and accuracy to arrows.
+    - Fire Shield: Instead of Immolation?
+    - Mass Slow
+    - Feeble Mind -> Prevents enemy from doing any ranged attacks/spells
+
+
+ # Magic Rebalance:
+- Spirit:
+Turn Undead: Affects only a single enemy. On master level affects all in vision.
+Removed Fate: Moves to Mind magic and becomes "Focus" -> Improves Archery skill.
+Shared Life: More even distribution so everybody has the same percentage of HP left.
+Protection From Magic: Moved to here from Body magic
+Preservation: To Novice, but with less duration.
+Detect Life: Replaced with "Healing Hands" -> Good expert Healing spell. If target is unconscious, it will always have at least 1 HP when healed.
+Raise Dead: Also heals Eradication on GM.
+
+- Mind Magic:
+Telepathy: Replaced with "Focus" -> Improves accuracy and Archery skill.
+Charm: Becomes "Novice" skill. Improves Merchant skill of party member.
+Mind Blast: Expert level skill, much more damage.
+Remove Fear: Becomes "Restore Mind" -> Also heals paralyze on expert and insanity on master level.
+Telekinesis: Moved to here from Earth magic.
+
+- Body:
+Heal: Becomes "First Aid" -> SP efficient low level heal, but long recovery time
+// New Spell: "Heal Wounds" -> More expensive expert healing spell that scales great with mastery and levels.
+Resurrection: Becomes "Rejuvenation" -> heals all status debuffs (including dead, stoned, zombie or age debuffs)
+Cure Disease/Poison: Becomes "Cure Affliction" -> Heals poison on expert rank, heals disease on master rank, heals stoned on GM rank.
+Regeneration: Much less healing per minute, less duration
+Removed "Protection From Magic"
+New Spell: "Day of Protection" from Light Magic
+New Spell: "Epidemy" Slows the movement of all enemies and lowers their damage.
+
+- Fire:
+Haste: Becomes Novice skill but only affects a single member. Longer duration on M and GM level
+Fire Aura: Expert skill
+Immolation: Replaced with "Summon Fire Elemental"
+Fire Spike: Replaced with "Burning Determination/Inner Fire" -> Improves might and accuracy of the caster.
+
+- Air:
+Invisibility: Becomes Grandmaster Skill
+Starburst: Becomes Master skill
+Shield: Replaced with "Air Blast" -> throws back enemy monsters in front of you.
+
+- Water:
+Removed "Ice Bolt" -> No need for two novice damage spells
+Recharge Item: Becomes novice, but is less powerful.
+Shield: (from Air)
+Ice Blast: Replaced with "Blizzard" -> Damages all enemies in sight, only works outside.
+
+- Earth:
+Remove Stun
+Earth Skin: Becomes Novice, but only affects a single member.
+New Spell: Petrify on expert mastery
+Telekinesis: Replaced with "Summon Earth Elemental"
+
+
+- Dark:
+Dark Grasp: Replaces "Sacrifice" This spell surrounds the target with the power of raw darkness, rendering it unable to fire missile attacks or cast spells, slowing its movement, halving its armor class, and halving the damage it does in melee combat.
+
+Light:
+Light Bolt: Replaced with "Disintegrating Light" Damages the enemy and halves his armor.
+Remove: Summon Elemental
+New Spell: Expert "Equilibrium" Slowly regenerates Spell Points of target over time.
+
+Sunray: Can alternate between fire and light damage. Will prefer the damage type that the monster is less resistant to.
+Remove: "Day of Protection" -> moved to Body magic
+New Spell: Master "Mass Blind". All targets in sight cannot cast, shoot and deal half damage in melee. Deals body damage

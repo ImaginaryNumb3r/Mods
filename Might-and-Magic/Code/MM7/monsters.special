@@ -1,0 +1,280 @@
+Default Monster Data				Resistances									
+#	Name	Picture	LVL	Fire	Air	Water	Earth	Mind	Spirit	Body	Light	Dark	Phys
+													
+	A												
+1	Angel	Angel A	0	Med	High	High	Med	High	Med	High	Imm	Low	High
+2	Archangel	Angel B	0										
+3	Seraph	Angel C	Brkweapon	High									
+4	Archer	Archer A	0	Low	Med	Low	Low	Med	Low	Low	0	0	Low
+5	Yeoman	Archer B	0
+6	Sniper	Archer C	BrkItem
+7	Giant Bat	Bat A	Disease1	0	Low	Med	Med	0	0	0	0	0	0
+8	Inferno Bat	Bat B	Disease1	High									
+9	Nightmare Bat	Bat C	Disease2	Med								High	
+10	Behemoth	Behemoth A	BrkItem	Low	Med	High	High	Imm	Low	Med	Low	Low	Med
+11	Ancient Behemoth	Behemoth B	Brkweapon										
+12	Abomination	Behemoth C	BrkArmor										
+13	Beholder	Beholder A	Insane	Vhigh	High	Low	High	Imm	Low	Imm	Low	Med	Vhigh
+14	Eldritch Seer	Beholder B	Cursex2										
+15	Eye of Terror	Beholder C	DrainSP										
+16	Moon Cultist	Cleric Moon A	0	Med	Med	Med	Low	Med	Med	Low	None	Imm	None
+17	Moon Cult Leader	Cleric Moon B	0										
+18	Moon Cult Hierarch	Cleric Moon C	0										
+19	Sun Worshipper	Cleric Sun A	0	Med	Med	Med	Low	Med	Med	Low	Imm	None	None
+20	Sun Seer	Cleric Sun B	0										
+21	Messiah of the Sun	Cleric Sun C	0										
+22	Demon Drone	Devil A	Disease3	Imm	High	Med	Vhigh	Imm	Low	High	Med	High	High
+23	Hell Knight	Devil B	Insane	Imm									
+24	Infernal	Devil C	DrainSP	Imm									
+25	Storm Dragon	Dragon A	0	Med	Imm	Med	Med	Med	Low	High	Low	Low	High
+26	Azure Dragon	Dragon B	0		Med	Imm							
+27	Firestorm Dragon	Dragon C	BrkArmor	Imm									
+28	Giant Firefly	Dragonfly A	0	Med	Low	None	Low	None	None	None	None	None	None
+29	Giant Dragonfly	Dragonfly B	0	Extreme									
+30	Dragonfly Queen	Dragonfly C	Weak										
+31	Dwarven Brute	Dwarf A	0	VHigh	VHigh	High	Extreme	Low	None	Low	None	None	Extreme
+32	Dwarven Berserker	Dwarf B	0										
+33	Dwarven Slayer	Dwarf C	BrkArmor										
+34	Air Elemental	Elemental Air A	BrkItem	High	Imm	High	Low	Imm	Imm	Imm	Low	Low	High
+35	Storm Elemental	Elemental Air B	BrkItem										
+36	Cyclone Elemental	Elemental Air C	BrkItem										
+37	Earth Elemental	Elemental Earth A	BrkItem	High	Low	High	Imm	Imm	Imm	Imm	Low	Low	High
+38	Rock Elemental	Elemental Earth B	BrkArmor										
+39	Obsidian Elemental	Elemental Earth C	Uncon										
+40	Living Flame	Elemental Fire A	0	Imm	Med	Low	High	Imm	Imm	Imm	Low	Low	High
+41	Fire Elemental	Elemental Fire B	0										
+42	Inferno Elemental	Elemental Fire C	BrkArmor										
+43	Dancing Light	Elemental Light A	0	Med	Med	Med	Med	Imm	Imm	Imm	Imm	Low	High
+44	Bright Light	Elemental Light B	0										
+45	Light Elemental	Elemental Light C	Uncon										
+46	Sprite	Elemental Water A	Weak	Low	Low	Imm	Med	Imm	Imm	Imm	Med	Med	Med
+47	Sylph	Elemental Water B	Weak
+48	Siren	Elemental Water C	Weak										
+49	Elven Scout	Elf Archer A	0	Low	Low	Low	Low	Low	Low	None	None	None	Low
+50	Elven Archer	Elf Archer B	0										
+51	Sylvan Archer	Elf Archer C	0										
+52	Elven Pikeman	Elf Spearman A	0	Low	Low	Low	Low	Low	Low	Low	None	None	Med
+53	Elven Lancer	Elf Spearman B	0										
+54	Sylvan Lancer	Elf Spearman C	Brkweapon										
+55	Militia	Fighter Chain A	0	Low	Low	Low	Low	Med	Low	Med	None	None	Med
+56	Soldier	Fighter Chain B	0
+57	Elite Soldier	Fighter Chain C	Brkweapon
+58	Thug	Fighter Leather A	0	None	Low	Low	None	Low	None	Med	None	None	Low
+59	Raider	Fighter Leather B	0										
+60	Marauder	Fighter Leather C	Stealx2
+61	Swordfighter	Fighter Plate A	0	High	Low	Vhigh	Med	Low	Low	High	Low	Low	Med
+62	Champion of the Sword	Fighter Plate B	0										
+63	Master of the Sword	Fighter Plate C	Brkweapon										
+64	Stone Gargoyle	Gargoyle A	Weak	High	Low	VHigh	Extreme	Imm	Imm	Imm	Low	Low	VHigh
+65	Marble Gargoyle	Gargoyle B	Paralyze										
+66	Mother Gargoyle	Gargoyle C	Stone										Imm
+67	Djinn	Genie A	Drunk	Vhigh	VHigh	Imm	High	Vhigh	Low	Vhigh	Low	Low	VHigh
+68	Master Djinn	Genie B	Asleep	Imm
+69	Djinn Vizir	Genie C	Afraid	Imm	Imm
+70	Shroud	Ghost A	Afraid	High	Med	Imm	High	Imm	Low	Imm	None	Extreme	VHigh
+71	Spectre	Ghost B	Agex2
+72	Phantom	Ghost C	Uncon
+73	Goblin Rioter	Goblin A	0	None	None	None	None	None	None	None	None	None	Low
+74	Goblin Marauder	Goblin B	0		Low	Low							
+75	Goblin Warlord	Goblin C	Drunk	Low	Low	Low	Low	Low	None	Low	Low	None	Low
+76	Gogling	Gog A	0	Imm	High	None	High	Med	Low	High	None	None	High
+77	Gog	Gog B	0										
+78	Magog	Gog C	0										
+79	Bronze Golem	Golem A	BrkArmor	VHigh	High	VHigh	VHigh	Imm	Imm	Imm	Vhigh	None	VHigh
+80	Brass Golem	Golem B	Brkweapon										
+81	Gold Golem	Golem C	BrkItem										
+82	Griffin	Griffin A	0	Low	Med	Med	Low	Low	Low	Med	VHigh	None	Low
+83	Ferocious Griffin	Griffin B	0										
+84	Griffin Alpha	Griffin C	BrkArmor										
+85	Harpy Chick	Harpy A	Drunk	Low	Med	Low	Low	None	Low	Low	None	Low	Low
+86	Harpy Pack Leader	Harpy B	Agex3										
+87	Harpy Hag	Harpy C	Cursex2										
+88	Foul Hydra	Hydra A	0	Med	Med	Vhigh	Med	Med	Low	Med	Low	Low	Med
+89	Pyro Hydra	Hydra B	0	VHigh	Med	Med							
+90	Chaos Hydra	Hydra C	BrkArmor	High	High	High	High				Med	Med	
+91	Lich	Lich A	0	VHigh	VHigh	VHigh	High	Imm	None	VHigh	None	Vhigh	Med
+92	Archlich	Lich B	Afraid
+93	Lich Elder	Lich C	Insane
+94	Sorcerer	Mage A	0	VHigh	VHigh	VHigh	High	Med	Low	Med	Imm	Low	Low
+95	Warmage	Mage B	0										
+96	Archmage	Mage C	0										
+97	Minicore	Manticore A	Poison2	Med	Med	Med	Med	Med	Med	Med	Med	Med	Med
+98	Manticore 	Manticore B	Poison3										
+99	Scorpicore	Manticore C	Poison3x2										
+100	Fallen Gorgon	Medusa A	Stone	VHigh	High	Imm	Imm	Imm	Med	VHigh	VHigh	VHigh	None
+101	Mighty Gorgon	Medusa B	Stone										Low
+102	Gorgon Empress	Medusa C	Stone	Imm	Imm				Imm	Imm	Imm	Imm	Low
+103	Minotaur Warrior	Minotaur A	Insane	Low	Low	Low	Low	Low	Low	Med	Low	Low	Med
+104	Minotaur Executor	Minotaur B	Uncon										
+105	Minotaur Lord	Minotaur C	Dead										
+106	Monk	Monk A	0	Med	Med	Med	Med	VHigh	Med	VHigh	Extreme		Low
+107	Master Monk	Monk B	0						Vhigh				
+108	Enlightened	Monk C	Uncon								Imm		Med
+109	Reanimator	Necromancer A	0	High	High	High	High	Med	Low	Low	None	Imm	Low
+110	Necromancer	Necromancer B	0										
+111	Queen of the Dead	Necromancer C	Dead										
+112	Acidic Blob	Ooze A	Brkweapon	None	None	Med	Low	Imm	Imm	Imm	None	None	Imm
+113	Dissolving Blob	Ooze B	BrkArmor	Low									
+114	Eldritch Ooze	Ooze C	BrkItem	Med	Low	High	Med				Low	Low	
+115	Peasant	Peasant Dwarf FemaleA A	0	0	0	0	0	0	0	0	0	0	0
+116	Peasant	Peasant Dwarf FemaleA B	0	0	0	0	0	0	0	0	0	0	0
+117	Peasant	Peasant Dwarf FemaleA C	0	0	0	0	0	0	0	0	0	0	0
+118	Peasant	Peasant Dwarf FemaleB A	0	0	0	0	0	0	0	0	0	0	0
+119	Peasant	Peasant Dwarf FemaleB B	0	0	0	0	0	0	0	0	0	0	0
+120	Peasant	Peasant Dwarf FemaleB C	0	0	0	0	0	0	0	0	0	0	0
+121	Peasant	Peasant Dwarf FemaleC A	0	0	0	0	0	0	0	0	0	0	0
+122	Peasant	Peasant Dwarf FemaleC B	0	0	0	0	0	0	0	0	0	0	0
+123	Peasant	Peasant Dwarf FemaleC C	0	0	0	0	0	0	0	0	0	0	0
+124	Peasant	Peasant Dwarf MaleA A	0	0	0	0	0	0	0	0	0	0	0
+125	Peasant	Peasant Dwarf MaleA B	0	0	0	0	0	0	0	0	0	0	0
+126	Peasant	Peasant Dwarf MaleA C	0	0	0	0	0	0	0	0	0	0	0
+127	Peasant	Peasant Dwarf MaleB A	0	0	0	0	0	0	0	0	0	0	0
+128	Peasant	Peasant Dwarf MaleB B	0	0	0	0	0	0	0	0	0	0	0
+129	Peasant	Peasant Dwarf MaleB C	0	0	0	0	0	0	0	0	0	0	0
+130	Peasant	Peasant Dwarf MaleC A	0	0	0	0	0	0	0	0	0	0	0
+131	Peasant	Peasant Dwarf MaleC B	0	0	0	0	0	0	0	0	0	0	0
+132	Peasant	Peasant Dwarf MaleC C	0	0	0	0	0	0	0	0	0	0	0
+133	Peasant	Peasant Elf FemaleA A	0	0	0	0	0	0	0	0	0	0	0
+134	Peasant	Peasant Elf FemaleA B	0	0	0	0	0	0	0	0	0	0	0
+135	Peasant	Peasant Elf FemaleA C	0	0	0	0	0	0	0	0	0	0	0
+136	Peasant	Peasant Elf FemaleB A	0	0	0	0	0	0	0	0	0	0	0
+137	Peasant	Peasant Elf FemaleB B	0	0	0	0	0	0	0	0	0	0	0
+138	Peasant	Peasant Elf FemaleB C	0	0	0	0	0	0	0	0	0	0	0
+139	Peasant	Peasant Elf FemaleC A	0	0	0	0	0	0	0	0	0	0	0
+140	Peasant	Peasant Elf FemaleC B	0	0	0	0	0	0	0	0	0	0	0
+141	Peasant	Peasant Elf FemaleC C	0	0	0	0	0	0	0	0	0	0	0
+142	Peasant	Peasant Elf MaleA A	0	0	0	0	0	0	0	0	0	0	0
+143	Peasant	Peasant Elf MaleA B	0	0	0	0	0	0	0	0	0	0	0
+144	Peasant	Peasant Elf MaleA C	0	0	0	0	0	0	0	0	0	0	0
+145	Peasant	Peasant Elf MaleB A	0	0	0	0	0	0	0	0	0	0	0
+146	Peasant	Peasant Elf MaleB B	0	0	0	0	0	0	0	0	0	0	0
+147	Peasant	Peasant Elf MaleB C	0	0	0	0	0	0	0	0	0	0	0
+148	Peasant	Peasant Elf MaleC A	0	0	0	0	0	0	0	0	0	0	0
+149	Peasant	Peasant Elf MaleC B	0	0	0	0	0	0	0	0	0	0	0
+150	Peasant	Peasant Elf MaleC C	0	0	0	0	0	0	0	0	0	0	0
+151	Peasant	Peasant Human1 FemaleA A	0	0	0	0	0	0	0	0	0	0	0
+152	Peasant	Peasant Human1 FemaleA B	0	0	0	0	0	0	0	0	0	0	0
+153	Peasant	Peasant Human1 FemaleA C	0	0	0	0	0	0	0	0	0	0	0
+154	Peasant	Peasant Human1 FemaleB A	0	0	0	0	0	0	0	0	0	0	0
+155	Peasant	Peasant Human1 FemaleB B	0	0	0	0	0	0	0	0	0	0	0
+156	Peasant	Peasant Human1 FemaleB C	0	0	0	0	0	0	0	0	0	0	0
+157	Peasant	Peasant Human1 FemaleC A	0	0	0	0	0	0	0	0	0	0	0
+158	Peasant	Peasant Human1 FemaleC B	0	0	0	0	0	0	0	0	0	0	0
+159	Peasant	Peasant Human1 FemaleC C	0	0	0	0	0	0	0	0	0	0	0
+160	Peasant	Peasant Human1 MaleA A	0	0	0	0	0	0	0	0	0	0	0
+161	Peasant	Peasant Human1 MaleA B	0	0	0	0	0	0	0	0	0	0	0
+162	Peasant	Peasant Human1 MaleA C	0	0	0	0	0	0	0	0	0	0	0
+163	Peasant	Peasant Human1 MaleB A	0	0	0	0	0	0	0	0	0	0	0
+164	Peasant	Peasant Human1 MaleB B	0	0	0	0	0	0	0	0	0	0	0
+165	Peasant	Peasant Human1 MaleB C	0	0	0	0	0	0	0	0	0	0	0
+166	Peasant	Peasant Human1 MaleC A	0	0	0	0	0	0	0	0	0	0	0
+167	Peasant	Peasant Human1 MaleC B	0	0	0	0	0	0	0	0	0	0	0
+168	Peasant	Peasant Human1 MaleC C	0	0	0	0	0	0	0	0	0	0	0
+169	Peasant	Peasant Human2 MaleA A	0	0	0	0	0	0	0	0	0	0	0
+170	Peasant	Peasant Human2 MaleA B	0	0	0	0	0	0	0	0	0	0	0
+171	Peasant	Peasant Human2 MaleA C	0	0	0	0	0	0	0	0	0	0	0
+172	Peasant	Peasant Human2 MaleB A	0	0	0	0	0	0	0	0	0	0	0
+173	Peasant	Peasant Human2 MaleB B	0	0	0	0	0	0	0	0	0	0	0
+174	Peasant	Peasant Human2 MaleB C	0	0	0	0	0	0	0	0	0	0	0
+175	Peasant	Peasant Human2 MaleC A	0	0	0	0	0	0	0	0	0	0	0
+176	Peasant	Peasant Human2 MaleC B	0	0	0	0	0	0	0	0	0	0	0
+177	Peasant	Peasant Human2 MaleC C	0	0	0	0	0	0	0	0	0	0	0
+178	Peasant	Peasant Human2 FemaleA A	0	0	0	0	0	0	0	0	0	0	0
+179	Peasant	Peasant Human2 FemaleA B	0	0	0	0	0	0	0	0	0	0	0
+180	Peasant	Peasant Human2 FemaleA C	0	0	0	0	0	0	0	0	0	0	0
+181	Peasant	Peasant Human2 FemaleB A	0	0	0	0	0	0	0	0	0	0	0
+182	Peasant	Peasant Human2 FemaleB B	0	0	0	0	0	0	0	0	0	0	0
+183	Peasant	Peasant Human2 FemaleB C	0	0	0	0	0	0	0	0	0	0	0
+184	Peasant	Peasant Human2 FemaleC A	0	0	0	0	0	0	0	0	0	0	0
+185	Peasant	Peasant Human2 FemaleC B	0	0	0	0	0	0	0	0	0	0	0
+186	Peasant	Peasant Human2 FemaleC C	0	0	0	0	0	0	0	0	0	0	0
+187	Giant Rodent	Rat A	Disease1	None	None	None	None	None	None	None	None	None	None
+188	Lightning Rodent	Rat B	Disease1		Extreme								
+189	Fire Rat	Rat C	Disease2	Extreme	None								
+190	Sentinel Droid	Robot A	0	High	Low	Low	Med	Imm	Imm	Imm	Med	Med	Low
+191	Assassin Droid	Robot B	0										
+192	Terminator Droid	Robot C	0										
+193	Roc	Roc A	0	Med	Med	Low	Low	Med	Low	Med	None	None	High
+194	Roc Alpha	Roc B	0										
+195	Thunderbird	Roc C	BrkArmor										
+196	Giant Shark	Sea Monster A	0	None	None	Imm	None	None	None	None	None	None	VHigh
+197	Dragon Shark	Sea Monster B	0										
+198	Megalodon	Sea Monster C	Afraid										
+199	Fallen Warrior	Skeleton Warrior A	0	Med	None	Med	None	Imm	None	Imm	None	Extreme	Low
+200	Fallen Champion	Skeleton Warrior B	Afraid										
+201	Fallen Hero	Skeleton Warrior C	Curse										
+202	Giant Spider	Spider A	Poison1	None	None	Low	None	None	None	None	None	None	None
+203	Widowmaker	Spider B	Poison2										
+204	Arachne	Spider C	Poison3										
+205	Swordsman	Swordsman A	0	Med	Low	Med	Low	Med	Low	Med	None	None	Low
+206	Guard	Swordsman B	0										
+207	Royal Guard	Swordsman C	Brkweapon										
+208	Thief	Thief A	Stealx2	None	None	None	None	None	None	None	None	None	None
+209	Burglar	Thief B	Stealx2										
+210	Assassin	Thief C	Poison		Low	Med							
+211	Fallen Demigod	Titan A	BrkArmor	Med	Imm	Med	Med	Imm	Med	Med	Med	Med	Med
+212	Titan	Titan B	Brkweapon		Imm			Imm		High	Low	Low	
+213	Primal God	Titan C	Dead	High	Imm	High	High	Imm					
+214	Troglodyte Breeder	Troglodyte A	0	Med	VHigh	VHigh	VHigh	None	None	None		Med	Med
+215	Troglodyte Soldier	Troglodyte B	Poison1										10
+216	Troglodyte Queen	Troglodyte C	Poison2	High									High
+217	Vampire Ghoul	Vampire A	Disease2	Low	Med	Imm	Med	Imm	None	Imm	None	VHigh	Med
+218	Vampire	Vampire B	DrainSP										
+219	Elder Vampire	Vampire C	DrainSP										
+220	Flood Warlock	Warlock B	0	Med	VHigh	Extreme	VHigh	Med	Med	Med	None	Med	Low
+221	Hurricane Warlock	Warlock C	0	High	Extreme	Vhigh							
+222	Firestorm Warlock	Warlock A	0	Extreme	Extreme	High							
+223	Evil Spirit	Wight A	Afraid	High	High	Imm	High	Imm	None	Imm	None	Extreme	Med
+224	Haunting	Wight B	DrainSP
+225	Poltergeist	Wight C	Agex2
+226	Wyvern	Wyvern A	Poison3	Med	Med	Med	Low	Med	Low	Med	Low	Low	Med
+227	Horned Wyvern	Wyvern B	Disease2										
+228	Ancient Wyvern	Wyvern C	Dead										
+229	Zombie	Zombie A	Disease1	VHigh	VHigh	VHigh	VHigh	Imm	None	Imm	None	Extreme	Extreme
+230	Rotting Zombie	Zombie B	Disease2										
+231	Plague Zombie	Zombie C	Dead										
+232	peasant	Peasant Goblin female A A	0										
+233	peasant	Peasant Goblin female A B	0										
+234	peasant	Peasant Goblin female A C	0										
+235	peasant	Peasant Goblin female B A	0										
+236	peasant	Peasant Goblin female B B	0										
+237	peasant	Peasant Goblin female B C	0										
+238	peasant	Peasant Goblin female C A	0										
+239	peasant	Peasant Goblin female C B	0										
+240	peasant	Peasant Goblin female C C	0										
+241	peasant	Peasant Goblin Male A A	0										
+242	peasant	Peasant Goblin Male A B	0										
+243	peasant	Peasant Goblin Male A C	0										
+244	peasant	Peasant Goblin Male B A	0										
+245	peasant	Peasant Goblin Male B B	0										
+246	peasant	Peasant Goblin Male B C	0										
+247	peasant	Peasant Goblin Male C A	0										
+248	peasant	Peasant Goblin Male C B	0										
+249	peasant	Peasant Goblin Male C C	0										
+250	Swamp Troll	Troll A	0	Low	High	Vhigh	Med	Low	Low	Med	None	Low	Med
+251	Mountain Troll	Troll B	0			High	VHigh						
+252	Maneater	Troll C	0										
+253	Cursed Tree	Treant A	0	None	Vhigh+	Vhigh+	Imm	Imm	Low	Imm	Low	Low	Vhigh+
+254	Corrupted Tree	Treant B	0		30	30	Imm						30
+255	Deeprooted Treefiend	Treant C	BrkItem		40	40	Imm						40
+256	Ghast	Ghoul A	Disease1	None	Low	High	Low	Imm	None	Imm	None	Extreme	Low
+257	Revenant	Ghoul B	Paralyze										
+258	Nightgaunt	Ghoul C	Paralyze										
+259	Tolberti	zBlasterGuy A	Errad	High	High	High	High	Imm	High	High	Imm	Imm	High
+260	Robert the Wise	zBlasterGuy B	Errad										
+261	Blaster Guy C	zBlasterGuy C	Errad										
+262	Mega-Dragon	zUltra Dragon A	Errad	Imm	High	High	High	High	15	Imm	Med	Med	High
+263	Mega-Dragon	zUltra Dragon B	Errad
+264	Mega-Dragon	zUltra Dragon C	Errad
+265	Cat A	zcat a 	0	0	0	0	0	0	0	0	0	0	0
+266	Cat B	zcat a 	0	0	0	0	0	0	0	0	0	0	0
+267	Cat C	zcat a 	0	0	0	0	0	0	0	0	0	0	0
+268	Chicken A	zchicken a	0	0	0	0	0	0	0	0	0	0	0
+269	Chicken B	zchicken a	0	0	0	0	0	0	0	0	0	0	0
+270	Chicken C	zchicken a	0	0	0	0	0	0	0	0	0	0	0
+271	Dog A	zdog a	0	0	0	0	0	0	0	0	0	0	0
+272	Dog B	zdog a	0	0	0	0	0	0	0	0	0	0	0
+273	Dog C	zdog a	0	0	0	0	0	0	0	0	0	0	0
+274	Rat A	zrat a	0	0	0	0	0	0	0	0	0	0	0
+275	Rat B	zrat a	0	0	0	0	0	0	0	0	0	0	0
+276	Rat C	zrat a	0	0	0	0	0	0	0	0	0	0	0
